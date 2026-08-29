@@ -895,6 +895,46 @@ main {
   font-size: 0.92rem;
 }
 
+/* ---------- Profile links (Google Scholar / ORCID) ---------- */
+.profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.profile-badge:hover {
+  border-color: var(--color-block);
+  text-decoration: none;
+}
+
+.profile-badge svg {
+  flex-shrink: 0;
+}
+
+.page-header .profile-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.page-header .profile-badge:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 /* ---------- Link cards (join/external) ---------- */
 .link-cards {
   display: grid;
