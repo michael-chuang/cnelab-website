@@ -187,12 +187,31 @@ a:hover {
 
 .nav-toggle {
   display: none;
-  background: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
   cursor: pointer;
   color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.nav-toggle svg {
+  display: block;
+}
+
+.nav-toggle .icon-close {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] .icon-menu {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] .icon-close {
+  display: block;
 }
 
 .nav-links {
