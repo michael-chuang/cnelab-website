@@ -254,6 +254,9 @@ a:hover {
   color: #fff;
   background: linear-gradient(165deg, #05070c 0%, #0a1530 45%, var(--color-block) 130%);
   overflow: hidden;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
 }
 
 .hero-bg {
@@ -349,6 +352,7 @@ a:hover {
 .hero-inner {
   position: relative;
   z-index: 1;
+  width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 96px 24px 76px;
