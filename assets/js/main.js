@@ -42,4 +42,23 @@ document.addEventListener("DOMContentLoaded", function () {
       muteBtn.setAttribute("aria-label", isUnmuted ? "Mute background video" : "Unmute background video");
     });
   }
+
+  // When the page is restored from the browser's back/forward cache (e.g. user
+  // navigates to another page and then hits Back), the YouTube iframe is often
+  // left frozen rather than resuming playback. Force it to reload so autoplay
+  // kicks in again, and reset our custom controls to match the fresh state.
+  window.addEventListener("pageshow", function (event) {
+    if (!event.persisted || !video) return;
+    var src = video.src;
+    video.src = "";
+    video.src = src;
+    if (playBtn) {
+      playBtn.classList.remove("is-paused");
+      playBtn.setAttribute("aria-label", "Pause background video");
+    }
+    if (muteBtn) {
+      muteBtn.classList.remove("is-unmuted");
+      muteBtn.setAttribute("aria-label", "Unmute background video");
+    }
+  });
 });
