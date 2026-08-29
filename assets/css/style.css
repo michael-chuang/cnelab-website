@@ -289,7 +289,7 @@ a:hover {
   .hero-video {
     /* Narrow mobile viewports crop a lot of width off a 16:9 video;
        favor the left side of the frame instead of a dead-center crop. */
-    object-position: 20% center;
+    object-position: 0% center;
   }
 }
 
