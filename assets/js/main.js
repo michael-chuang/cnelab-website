@@ -16,4 +16,30 @@ document.addEventListener("DOMContentLoaded", function () {
       toggle.setAttribute("aria-expanded", "false");
     });
   });
+
+  // Hero background video controls (YouTube IFrame postMessage API).
+  var video = document.getElementById("hero-video");
+  var playBtn = document.getElementById("video-toggle-play");
+  var muteBtn = document.getElementById("video-toggle-mute");
+
+  function ytCommand(func) {
+    if (!video || !video.contentWindow) return;
+    video.contentWindow.postMessage(JSON.stringify({ event: "command", func: func, args: [] }), "*");
+  }
+
+  if (playBtn) {
+    playBtn.addEventListener("click", function () {
+      var isPaused = playBtn.classList.toggle("is-paused");
+      ytCommand(isPaused ? "pauseVideo" : "playVideo");
+      playBtn.setAttribute("aria-label", isPaused ? "Play background video" : "Pause background video");
+    });
+  }
+
+  if (muteBtn) {
+    muteBtn.addEventListener("click", function () {
+      var isUnmuted = muteBtn.classList.toggle("is-unmuted");
+      ytCommand(isUnmuted ? "unMute" : "mute");
+      muteBtn.setAttribute("aria-label", isUnmuted ? "Mute background video" : "Unmute background video");
+    });
+  }
 });
