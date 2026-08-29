@@ -122,12 +122,15 @@ a:hover {
 }
 
 /* ---------- Header / nav ---------- */
+/* Fixed dark theme regardless of light/dark mode — matches the dark
+   hero and footer so the header doesn't flip to a jarring white bar
+   in light mode. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-ink);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .nav-bar {
@@ -146,7 +149,7 @@ a:hover {
   gap: 12px;
   font-weight: 800;
   font-size: 1.05rem;
-  color: var(--color-text);
+  color: #fff;
 }
 
 .brand:hover {
@@ -181,7 +184,7 @@ a:hover {
   font-size: 0.68rem;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.65);
   margin-top: 2px;
 }
 
@@ -190,11 +193,11 @@ a:hover {
   width: 40px;
   height: 40px;
   padding: 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--color-text);
+  color: #fff;
   flex-shrink: 0;
 }
 
@@ -227,7 +230,7 @@ a:hover {
   display: inline-block;
   padding: 10px 14px;
   border-radius: var(--radius-sm);
-  color: var(--color-text);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -235,13 +238,14 @@ a:hover {
 }
 
 .nav-links a:hover {
-  background: var(--color-surface-alt);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
   text-decoration: none;
 }
 
 .nav-links a[aria-current="page"] {
-  color: var(--color-block);
-  background: var(--color-primary-tint);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 /* ---------- Hero ---------- */
@@ -500,15 +504,6 @@ a:hover {
   position: relative;
   z-index: 1;
   max-width: var(--max-width);
-}
-
-/* Optional photo variant: a .hero-bg image + dark overlay layered under
-   the same page-header content, reusing the hero's cover/overlay treatment. */
-.page-header-photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(3, 6, 14, 0.28) 0%, rgba(3, 6, 14, 0.48) 70%, rgba(3, 6, 14, 0.72) 100%);
 }
 
 .page-header .eyebrow {
@@ -1138,8 +1133,8 @@ main {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    background: var(--color-ink);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     flex-direction: column;
     padding: 8px 16px 16px;
     box-shadow: var(--shadow-md);
