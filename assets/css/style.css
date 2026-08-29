@@ -489,13 +489,26 @@ a:hover {
 
 /* ---------- Page header (non-home) ---------- */
 .page-header {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(165deg, #05070c 0%, #0a1530 55%, var(--color-block) 145%);
   color: #fff;
   padding: 64px 24px 52px;
 }
 
 .page-header .container {
+  position: relative;
+  z-index: 1;
   max-width: var(--max-width);
+}
+
+/* Optional photo variant: a .hero-bg image + dark overlay layered under
+   the same page-header content, reusing the hero's cover/overlay treatment. */
+.page-header-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3, 6, 14, 0.28) 0%, rgba(3, 6, 14, 0.48) 70%, rgba(3, 6, 14, 0.72) 100%);
 }
 
 .page-header .eyebrow {
