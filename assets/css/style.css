@@ -608,6 +608,25 @@ main {
   text-decoration: underline;
 }
 
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+}
+.keyword-list li {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
 /* Solid near-black block section — the "black" end of the rhythm. */
 .section-invert {
   background: var(--color-ink);
