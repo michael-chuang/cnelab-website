@@ -404,27 +404,6 @@ a:hover {
   padding-left: 20px;
 }
 
-@media (max-width: 700px) {
-  /* On tall narrow screens, centering the whole text block vertically
-     lets the heading sit right on top of the subject in the video.
-     Stretch the inner column so the heading can stay near the top
-     and the buttons get pushed toward the bottom instead. */
-  .hero {
-    align-items: stretch;
-  }
-  .hero-inner {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    padding-top: 56px;
-    padding-bottom: 40px;
-  }
-  .hero-actions {
-    margin-top: auto;
-    padding-top: 32px;
-  }
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
