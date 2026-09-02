@@ -197,6 +197,11 @@ a:hover {
   -webkit-background-clip: text;
   background-clip: text;
   animation: brand-wave 6s ease-in-out infinite;
+  /* iOS Safari can smear/ghost an animated background-clip:text element
+     during scroll unless it's promoted to its own compositing layer. */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: background-position;
 }
 
 @keyframes brand-wave {
