@@ -178,29 +178,42 @@ a:hover {
   font-weight: 800;
 }
 
-/* Polished chrome shimmer sweep across the wordmark, like the light-catching
-   metallic branding seen on trackside logos at the 2025 F1 season. The base
-   is a constantly-visible teal/purple gradient (so it reads as "special"
-   even on a still frame) with a bright glint that sweeps through on a loop. */
+/* F1-style wordmark: solid gradient text plus a trailing "speed line" streak
+   (repeating stripes fading off the left edge), like the motion-blurred
+   trackside logos at the 2025 F1 season. The streak is a duplicated copy of
+   the same text (via attr(data-text)) clipped to thin repeating stripes and
+   masked so it fades out toward the right, sitting behind the real text. */
 .brand-text.shine {
-  background: linear-gradient(
-    100deg,
-    #3fd6c2 0%,
-    #6fa8ff 20%,
-    #b58bff 35%,
-    #ffffff 45%,
-    #ffffff 50%,
-    #b58bff 60%,
-    #6fa8ff 75%,
-    #3fd6c2 90%,
-    #3fd6c2 100%
-  );
+  position: relative;
+  background: linear-gradient(100deg, #3fd6c2 0%, #6fa8ff 45%, #b58bff 100%);
   background-size: 220% auto;
   background-position: 0% center;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: brand-shine 2.8s linear infinite;
+  animation: brand-shine 3.6s linear infinite;
+}
+
+.brand-text.shine::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(
+    100deg,
+    rgba(63, 214, 194, 1) 0px,
+    rgba(111, 168, 255, 1) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-mask-image: linear-gradient(to right, black 0%, transparent 55%);
+  mask-image: linear-gradient(to right, black 0%, transparent 55%);
+  filter: blur(0.4px);
+  transform: translateX(-7px);
+  pointer-events: none;
 }
 
 @keyframes brand-shine {
