@@ -178,6 +178,49 @@ a:hover {
   font-weight: 800;
 }
 
+/* Polished chrome shimmer sweep across the wordmark, like the light-catching
+   metallic branding seen on trackside logos at the 2025 F1 season — a
+   subtle, slow highlight rather than a constant flashy loop. */
+.brand-text.shine {
+  background: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #b9c8ea 22%,
+    #3fd6c2 32%,
+    #ffffff 42%,
+    #ffffff 50%,
+    #b58bff 60%,
+    #ffffff 70%,
+    #b9c8ea 84%,
+    #ffffff 100%
+  );
+  background-size: 300% auto;
+  background-position: 0% center;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: brand-shine 5s ease-in-out infinite;
+}
+
+@keyframes brand-shine {
+  0% {
+    background-position: 0% center;
+  }
+  35% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 100% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-text.shine {
+    animation: none;
+    background-position: 45% center;
+  }
+}
+
 .brand-text small {
   display: block;
   font-weight: 500;
