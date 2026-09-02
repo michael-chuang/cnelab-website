@@ -178,50 +178,34 @@ a:hover {
   font-weight: 800;
 }
 
-/* F1-style wordmark: solid gradient text plus a trailing "speed line" streak
-   (repeating stripes fading off the left edge), like the motion-blurred
-   trackside logos at the 2025 F1 season. The streak is a duplicated copy of
-   the same text (via attr(data-text)) clipped to thin repeating stripes and
-   masked so it fades out toward the right, sitting behind the real text. */
+/* Ocean-wave wordmark: a soft blue/teal gradient that drifts back and
+   forth (not a one-way sweep) like light moving across water. */
 .brand-text.shine {
-  position: relative;
-  background: linear-gradient(100deg, #3fd6c2 0%, #6fa8ff 45%, #b58bff 100%);
-  background-size: 220% auto;
+  background: linear-gradient(
+    100deg,
+    #0a3d62 0%,
+    #1b9e8f 22%,
+    #3fd6c2 40%,
+    #a8e6ef 52%,
+    #3fd6c2 64%,
+    #1b9e8f 82%,
+    #0a3d62 100%
+  );
+  background-size: 260% auto;
   background-position: 0% center;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: brand-shine 3.6s linear infinite;
+  animation: brand-wave 6s ease-in-out infinite;
 }
 
-.brand-text.shine::before {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: repeating-linear-gradient(
-    100deg,
-    rgba(63, 214, 194, 1) 0px,
-    rgba(111, 168, 255, 1) 2px,
-    transparent 2px,
-    transparent 4px
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-mask-image: linear-gradient(to right, black 0%, transparent 55%);
-  mask-image: linear-gradient(to right, black 0%, transparent 55%);
-  filter: blur(0.4px);
-  transform: translateX(-7px);
-  pointer-events: none;
-}
-
-@keyframes brand-shine {
-  0% {
+@keyframes brand-wave {
+  0%,
+  100% {
     background-position: 0% center;
   }
-  100% {
-    background-position: 220% center;
+  50% {
+    background-position: 100% center;
   }
 }
 
