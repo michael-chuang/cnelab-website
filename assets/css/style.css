@@ -179,8 +179,10 @@ a:hover {
 }
 
 /* Ocean-wave wordmark: a soft blue/teal gradient that drifts back and
-   forth (not a one-way sweep) like light moving across water. */
-.brand-text.shine {
+   forth (not a one-way sweep) like light moving across water. Applied to
+   both the "CNElab" line and the Chinese subtitle so they wave together. */
+.shine {
+  display: block;
   background: linear-gradient(
     100deg,
     #0a3d62 0%,
@@ -204,6 +206,13 @@ a:hover {
   will-change: background-position;
 }
 
+.brand-text-zh {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
 @keyframes brand-wave {
   0%,
   100% {
@@ -215,7 +224,7 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand-text.shine {
+  .shine {
     animation: none;
     background-position: 45% center;
   }
