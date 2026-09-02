@@ -173,7 +173,7 @@ a:hover {
 .brand-text {
   display: flex;
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   line-height: 1.15;
   letter-spacing: 0.02em;
@@ -213,6 +213,9 @@ a:hover {
   font-weight: 600;
   letter-spacing: 0;
   white-space: nowrap;
+  /* Out of phase with the English line so the two read as two independent
+     waves rather than one gradient flowing across from English to Chinese. */
+  animation-delay: -3s;
 }
 
 @keyframes brand-wave {
