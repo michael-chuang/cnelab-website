@@ -208,8 +208,13 @@ a:hover {
   will-change: background-position;
 }
 
+.brand-text-sep {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+}
+
 .brand-text-zh {
-  font-size: 0.72rem;
+  font-size: inherit;
   font-weight: 600;
   letter-spacing: 0;
   white-space: nowrap;
