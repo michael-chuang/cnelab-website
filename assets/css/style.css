@@ -172,7 +172,9 @@ a:hover {
 
 .brand-text {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
   line-height: 1.15;
   letter-spacing: 0.02em;
   font-weight: 800;
@@ -207,10 +209,10 @@ a:hover {
 }
 
 .brand-text-zh {
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0;
-  margin-top: 2px;
+  white-space: nowrap;
 }
 
 @keyframes brand-wave {
