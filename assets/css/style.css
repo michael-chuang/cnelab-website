@@ -179,38 +179,36 @@ a:hover {
 }
 
 /* Polished chrome shimmer sweep across the wordmark, like the light-catching
-   metallic branding seen on trackside logos at the 2025 F1 season — a
-   subtle, slow highlight rather than a constant flashy loop. */
+   metallic branding seen on trackside logos at the 2025 F1 season. The base
+   is a constantly-visible teal/purple gradient (so it reads as "special"
+   even on a still frame) with a bright glint that sweeps through on a loop. */
 .brand-text.shine {
   background: linear-gradient(
     100deg,
-    #ffffff 0%,
-    #b9c8ea 22%,
-    #3fd6c2 32%,
-    #ffffff 42%,
+    #3fd6c2 0%,
+    #6fa8ff 20%,
+    #b58bff 35%,
+    #ffffff 45%,
     #ffffff 50%,
     #b58bff 60%,
-    #ffffff 70%,
-    #b9c8ea 84%,
-    #ffffff 100%
+    #6fa8ff 75%,
+    #3fd6c2 90%,
+    #3fd6c2 100%
   );
-  background-size: 300% auto;
+  background-size: 220% auto;
   background-position: 0% center;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: brand-shine 5s ease-in-out infinite;
+  animation: brand-shine 2.8s linear infinite;
 }
 
 @keyframes brand-shine {
   0% {
     background-position: 0% center;
   }
-  35% {
-    background-position: 100% center;
-  }
   100% {
-    background-position: 100% center;
+    background-position: 220% center;
   }
 }
 
