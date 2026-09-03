@@ -225,15 +225,15 @@ a:hover {
 
   .brand {
     gap: 8px;
-    font-size: 0.8rem;
+    font-size: 0.92rem;
     min-width: 0;
   }
 
   .brand-mark {
-    width: 32px;
-    height: 32px;
-    background-size: 64px 51px;
-    background-position: -16px 0;
+    width: 34px;
+    height: 34px;
+    background-size: 68px 54px;
+    background-position: -17px 0;
   }
 
   .brand-text {
@@ -242,7 +242,7 @@ a:hover {
   }
 
   .brand-text-zh {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
   }
 }
 
