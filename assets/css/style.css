@@ -213,6 +213,39 @@ a:hover {
   font-weight: 400;
 }
 
+/* On narrow phones, "CNElab | 智慧神經人因工程實驗室" at full size doesn't
+   fit next to the hamburger button and pushes it off-screen. Shrink the
+   wordmark and nav padding rather than dropping back to a stacked layout. */
+@media (max-width: 480px) {
+  .nav-bar {
+    padding-left: 14px;
+    padding-right: 14px;
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 8px;
+    font-size: 0.8rem;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    background-size: 64px 51px;
+    background-position: -16px 0;
+  }
+
+  .brand-text {
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .brand-text-zh {
+    font-size: 0.72rem;
+  }
+}
+
 .brand-text-zh {
   font-size: inherit;
   font-weight: 600;
