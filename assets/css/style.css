@@ -250,48 +250,6 @@ a:hover {
   margin-top: 2px;
 }
 
-/* EEG signal strip under the header: a continuously scrolling brainwave
-   trace in the same ocean-wave palette as the logo, tying the "neuro" and
-   "wave" motifs together. */
-.eeg-strip {
-  height: 26px;
-  background: var(--color-ink);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.eeg-track {
-  display: block;
-  width: 200%;
-  height: 100%;
-  animation: eeg-scroll 7s linear infinite;
-}
-
-#eeg-wave {
-  fill: none;
-  stroke: url(#eeg-gradient);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  opacity: 0.9;
-}
-
-@keyframes eeg-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .eeg-track {
-    animation: none;
-  }
-}
-
 .nav-toggle {
   display: none;
   width: 40px;
