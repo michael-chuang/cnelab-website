@@ -81,4 +81,53 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
+
+  // Publication year rail: builds a clickable year index next to the
+  // "Journal Papers — Published / Accepted" list (see publications.html),
+  // highlights the year currently in view, and jumps to a year on click.
+  var yearRail = document.getElementById("pub-year-rail");
+  var pubYearList = document.getElementById("pub-year-list");
+  if (yearRail && pubYearList) {
+    var yearItems = pubYearList.querySelectorAll("li[data-year]");
+    var firstItemForYear = {};
+    var years = [];
+
+    yearItems.forEach(function (li) {
+      var year = li.getAttribute("data-year");
+      if (!(year in firstItemForYear)) {
+        years.push(year);
+        firstItemForYear[year] = li;
+      }
+    });
+
+    years.forEach(function (year) {
+      var link = document.createElement("button");
+      link.type = "button";
+      link.className = "pub-year-link";
+      link.textContent = year;
+      link.setAttribute("data-year", year);
+      link.addEventListener("click", function () {
+        firstItemForYear[year].scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      yearRail.appendChild(link);
+    });
+
+    if ("IntersectionObserver" in window) {
+      var yearSpy = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var year = entry.target.getAttribute("data-year");
+            yearRail.querySelectorAll(".pub-year-link").forEach(function (link) {
+              link.classList.toggle("active", link.getAttribute("data-year") === year);
+            });
+          });
+        },
+        { threshold: 0, rootMargin: "-20% 0px -70% 0px" }
+      );
+      years.forEach(function (year) {
+        yearSpy.observe(firstItemForYear[year]);
+      });
+    }
+  }
 });
