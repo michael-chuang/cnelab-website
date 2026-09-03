@@ -52,4 +52,30 @@ document.addEventListener("DOMContentLoaded", function () {
       video.play();
     }
   });
+
+  // Scroll-reveal: fade/slide .reveal elements into place as they enter
+  // the viewport, then stop watching them (one-time reveal).
+  var revealEls = document.querySelectorAll(".reveal");
+  if (revealEls.length) {
+    if ("IntersectionObserver" in window) {
+      var revealObserver = new IntersectionObserver(
+        function (entries, observer) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -80px 0px" }
+      );
+      revealEls.forEach(function (el) {
+        revealObserver.observe(el);
+      });
+    } else {
+      revealEls.forEach(function (el) {
+        el.classList.add("is-visible");
+      });
+    }
+  }
 });
