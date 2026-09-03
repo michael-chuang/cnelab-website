@@ -67,7 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         },
-        { threshold: 0.15, rootMargin: "0px 0px -80px 0px" }
+        // threshold: 0 fires as soon as any part of the element enters the
+        // viewport — a ratio-based threshold (e.g. 0.15) would never fire
+        // for elements taller than the viewport, like long publication lists.
+        { threshold: 0, rootMargin: "0px 0px -10% 0px" }
       );
       revealEls.forEach(function (el) {
         revealObserver.observe(el);
