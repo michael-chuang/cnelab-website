@@ -82,13 +82,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Publication year rail: builds a clickable year index next to the
-  // "Journal Papers — Published / Accepted" list (see publications.html),
-  // highlights the year currently in view, and jumps to a year on click.
-  var yearRail = document.getElementById("pub-year-rail");
-  var pubYearList = document.getElementById("pub-year-list");
-  if (yearRail && pubYearList) {
-    var yearItems = pubYearList.querySelectorAll("li[data-year]");
+  // Year rail: builds a clickable year index alongside a chronological list
+  // (see publications.html and research.html), highlights the year
+  // currently in view, and jumps to a year on click. A page can have more
+  // than one — each <nav class="year-rail" data-year-source="ID"> pulls its
+  // <li data-year> items from the element with that id. The source may
+  // contain several <ul>s (e.g. Research's PI / Co-PI / Industry lists),
+  // and the same year may reappear in more than one of them, so every
+  // tagged item (not just the first per year) is watched for the spy.
+  document.querySelectorAll(".year-rail[data-year-source]").forEach(function (yearRail) {
+    var source = document.getElementById(yearRail.getAttribute("data-year-source"));
+    if (!source) return;
+
+    var yearItems = source.querySelectorAll("li[data-year]");
+    if (!yearItems.length) return;
+
     var firstItemForYear = {};
     var years = [];
 
@@ -100,10 +108,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
+    // Sort newest-first: a page's lists (e.g. Research's PI / Co-PI /
+    // Industry groups) don't always appear in one continuous chronological
+    // order, so first-occurrence order alone can look scrambled.
+    years.sort(function (a, b) {
+      return Number(b) - Number(a);
+    });
+
     years.forEach(function (year) {
       var link = document.createElement("button");
       link.type = "button";
-      link.className = "pub-year-link";
+      link.className = "year-rail-link";
       link.textContent = year;
       link.setAttribute("data-year", year);
       link.addEventListener("click", function () {
@@ -118,16 +133,16 @@ document.addEventListener("DOMContentLoaded", function () {
           entries.forEach(function (entry) {
             if (!entry.isIntersecting) return;
             var year = entry.target.getAttribute("data-year");
-            yearRail.querySelectorAll(".pub-year-link").forEach(function (link) {
+            yearRail.querySelectorAll(".year-rail-link").forEach(function (link) {
               link.classList.toggle("active", link.getAttribute("data-year") === year);
             });
           });
         },
         { threshold: 0, rootMargin: "-20% 0px -70% 0px" }
       );
-      years.forEach(function (year) {
-        yearSpy.observe(firstItemForYear[year]);
+      yearItems.forEach(function (li) {
+        yearSpy.observe(li);
       });
     }
-  }
+  });
 });

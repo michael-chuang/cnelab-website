@@ -1334,28 +1334,30 @@ main {
   }
 }
 
-/* ---------- Publication year rail ---------- */
-/* A sticky vertical list of years running alongside the "Journal Papers —
-   Published / Accepted" list (a real column in the layout, not something
-   floating in the page margin, so it still fits on an un-maximized laptop
-   window). Highlights the year currently in view and jumps to it on click. */
-.pub-list-with-rail {
+/* ---------- Year rail ---------- */
+/* A sticky vertical list of years running alongside a long chronological
+   list — e.g. Publications' "Journal Papers" or Research's project lists.
+   A real column in the layout (not floating in the page margin), so it
+   still fits on an un-maximized laptop window. Highlights the year
+   currently in view and jumps to it on click. Reused across pages, so the
+   content column (.year-rail-content) can hold one <ul> or several. */
+.year-rail-layout {
   display: flex;
   align-items: flex-start;
   gap: 20px;
 }
 
-.pub-list-with-rail .pub-list {
+.year-rail-layout .year-rail-content {
   flex: 1;
   min-width: 0;
 }
 
-.pub-year-rail {
+.year-rail {
   display: none;
 }
 
 @media (min-width: 860px) {
-  .pub-year-rail {
+  .year-rail {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -1367,12 +1369,12 @@ main {
     padding: 4px 2px;
   }
 
-  .pub-year-rail:empty {
+  .year-rail:empty {
     display: none;
   }
 }
 
-.pub-year-link {
+.year-rail-link {
   appearance: none;
   background: none;
   border: none;
@@ -1386,11 +1388,11 @@ main {
   transition: color 0.2s ease, border-color 0.2s ease, font-size 0.2s ease;
 }
 
-.pub-year-link:hover {
+.year-rail-link:hover {
   color: var(--color-primary);
 }
 
-.pub-year-link.active {
+.year-rail-link.active {
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-size: 0.92rem;
