@@ -80,7 +80,14 @@
     </button>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
-      <li><a href="team.html" aria-current="page">Meet Us</a></li>
+      <li class="nav-dropdown">
+        <a href="team.html" aria-current="page">Meet Us</a>
+        <ul class="nav-submenu">
+          <li><a href="team.html#pi">Principal Investigator</a></li>
+          <li><a href="team.html#students">Students</a></li>
+          <li><a href="team.html#alumni">Alumni</a></li>
+        </ul>
+      </li>
       <li><a href="research.html">Research</a></li>
       <li><a href="publications.html">Publications</a></li>
       <li><a href="teaching.html">Teaching</a></li>
@@ -250,7 +257,7 @@
     </div>
   </section>
 
-  <section class="section section-alt reveal">
+  <section class="section section-alt reveal" id="students">
     <div class="container">
 
       <div class="role-heading reveal">
@@ -384,7 +391,7 @@
         </div>
       </div>
 
-      <div class="role-heading reveal">
+      <div class="role-heading reveal" id="alumni">
         <h2>Alumni</h2>
         <div class="rule"></div>
       </div>

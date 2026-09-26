@@ -367,6 +367,50 @@ a:hover {
   transform: scaleX(1);
 }
 
+/* "Meet Us" dropdown: reveals a small submenu on hover/focus (desktop)
+   listing the team page's sections, so visitors can jump straight to
+   Principal Investigator / Students / Alumni. */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-submenu {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: var(--color-ink);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.nav-dropdown:hover .nav-submenu,
+.nav-dropdown:focus-within .nav-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-submenu a {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+}
+
+#pi,
+#students,
+#alumni {
+  scroll-margin-top: 90px;
+}
+
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
@@ -1282,6 +1326,23 @@ main {
   .nav-links a {
     padding: 12px 8px;
     width: 100%;
+  }
+
+  .nav-submenu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: none;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 0 16px;
+  }
+
+  .nav-submenu a {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.78rem;
   }
 
   .site-header {
