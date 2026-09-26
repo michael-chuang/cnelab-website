@@ -377,15 +377,17 @@ a:hover {
 .nav-submenu {
   list-style: none;
   margin: 0;
-  padding: 6px;
+  padding: 8px;
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 220px;
-  background: var(--color-ink);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
+  padding-top: 10px;
+  min-width: 240px;
+  background: #171c26;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);
@@ -399,10 +401,32 @@ a:hover {
   transform: translateY(0);
 }
 
+.nav-submenu li + li {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 2px;
+  padding-top: 2px;
+}
+
 .nav-submenu a {
   display: block;
   width: 100%;
   white-space: nowrap;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.nav-submenu a:hover,
+.nav-submenu a:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.nav-submenu a::after {
+  content: none;
 }
 
 #pi,
@@ -1342,7 +1366,8 @@ main {
 
   .nav-submenu a {
     color: rgba(255, 255, 255, 0.65);
-    font-size: 0.78rem;
+    font-size: 0.74rem;
+    font-weight: 600;
   }
 
   .site-header {
