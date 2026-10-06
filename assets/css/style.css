@@ -989,7 +989,7 @@ main {
 }
 
 .pi-card .pi-title {
-  color: var(--color-accent);
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 0.9rem;
   margin: 0 0 10px;
