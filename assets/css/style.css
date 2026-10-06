@@ -989,9 +989,8 @@ main {
 }
 
 .pi-card .pi-title {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 700;
-  font-size: 0.9rem;
   margin: 0 0 10px;
 }
 
