@@ -1004,7 +1004,7 @@ main {
    primary title/department block, with the role name picked out in the
    site's blue accent so it still reads clearly at a glance. */
 .pi-card .pi-secondary-role strong {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 700;
 }
 
