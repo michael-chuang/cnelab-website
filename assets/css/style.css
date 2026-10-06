@@ -1000,6 +1000,18 @@ main {
   color: var(--color-text-muted);
 }
 
+/* Secondary appointments (adjunct roles, society positions) — smaller than
+   the primary pi-title, with just the role name picked out in the site's
+   blue accent so it still reads clearly at a glance. */
+.pi-card .pi-secondary-role {
+  font-size: 0.85rem;
+}
+
+.pi-card .pi-secondary-role strong {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
 @media (max-width: 560px) {
   .pi-card {
     flex-direction: column;
