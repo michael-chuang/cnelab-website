@@ -988,12 +988,6 @@ main {
   font-weight: 800;
 }
 
-.pi-card .pi-title {
-  color: var(--color-accent);
-  font-weight: 700;
-  margin: 0 0 10px;
-}
-
 .pi-card p {
   margin: 0;
   color: var(--color-text-muted);
