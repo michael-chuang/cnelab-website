@@ -180,22 +180,24 @@ a:hover {
   font-weight: 800;
 }
 
-/* Ocean-wave wordmark: a soft blue/teal gradient that drifts back and
-   forth (not a one-way sweep) like light moving across water. Applied to
-   both the "CNElab" line and the Chinese subtitle so they wave together. */
+/* Holographic wordmark: a pearlescent blue-violet gradient that drifts
+   back and forth (not a one-way sweep) like light moving across foil.
+   Applied to both the "CNElab" line and the Chinese subtitle so they
+   wave together. */
 .shine {
   display: block;
   background: linear-gradient(
-    100deg,
-    #0a3d62 0%,
-    #1b9e8f 22%,
-    #3fd6c2 40%,
-    #a8e6ef 52%,
-    #3fd6c2 64%,
-    #1b9e8f 82%,
-    #0a3d62 100%
+    115deg,
+    #2b3a8f 0%,
+    #4c6ef5 16%,
+    #91a7ff 30%,
+    #e0e7ff 42%,
+    #9775fa 56%,
+    #5f3dc4 70%,
+    #4c6ef5 85%,
+    #2b3a8f 100%
   );
-  background-size: 260% auto;
+  background-size: 300% auto;
   background-position: 0% center;
   color: transparent;
   -webkit-background-clip: text;
