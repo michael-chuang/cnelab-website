@@ -210,6 +210,69 @@ a:hover {
   will-change: background-position;
 }
 
+/* Color variants: page headings each get their own gradient family so the
+   site doesn't read as one repeated color, while sharing the same drifting
+   wave animation as the wordmark. */
+/* These use background-image (not the background shorthand) so they don't
+   reset the background-clip: text that .shine already set — the shorthand
+   would silently reset it to border-box and the "text" would render as a
+   solid block instead of being clipped to the letterforms. */
+.shine-green {
+  background-image: linear-gradient(
+    115deg,
+    #2b8a3e 0%,
+    #51cf66 16%,
+    #b2f2bb 30%,
+    #e6fcf5 42%,
+    #63e6be 56%,
+    #12b886 70%,
+    #51cf66 85%,
+    #2b8a3e 100%
+  );
+}
+
+.shine-gold {
+  background-image: linear-gradient(
+    115deg,
+    #b8860b 0%,
+    #f59f00 16%,
+    #ffd43b 30%,
+    #fff3bf 42%,
+    #ffd43b 56%,
+    #f08c00 70%,
+    #f59f00 85%,
+    #b8860b 100%
+  );
+}
+
+.shine-pink {
+  background-image: linear-gradient(
+    115deg,
+    #9c36b5 0%,
+    #e64980 16%,
+    #ffa8c5 30%,
+    #ffe3ec 42%,
+    #ffa8c5 56%,
+    #be4bdb 70%,
+    #e64980 85%,
+    #9c36b5 100%
+  );
+}
+
+.shine-teal {
+  background-image: linear-gradient(
+    115deg,
+    #0b7285 0%,
+    #15aabf 16%,
+    #66d9e8 30%,
+    #e3fafc 42%,
+    #66d9e8 56%,
+    #1098ad 70%,
+    #15aabf 85%,
+    #0b7285 100%
+  );
+}
+
 .brand-text-sep {
   color: rgba(255, 255, 255, 0.35);
   font-weight: 400;
