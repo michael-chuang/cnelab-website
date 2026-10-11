@@ -206,4 +206,32 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     { passive: true }
   );
+
+  // First-visit hint: show "Swipe to browse pages" once per device (mobile
+  // only), then remember it's been seen so it doesn't nag on every visit.
+  var hint = document.getElementById("swipe-hint");
+  if (hint && isMobile()) {
+    var seenKey = "cnelab-swipe-hint-seen";
+    var alreadySeen = true;
+    try {
+      alreadySeen = !!window.localStorage.getItem(seenKey);
+    } catch (e) {
+      alreadySeen = false;
+    }
+    if (!alreadySeen) {
+      requestAnimationFrame(function () {
+        hint.classList.add("visible");
+      });
+      var dismissHint = function () {
+        hint.classList.remove("visible");
+        try {
+          window.localStorage.setItem(seenKey, "1");
+        } catch (e) {
+          /* private browsing or storage disabled — just skip remembering */
+        }
+      };
+      setTimeout(dismissHint, 3500);
+      document.addEventListener("touchstart", dismissHint, { once: true, passive: true });
+    }
+  }
 });

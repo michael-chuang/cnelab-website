@@ -1459,6 +1459,75 @@ main {
   }
 }
 
+/* ---------- Mobile page dots + swipe hint ---------- */
+/* Fixed indicator strip (mobile only) showing which of the 6 main pages
+   you're on and that swiping left/right moves between them — dots are
+   also plain links, so tapping one works without JS or touch. */
+.page-dots {
+  display: none;
+}
+
+.swipe-hint {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .page-dots {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 90;
+    padding: 9px 14px;
+    background: rgba(8, 11, 18, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .page-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.32);
+    transition: width 0.25s ease, background 0.25s ease;
+  }
+
+  .page-dot.active {
+    width: 22px;
+    background: var(--color-primary);
+  }
+
+  .swipe-hint {
+    display: block;
+    position: fixed;
+    left: 50%;
+    bottom: 54px;
+    transform: translateX(-50%);
+    z-index: 90;
+    background: rgba(8, 11, 18, 0.88);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  .swipe-hint.visible {
+    opacity: 1;
+  }
+}
+
 /* ---------- Scroll-reveal ---------- */
 /* Sections start faded/offset and ease into place once they enter the
    viewport (see the IntersectionObserver in main.js) — the same idea as
