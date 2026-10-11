@@ -146,3 +146,64 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+// Mobile swipe navigation: on narrow viewports, a left/right swipe moves
+// between the 6 main pages in nav order (wrapping around at the ends).
+// Guarded on horizontal-dominant, fast-enough gestures so it doesn't
+// hijack normal vertical scrolling.
+document.addEventListener("DOMContentLoaded", function () {
+  var pageOrder = ["index.html", "team.html", "research.html", "publications.html", "teaching.html", "join.html"];
+
+  function isMobile() {
+    return window.matchMedia("(max-width: 860px)").matches;
+  }
+
+  function currentPageIndex() {
+    var file = window.location.pathname.split("/").pop();
+    if (!file) file = "index.html";
+    var idx = pageOrder.indexOf(file);
+    return idx === -1 ? 0 : idx;
+  }
+
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchStartTime = 0;
+  var navLinks = document.querySelector(".nav-links");
+
+  document.addEventListener(
+    "touchstart",
+    function (e) {
+      if (!isMobile() || e.touches.length !== 1) return;
+      if (navLinks && navLinks.classList.contains("open")) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchend",
+    function (e) {
+      if (!isMobile()) return;
+      if (navLinks && navLinks.classList.contains("open")) return;
+      if (!touchStartTime) return;
+
+      var touch = e.changedTouches[0];
+      var dx = touch.clientX - touchStartX;
+      var dy = touch.clientY - touchStartY;
+      var elapsed = Date.now() - touchStartTime;
+      touchStartTime = 0;
+
+      var minDistance = 70;
+      if (elapsed > 800) return;
+      if (Math.abs(dx) < minDistance) return;
+      if (Math.abs(dy) > Math.abs(dx) * 0.6) return;
+
+      var idx = currentPageIndex();
+      var nextIdx = dx < 0 ? (idx + 1) % pageOrder.length : (idx - 1 + pageOrder.length) % pageOrder.length;
+      window.location.href = pageOrder[nextIdx];
+    },
+    { passive: true }
+  );
+});
