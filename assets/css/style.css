@@ -273,17 +273,17 @@ a:hover {
   );
 }
 
-.shine-orange {
+.shine-silver {
   background-image: linear-gradient(
     115deg,
-    #d9480f 0%,
-    #f76707 16%,
-    #ffa94d 30%,
-    #fff4e6 42%,
-    #ffa94d 56%,
-    #e8590c 70%,
-    #f76707 85%,
-    #d9480f 100%
+    #5c5f66 0%,
+    #adb5bd 16%,
+    #e9ecef 30%,
+    #ffffff 42%,
+    #e9ecef 56%,
+    #868e96 70%,
+    #adb5bd 85%,
+    #5c5f66 100%
   );
 }
 
