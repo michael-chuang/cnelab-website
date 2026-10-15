@@ -1080,6 +1080,12 @@ main {
   font-weight: 700;
 }
 
+.pi-card .pi-secondary-role + .pi-secondary-role {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
 @media (max-width: 560px) {
   .pi-card {
     flex-direction: column;
