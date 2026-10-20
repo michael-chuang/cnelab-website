@@ -1143,6 +1143,18 @@ main {
   font-weight: 600;
 }
 
+/* Numbered count for the published/accepted journal list only — the
+   other .pub-list uses (preprints, book chapters, conference papers)
+   stay unnumbered via the shared list-style:none above. */
+ol.pub-list {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+
+ol.pub-list li {
+  padding-left: 8px;
+}
+
 .tag {
   display: inline-block;
   font-size: 0.72rem;
