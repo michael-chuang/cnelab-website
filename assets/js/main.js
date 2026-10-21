@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!yearItems.length) return;
 
     var firstItemForYear = {};
+    var countForYear = {};
     var years = [];
 
     yearItems.forEach(function (li) {
@@ -105,7 +106,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!(year in firstItemForYear)) {
         years.push(year);
         firstItemForYear[year] = li;
+        countForYear[year] = 0;
       }
+      countForYear[year] += 1;
     });
 
     // Sort newest-first: a page's lists (e.g. Research's PI / Co-PI /
@@ -119,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var link = document.createElement("button");
       link.type = "button";
       link.className = "year-rail-link";
-      link.textContent = year;
+      link.textContent = year + " (" + countForYear[year] + ")";
       link.setAttribute("data-year", year);
       link.addEventListener("click", function () {
         firstItemForYear[year].scrollIntoView({ behavior: "smooth", block: "start" });
