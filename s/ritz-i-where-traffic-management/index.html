@@ -555,6 +555,7 @@ resize(); requestAnimationFrame(loop);
 <div class="game">
   <div style="display:flex;flex-direction:column;gap:10px;min-width:0"><div class="board cockpit"><canvas id="cv2" aria-label="開車時從駕駛座看出去的畫面與儀表板"></canvas></div><div class="cap" id="cap2" hidden style="position:static"><div id="capText2"></div></div></div>
   <div class="side">
+    <div class="msg" id="msg2">你正開在兩線道的左車道。按「後方」或「前方」讓緊急車輛出現，或按喇叭試試羅盤。</div>
     <div class="group">
       <h2>1　哪一種車？</h2>
       <div class="row" id="kinds2">
@@ -584,7 +585,6 @@ resize(); requestAnimationFrame(loop);
       <b>警笛在前面還是後面？</b>
       <div class="row"><button data-g="F">前面</button><button data-g="B">後面</button></div>
     </div>
-    <div class="msg" id="msg2">你正開在兩線道的左車道。按「後方」或「前方」讓緊急車輛出現，或按喇叭試試羅盤。</div>
   </div>
 </div>
 <section style="display:flex;flex-direction:column;gap:10px">
