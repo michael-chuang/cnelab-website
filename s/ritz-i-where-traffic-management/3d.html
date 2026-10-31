@@ -129,8 +129,6 @@ function dept(x,z){const g=new THREE.Group();g.position.set(x,0.6,z);scene.add(g
   const glass=canvasTex(256,512,(c,w,h)=>{c.fillStyle="#3c6f97";c.fillRect(0,0,w,h);for(let j=0;j<h;j+=16){c.fillStyle=j%32?"#5b8fbb":"#4a7fab";c.fillRect(0,j,w,10)}for(let i=0;i<w;i+=32){c.fillStyle="#2b5576";c.fillRect(i,0,3,h)}});
   const t=new THREE.Mesh(new THREE.BoxGeometry(30,70,30),new THREE.MeshStandardMaterial({map:glass,roughness:0.25,metalness:0.35}));t.position.y=35;t.castShadow=t.receiveShadow=true;g.add(t);
   box(40,10,40,M(0xe8e1d6),0,0,0,g);
-  const sm=new THREE.MeshStandardMaterial({map:canvasTex(512,128,(c,w,h)=>{c.fillStyle="#b3122e";c.fillRect(0,0,w,h);c.fillStyle="#fff";c.font="bold 78px 'Noto Sans TC','PingFang TC',sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText("百貨公司",w/2,h/2+4)})});
-  for(const [px,pz,ry] of [[0,15.4,0],[15.4,0,Math.PI/2]]){const sg=new THREE.Mesh(new THREE.PlaneGeometry(22,5),sm);sg.position.set(px,63,pz);sg.rotation.y=ry;g.add(sg)}
   return g}
 function temple(x,z){const g=new THREE.Group();g.position.set(x,0.6,z);g.rotation.y=Math.PI;scene.add(g);
   box(26,1.2,20,M(0xc9b9a0),0,0,0,g); box(22,9,14,M(0xb23a2a),0,1.2,0,g);

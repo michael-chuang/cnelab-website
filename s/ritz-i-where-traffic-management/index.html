@@ -991,8 +991,7 @@ function apt(x,z,w,d,fl,wall,faceZ){const fh=6,H=fl*fh,g=new THREE.Group();g.pos
 function dept(x,z){const g=new THREE.Group();g.position.set(x,1,z);scene.add(g);
   const gl=ctex(256,512,(c,w,h)=>{c.fillStyle="#3c6f97";c.fillRect(0,0,w,h);for(let j=0;j<h;j+=16){c.fillStyle=j%32?"#5b8fbb":"#4a7fab";c.fillRect(0,j,w,10)}for(let i=0;i<w;i+=32){c.fillStyle="#2b5576";c.fillRect(i,0,3,h)}});
   const t=new THREE.Mesh(new THREE.BoxGeometry(50,120,50),new THREE.MeshStandardMaterial({map:gl,roughness:0.25,metalness:0.35}));t.position.y=60;t.castShadow=t.receiveShadow=true;g.add(t);box(66,16,66,M(0xe8e1d6),0,0,0,g);
-  const sm=new THREE.MeshStandardMaterial({map:ctex(512,128,(c,w,h)=>{c.fillStyle="#b3122e";c.fillRect(0,0,w,h);c.fillStyle="#fff";c.font="bold 78px 'Noto Sans TC','PingFang TC',sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText("百貨公司",w/2,h/2+4)})});
-  for(const [px,pz,ry] of [[0,25.6,0],[25.6,0,Math.PI/2]]){const s=new THREE.Mesh(new THREE.PlaneGeometry(36,8),sm);s.position.set(px,108,pz);s.rotation.y=ry;g.add(s)}}
+}
 function temple(x,z){const g=new THREE.Group();g.position.set(x,1,z);g.rotation.y=Math.PI;scene.add(g);
   box(44,2,34,M(0xc9b9a0),0,0,0,g);box(38,15,24,M(0xb23a2a),0,2,0,g);for(let i=-2;i<=2;i++)box(1.6,15,1.6,M(0xd94f2b),i*8.5,2,12.8,g);
   const roof=(w,d,y)=>{box(w,2,d,M(0xe07b2a,{roughness:0.6}),0,y,0,g);box(w*0.9,1.5,1.5,M(0x2f8f5a),0,y+2,0,g);for(const s of [-1,1]){const c=new THREE.Mesh(new THREE.ConeGeometry(1,5,8),M(0xf2c14e));c.position.set(s*w*0.48,y+3.4,0);c.rotation.z=-s*0.6;g.add(c)}};
@@ -1007,6 +1006,13 @@ dept(-98,-98); apt(96,-62,76,30,6,"#e9dcc7",1); apt(62,-118,30,56,5,"#d9e4ea",-1
 park(98,98); temple(-72,64); apt(-122,120,36,40,4,"#efd9c4",1);
 for(let p=55;p<190;p+=26) for(const s of [-1,1]){tree(p,s*(H2+9),0.75);tree(-p,s*(H2+9),0.75);tree(s*(H2+9),p,0.75);tree(s*(H2+9),-p,0.75)}
 
+// 路名
+function roadLabel(text,x,y,z,sz){const c=document.createElement("canvas"),g=c.getContext("2d"),F="bold 64px 'Noto Sans TC','PingFang TC',sans-serif";g.font=F;
+  const lines=text.split("\n"),w=Math.max(...lines.map(l=>g.measureText(l).width))+48;c.width=w;c.height=80*lines.length+24;g.font=F;
+  g.fillStyle="rgba(255,255,255,.9)";g.fillRect(0,0,w,c.height);g.fillStyle="#2f8f5a";g.fillRect(0,0,w,10);g.fillStyle="#10202c";g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,18+i*80));
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(sz*c.width/c.height,sz,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s)}
+roadLabel("惠中路",0,12,-105,9); roadLabel("惠中路",0,12,105,9);
+roadLabel("臺灣大道\n往台中車站",108,14,0,13); roadLabel("臺灣大道\n往東海、沙鹿",-108,14,0,13);
 // 紅綠燈（同 2D：分隔島上的燈桿＋懸臂燈頭）
 const F=STOPOFF+28;
 const SIG={N:{h:[C-32,C-F],p:[C,C-F],hor:true},S:{h:[C+32,C+F],p:[C,C+F],hor:true},E:{h:[C+F,C-32],p:[C+F,C],hor:false},W:{h:[C-F,C+32],p:[C-F,C],hor:false}};
