@@ -162,6 +162,7 @@ svg text{font-family:var(--body)}
     </div>
   </div>
   <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="demo">填入範例數據看看</button></div>
+  <p class="note" id="addMsg" aria-live="polite"></p>
 </section>
 
 <section>
@@ -187,7 +188,16 @@ svg text{font-family:var(--body)}
     <li>如果駕駛在關緊車窗的車裡，會不會聽不出救護車在哪裡？寫下你的結論：
       <textarea id="concl" rows="3"></textarea></li>
   </ol>
-  <p class="note">本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」。請把「全部平均」抄到紀錄單（四）表 4-4，和機器比較。數據只存在這台電腦的瀏覽器裡。</p></div>
+  <p class="note">本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」。請把「全部平均」抄到紀錄單（四）表 4-4，和機器比較。</p></div>
+</section>
+
+<section>
+  <h2>儲存與匯出</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <p>你輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完實驗後，按下面的按鈕存成 Word 檔，裡面有基本資料、假設、每位受試者的表 1-1、表 1-2、圖 1-1、圖 1-2、結論和 3D 模擬紀錄。</p>
+    <div class="row" style="align-items:center"><label for="date">實驗日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="rec">記錄員：</label><input type="text" id="rec" class="name"><label for="ann2">播音員：</label><input type="text" id="ann2" class="name"></div>
+    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
+  </div>
 </section>
 </div>
 
@@ -197,7 +207,7 @@ svg text{font-family:var(--body)}
 /* ================= 資料：表 1-1、表 1-2（存在瀏覽器） ================= */
 const ANG=[0,30,60,90];
 const KEY="ws1-occlusion-v1";
-let S={who:"",t1:{a:{},b:{}},t2:[],hyp:"",q2:"",q3:"",concl:""};
+let S={who:"",t1:{a:{},b:{}},t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
@@ -219,8 +229,10 @@ function calcT1(){ANG.forEach(t=>{for(const k of ["a","b"]){$("d"+k+t).textConte
 /* 圖 1-1：量角器點圖（左＝未遮蔽，右＝戴耳塞，中間垂直線＝0°） */
 const SVGNS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
-function drawProt(){const s=$("prot");s.innerHTML="";const cx=300,cy=300,R=250,cs=getComputedStyle(document.documentElement);
-  const ink=cs.getPropertyValue("--ink").trim(),muted=cs.getPropertyValue("--muted").trim(),ca=cs.getPropertyValue("--a").trim(),cb=cs.getPropertyValue("--b").trim();
+function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),a:g("--a"),b:g("--b"),line:g("--line")}}
+const PRINT={ink:"#18232b",muted:"#5b6872",a:"#2a6fb8",b:"#d9532c",line:"#d3dbe0"};
+function drawProt(s=$("prot"),T1=S.t1,P=pal()){s.innerHTML="";const cx=300,cy=300,R=250;
+  const ink=P.ink,muted=P.muted,ca=P.a,cb=P.b;
   el("path",{d:`M${cx-R},${cy} A${R},${R} 0 0 1 ${cx+R},${cy} Z`,fill:"none",stroke:ink,"stroke-width":2.5},s);
   el("path",{d:`M${cx-R+34},${cy} A${R-34},${R-34} 0 0 1 ${cx+R-34},${cy}`,fill:"none",stroke:ink,"stroke-width":1},s);
   for(const side of [-1,1]) for(let d=0;d<=90;d++){const a=d*Math.PI/180,L=d%10===0?16:d%5===0?10:5;
@@ -233,7 +245,7 @@ function drawProt(){const s=$("prot");s.innerHTML="";const cx=300,cy=300,R=250,c
   el("text",{x:cx-R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:ca},s,"← 未遮蔽");
   el("text",{x:cx+R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:cb},s,"戴耳塞 →");
   let n=0;
-  for(const [k,side,col] of [["a",-1,ca],["b",1,cb]]) ANG.forEach((t,i)=>{const p=num(S.t1[k][t]);if(p===null)return;n++;
+  for(const [k,side,col] of [["a",-1,ca],["b",1,cb]]) ANG.forEach((t,i)=>{const p=num(T1[k][t]);if(p===null)return;n++;
     const d=Math.max(-90,Math.min(90,p)),a=d*Math.PI/180,r=R-80-i*22;
     const x=cx+side*r*Math.sin(a),y=cy-r*Math.cos(a);
     el("circle",{cx:x,cy:y,r:8,fill:col,stroke:"#fff","stroke-width":2},s);
@@ -252,25 +264,25 @@ function calcT2(){S.t2.forEach((r,i)=>{const a=num(r.a),b=num(r.b);$("rd"+i).tex
   $("t2").querySelector("tfoot").innerHTML=`<tr class="avg"><td>全部平均</td><td class="num">${f1(A)}</td><td class="num">${f1(B)}</td><td class="num">${A!==null&&B!==null?f1(B-A):""}</td><td></td></tr>`;
   $("qa").textContent=A===null?"　":f1(A);$("qb").textContent=B===null?"　":f1(B);$("qd").textContent=A!==null&&B!==null?f1(B-A):"　";
   drawBar(A,B)}
-function drawBar(A,B){const s=$("bar");s.innerHTML="";const cs=getComputedStyle(document.documentElement);
-  const ink=cs.getPropertyValue("--ink").trim(),muted=cs.getPropertyValue("--muted").trim(),line=cs.getPropertyValue("--line").trim();
+function drawBar(A,B,s=$("bar"),P=pal()){s.innerHTML="";
+  const ink=P.ink,muted=P.muted,line=P.line;
   const top=Math.max(30,Math.ceil(Math.max(A||0,B||0)/10)*10),x0=56,y0=250,H=210;
-  for(let v=0;v<=top;v+=top>60?20:10){const y=y0-v/top*H;el("line",{x1:x0,x2:400,y1:y,y2:y,stroke:line,"stroke-width":1},s);el("text",{x:x0-8,y:y+4,"text-anchor":"end","font-size":12,fill:muted,"font-family":"var(--num)"},s,String(v))}
+  for(let v=0;v<=top;v+=top>60?20:10){const y=y0-v/top*H;el("line",{x1:x0,x2:400,y1:y,y2:y,stroke:line,"stroke-width":1},s);el("text",{x:x0-8,y:y+4,"text-anchor":"end","font-size":12,fill:muted},s,String(v))}
   el("text",{x:14,y:y0-H/2,"text-anchor":"middle","font-size":13,fill:muted,transform:`rotate(-90 14 ${y0-H/2})`},s,"平均角度差（度）");
-  [["未遮蔽",A,cs.getPropertyValue("--a").trim(),150],["戴耳塞",B,cs.getPropertyValue("--b").trim(),300]].forEach(([lab,v,c,x])=>{
+  [["未遮蔽",A,P.a,150],["戴耳塞",B,P.b,300]].forEach(([lab,v,c,x])=>{
     if(v!==null){const h=v/top*H;el("rect",{x:x-40,y:y0-h,width:80,height:h,rx:4,fill:c},s);el("text",{x,y:y0-h-8,"text-anchor":"middle","font-size":15,"font-weight":700,fill:ink},s,f1(v)+"°")}
     el("text",{x,y:y0+22,"text-anchor":"middle","font-size":14,fill:ink},s,lab)});
   el("line",{x1:x0,x2:400,y1:y0,y2:y0,stroke:ink,"stroke-width":1.5},s);
   if(A===null&&B===null) el("text",{x:228,y:150,"text-anchor":"middle","font-size":14,fill:muted},s,"表 1-2 有數字後，長條會長出來")}
 
 $("addSub").addEventListener("click",()=>{const a=t1Avg("a"),b=t1Avg("b");if(a===null&&b===null)return;
-  S.t2.push({name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b)});save();buildT2()});
+  S.t2.push({name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b),t1:JSON.parse(JSON.stringify(S.t1))});save();buildT2();$("addMsg").textContent="已加入表 1-2，原始紀錄也存起來了。可以按「清空表 1-1，換下一位」。"});
 $("clr1").addEventListener("click",()=>{S.t1={a:{},b:{}};S.who="";$("who").value="";save();buildT1();calcT1()});
 $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();buildT2()});
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
   S.t1={a:{0:"3",30:"36",60:"52",90:"81"},b:{0:"-12",30:"55",60:"84",90:"62"}};save();buildT1();calcT1()});
 $("who").value=S.who;$("who").addEventListener("input",e=>{S.who=e.target.value;save()});
-for(const id of ["hyp","q2","q3","concl"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
+for(const id of ["hyp","q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
 buildT1();calcT1();buildT2();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawProt();calcT2()});
 new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -366,7 +378,9 @@ function siren(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)
   o.start(t0);o.stop(t0+2.05)}
 // 模擬受試者指的方向：未遮蔽誤差小，戴耳塞誤差大（只是示範用的亂數）
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-const LOG=[];
+const LOG=S.log||(S.log=[]);
+function renderLog(){if(LOG.length)$("log").innerHTML=LOG.slice(0,8).map(s=>`<span style="color:${s.startsWith("未")?"var(--a)":"var(--b)"}">${s}</span>`).join("")}
+renderLog();
 $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disabled=true;clearPoint();siren();playT=performance.now();
   $("result").textContent="警笛播放中……受試者在聽";
   setTimeout(()=>{const sd=ear==="a"?7:24;let p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5; /* 前後搞混 */
@@ -377,8 +391,8 @@ $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disab
     if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(150,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
     const mid=dir((a0+a1)/2).multiplyScalar(160);diffLabel=label("差 "+d+"°",mid.x,26,mid.z,22,ear==="a"?"#2a6fb8":"#d9532c");
     $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
-    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>8)LOG.pop();
-    $("log").innerHTML=LOG.map(s=>`<span style="color:${s.startsWith("未")?"var(--a)":"var(--b)"}">${s}</span>`).join("");
+    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>40)LOG.pop();save();
+    renderLog();
     busy=false;$("play").disabled=false},2200)});
 let playT=-1e9;
 $("angs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;angle=+b.dataset.a;$("angs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();placeAnn();$("result").textContent="按「播放警笛」。"});
@@ -395,6 +409,86 @@ function tick(now){requestAnimationFrame(tick);
   else arm.rotation.x=-1.3;
   ctl.update();renderer.render(scene,cam)}
 requestAnimationFrame(tick);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script>
+/* ================= 匯出 Word（.docx） ================= */
+(()=>{
+const btn=$("export"), msg=$("expMsg");
+const FONT={ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"};
+async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(svg);
+  const img=new Image();img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml.replace("<svg",`<svg width="${w}" height="${h}"`));
+  await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+  const b=await new Promise(r=>c.toBlob(r,"image/png"));return await b.arrayBuffer()}
+function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+btn.addEventListener("click",async()=>{
+  if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
+  btn.disabled=true;msg.textContent="正在產生 Word 檔……";
+  try{
+    const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
+    const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80},bullet:o.bullet?{level:0}:undefined});
+    const H=(t)=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:22})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
+    const table=(head,rows,ws)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,w:ws&&ws[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{w:ws&&ws[i],bold:r.bold}))}))]});
+    const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
+    const t1Rows=T1=>{const rows=ANG.map(t=>{const a=num(T1.a[t]),b=num(T1.b[t]);return [t+"°"+(t===0?"（正前方）":t===90?"（正右方）":""),a??"",f1(diff(a,t)),b??"",f1(diff(b,t))]});
+      const ma=avg(ANG.map(t=>diff(num(T1.a[t]),t))),mb=avg(ANG.map(t=>diff(num(T1.b[t]),t)));const r=["平均","—",f1(ma),"—",f1(mb)];r.bold=true;rows.push(r);return rows};
+    const H1=["真實角度","A 未遮蔽 指的角度","A 角度差","B 戴耳塞 指的角度","B 角度差"];
+    // 受試者清單：表 1-2 裡有原始紀錄的人＋目前表 1-1（若還沒加入）
+    const subs=S.t2.filter(r=>r.t1).map(r=>({name:r.name,t1:r.t1}));
+    const cur=ANG.some(t=>num(S.t1.a[t])!==null||num(S.t1.b[t])!==null);
+    if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
+    const body=[];
+    body.push(P("智「where」交通　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
+    body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
+    body.push(H("壹、實驗目的"));
+    body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳塞，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
+    body.push(H("貳、研究問題與假設"));
+    body.push(P("問題：耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？"));
+    body.push(P("我的假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
+    body.push(H("參、實驗步驟"));
+    ["以受試者為圓心、半徑 2 公尺，在地上畫出 0°、30°、60°、90° 四條線。","受試者坐在圓心，戴上眼罩，臉朝 0°，頭不能轉。","播音員拿喇叭站到某一個角度，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向，記錄員用量角器讀出「指的角度」。","角度差＝指的角度和真實角度相差幾度。","A 未遮蔽、B 戴耳塞各做 4 個角度，順序打亂。"].forEach(t=>body.push(P(t,{bullet:true})));
+    body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
+    if(!subs.length) body.push(P("（還沒有輸入資料）"));
+    for(const [i,x] of subs.entries()){
+      body.push(P(`受試者：${x.name}`,{bold:true}));
+      body.push(table(H1,t1Rows(x.t1),[24,19,19,19,19]));
+      body.push(cap(`表 1-1（${i+1}）、${x.name} 的紀錄`));
+      const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT);
+      body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
+      body.push(cap(`圖 1-1（${i+1}）、${x.name} 指的方向（左：未遮蔽；右：戴耳塞）`));
+    }
+    body.push(H("伍、全組整理（表 1-2、圖 1-2）"));
+    const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
+    const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
+    const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
+    body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳塞 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
+    body.push(cap("表 1-2、全組的平均角度差"));
+    const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);
+    body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bv,420,300),transformation:{width:360,height:257}})]}));
+    body.push(cap("圖 1-2、未遮蔽和戴耳塞的平均角度差"));
+    body.push(H("陸、結果與結論"));
+    body.push(P(`1. 未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳塞時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`));
+    body.push(P("2. 戴耳塞時，哪一個角度指得最不準？"+(S.q2||"＿＿＿＿")));
+    body.push(P("3. 左右兩邊的點比起來，哪一邊比較散？"+(S.q3||"＿＿＿＿")));
+    body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
+    body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
+    if(LOGX().length){body.push(H("附錄：3D 模擬紀錄（電腦模擬，不是真實數據）"));LOGX().slice().reverse().forEach(t=>body.push(P(t.replace(/\s+/g," "),{size:20})))}
+    const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
+    const blob=await Packer.toBlob(doc);
+    const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
+    let done=false;
+    if(window.claude&&typeof window.claude.use==="function"){
+      const dl=await window.claude.use("downloads");
+      if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。";done=true}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。";done=true}}
+    }
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
+  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
+  btn.disabled=false});
+function LOGX(){return S.log||[]}
 })();
 </script>
 
