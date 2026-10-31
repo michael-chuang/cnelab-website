@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bamum&display=swap">
 <style>
 /* Layout：左邊是路口（正方形畫布），右邊是控制與「系統在做什麼」五步驟；下方是每一次的紀錄表。手機時上下堆疊 */
 :root{
@@ -82,6 +83,9 @@ td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
 .dpad button{width:100%}
 .dpad button[data-d="R"]{background:var(--amber);border-color:var(--amber);color:#1b1f22}
 .tab{font-family:var(--display);font-size:17px;border-radius:10px;padding:8px 18px}
+a.tablink{font-family:"Huninn","Noto Sans TC","PingFang TC","Noto Sans Bamum",system-ui,sans-serif;display:inline-flex;align-items:center;text-decoration:none;border:1px dashed var(--accent);background:var(--panel);color:var(--accent);line-height:1.6}
+a.tablink:hover{background:var(--chip)}
+a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .board.cockpit{aspect-ratio:900/620;max-width:none}
 #tab2 .game{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
 @media (max-width:820px){#tab2 .game{grid-template-columns:minmax(0,1fr)}}
@@ -99,6 +103,7 @@ td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
   <div class="row tabs" role="tablist">
     <button class="tab on" data-tab="tab1" role="tab">① 路口模式</button>
     <button class="tab" data-tab="tab2" role="tab">② 駕駛艙模式</button>
+    <a class="tab tablink" id="ws1link" href="sheet1.html">𖥕 學習單(一) 人因工程篇</a>
     <button class="tab" data-tab="tab3" role="tab">③ 實驗模型</button>
   </div>
 </header>
@@ -1428,8 +1433,8 @@ document.getElementById("mviews").addEventListener("click",e=>{const b=e.target.
 </script>
 <!-- TAB3 END -->
 <script>
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
   const t=b.dataset.tab; document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
   document.getElementById("tab3").hidden=t!=="tab3"; if(window.__modelShow) window.__modelShow(t==="tab3");
   if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
@@ -1437,6 +1442,7 @@ document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
   window.dispatchEvent(new Event("resize"));
 }));
 </script>
+<script>if(!/cnelab\.net$/.test(location.hostname)){const a=document.getElementById("ws1link");if(a){a.href="https://claude.ai/artifact/Sh6o3PZEmYkK17Fm6Vuoih";a.target="_blank";a.rel="noopener"}}</script>
 
 </body>
 </html>
