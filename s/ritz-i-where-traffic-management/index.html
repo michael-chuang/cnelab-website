@@ -2061,6 +2061,23 @@ td.rng input{max-width:5em}
 .state .up{color:#ff6b5b}.state .down{color:#5ea8ff}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+/* 圖 2-1：長條圖＋輸入格合一 */
+.bcard{display:flex;flex-direction:column;gap:8px}
+.bc-scroll{overflow-x:auto}
+.bc{display:grid;grid-template-columns:56px repeat(var(--n,11),minmax(50px,1fr));column-gap:6px;row-gap:6px;min-width:680px;align-items:center}
+.bc-plot{position:relative;height:260px;margin-top:22px;border-bottom:2px solid var(--ink);align-self:stretch}
+.bc-ax{border-bottom-color:transparent}
+.bc-ax span{position:absolute;right:6px;transform:translateY(50%);font-family:var(--num);font-size:12px;color:var(--muted)}
+.bc-ylab{position:absolute;left:0;top:44%;writing-mode:vertical-rl;font-size:12px;font-weight:500;color:var(--muted)}
+.bc-a{position:absolute;left:18%;right:18%;bottom:0;border-radius:6px 6px 0 0;border:1px solid rgba(0,0,0,.25);transition:height .25s}
+.bc-g{position:absolute;left:8%;right:8%;bottom:0;border:2px dashed var(--ink);border-bottom:0;border-radius:4px 4px 0 0;transition:height .25s;z-index:1}
+.bc-v{position:absolute;left:0;right:0;text-align:center;font-family:var(--num);font-weight:700;font-size:14px}
+.bc-dot{display:flex;justify-content:center}
+.bc-dot span{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.bc-lab{font-size:13px;color:var(--muted);text-align:right;padding-right:4px}
+.bc-in{width:100%!important;max-width:none!important;padding:4px 2px!important;font-size:15px}
+.bc-name{font-size:12px!important;background:transparent!important;border-color:transparent!important}
+.bc-d{text-align:center;font-family:var(--num);color:var(--muted)}
 .step.key{background:color-mix(in srgb,var(--accent) 12%,var(--paper));border:2px solid var(--accent)}
 .step.key p{color:var(--ink)}
 .fam-card{margin-top:2px}
@@ -2167,13 +2184,10 @@ td.rng input{max-width:5em}
     <div class="photo card"><h3>照片 1：抓一把（還沒排）</h3><label class="drop" for="ph1"><img id="im_ph1" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph1" accept="image/*" hidden><button class="xbtn" data-clear="ph1">移除照片</button></div>
     <div class="photo card"><h3>照片 2：同顏色排成一排</h3><label class="drop" for="ph2"><img id="im_ph2" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph2" accept="image/*" hidden><button class="xbtn" data-clear="ph2">移除照片</button></div>
   </div>
-  <div class="two">
-    <div class="tbl"><table id="t22">
-      <thead><tr><th>顏色</th><th>我猜幾顆<br>（不要數！）</th><th>實際幾顆</th><th>差幾顆</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
-    <div class="card" style="display:flex;flex-direction:column;gap:6px">
-      <svg id="beadbar" viewBox="0 0 560 300" role="img" aria-label="串珠聲譜長條圖"></svg>
-      <p class="cap">圖 2-1　我的串珠聲譜：實心長條＝實際顆數，虛線框＝我猜的顆數</p>
-    </div>
+  <div class="card bcard">
+    <div class="bc-scroll"><div class="bc" id="bc" role="group" aria-label="串珠聲譜：每種顏色輸入我猜幾顆和實際幾顆"></div></div>
+    <p class="cap">圖 2-1　我的串珠聲譜：在每種顏色下面填「我猜」和「實際」，上面的長條會自己長出來（實心＝實際顆數，虛線框＝我猜的顆數）</p>
+    <p class="note" id="bcTotal" style="text-align:center"></p>
   </div>
   <div class="card qa"><ol>
     <li>只用眼睛猜，準嗎？ <input type="text" id="qb1" style="max-width:14em"></li>
@@ -2463,17 +2477,32 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 function bind(id,obj,key,ev="input",after){const e=$(id);if(!e)return;e.value=obj[key]??"";e.addEventListener(ev,()=>{obj[key]=e.value;save();after&&after()})}
 
 /* 表 2-1＋圖 2-1 串珠聲譜 */
-function buildT22(){const tb=$("t22").querySelector("tbody");tb.innerHTML="";
-  S.beads.forEach((b,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td style="text-align:left"><span class="sw" style="background:${b.c}"></span><input type="text" id="bn${i}" class="name" style="max-width:6em" aria-label="顏色名稱"></td><td><input type="number" id="bg${i}" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 我猜幾顆"></td><td><input type="number" id="ba${i}" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 實際幾顆"></td><td class="num" id="bd${i}"></td>`;
-    tb.appendChild(tr);bind("bn"+i,b,"n","input",calcT22);bind("bg"+i,b,"g","input",calcT22);bind("ba"+i,b,"a","input",calcT22)});calcT22()}
-function calcT22(){let G=0,A=0,hasG=false,hasA=false;S.beads.forEach((b,i)=>{const g=num(b.g),a=num(b.a);if(g!==null){G+=g;hasG=true}if(a!==null){A+=a;hasA=true}$("bd"+i).textContent=g!==null&&a!==null?String(Math.abs(a-g)):""});
-  $("t22").querySelector("tfoot").innerHTML=`<tr class="avg"><td>合計</td><td class="num">${hasG?G:""}</td><td class="num">${hasA?A:""}</td><td></td></tr>`;drawBeads()}
+/* 圖 2-1：長條圖和輸入格合在一起（每種顏色一欄） */
+function buildT22(){const bc=$("bc");bc.style.setProperty("--n",S.beads.length);
+  let h=`<div class="bc-ax bc-plot" id="bcAx"></div>`+S.beads.map((b,i)=>`<div class="bc-plot" id="bp${i}"><div class="bc-g" id="bcg${i}"></div><div class="bc-a" id="bca${i}" style="background:${b.c}"></div><span class="bc-v" id="bcv${i}"></span></div>`).join("");
+  h+=`<div class="bc-lab"></div>`+S.beads.map(b=>`<div class="bc-dot"><span style="background:${b.c}"></span></div>`).join("");
+  h+=`<div class="bc-lab">顏色</div>`+S.beads.map((b,i)=>`<div><input type="text" id="bn${i}" class="bc-in bc-name" aria-label="顏色名稱"></div>`).join("");
+  h+=`<div class="bc-lab">我猜</div>`+S.beads.map((b,i)=>`<div><input type="number" id="bg${i}" class="bc-in" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 我猜幾顆"></div>`).join("");
+  h+=`<div class="bc-lab">實際</div>`+S.beads.map((b,i)=>`<div><input type="number" id="ba${i}" class="bc-in" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 實際幾顆"></div>`).join("");
+  h+=`<div class="bc-lab">差幾顆</div>`+S.beads.map((b,i)=>`<div class="bc-d num" id="bd${i}"></div>`).join("");
+  bc.innerHTML=h;
+  S.beads.forEach((b,i)=>{bind("bn"+i,b,"n","input",calcT22);bind("bg"+i,b,"g","input",calcT22);bind("ba"+i,b,"a","input",calcT22)});calcT22()}
+function calcT22(){let G=0,A=0,hasG=false,hasA=false;
+  const mx=Math.max(6,...S.beads.map(b=>Math.max(num(b.a)||0,num(b.g)||0))),top=Math.ceil(mx/2)*2,step=top>20?5:top>10?2:1;
+  let ax="";for(let v=0;v<=top;v+=step)ax+=`<span style="bottom:${v/top*100}%">${v}</span>`;$("bcAx").innerHTML=ax+`<b class="bc-ylab">幾顆</b>`;
+  const lines=[];for(let v=step;v<=top;v+=step)lines.push(`linear-gradient(var(--line),var(--line)) 0 ${100-v/top*100}% / 100% 1px no-repeat`);
+  S.beads.forEach((b,i)=>{const g=num(b.g),a=num(b.a);if(g!==null){G+=g;hasG=true}if(a!==null){A+=a;hasA=true}
+    $("bp"+i).style.background=lines.join(",");
+    const ea=$("bca"+i),eg=$("bcg"+i),ev=$("bcv"+i);
+    ea.style.height=(a?a/top*100:0)+"%";ea.style.display=a?"block":"none";eg.style.height=(g?g/top*100:0)+"%";eg.style.display=g?"block":"none";
+    ev.textContent=a!==null&&a>0?a:"";ev.style.bottom=`calc(${Math.max(a||0,0)/top*100}% + 4px)`;
+    $("bd"+i).textContent=g!==null&&a!==null?String(Math.abs(a-g)):""});
+  $("bcTotal").textContent=hasG||hasA?`合計：我猜 ${hasG?G:"—"} 顆，實際 ${hasA?A:"—"} 顆`:""}
 const SVGNS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
 function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),line:g("--line")}}
 const PRINT={ink:"#18232b",muted:"#5b6872",line:"#d3dbe0"};
-function drawBeads(s=$("beadbar"),P=pal()){s.innerHTML="";const x0=44,y0=250,H=220,W=500,n=S.beads.length,bw=W/n;
+function drawBeads(s,P=PRINT){s.innerHTML="";const x0=44,y0=250,H=220,W=500,n=S.beads.length,bw=W/n;
   const mx=Math.max(6,...S.beads.map(b=>Math.max(num(b.a)||0,num(b.g)||0)));const top=Math.ceil(mx/2)*2;
   for(let v=0;v<=top;v+=top>20?5:top>10?2:1){const y=y0-v/top*H;el("line",{x1:x0,x2:x0+W,y1:y,y2:y,stroke:P.line,"stroke-width":1},s);el("text",{x:x0-6,y:y+4,"text-anchor":"end","font-size":12,fill:P.muted},s,String(v))}
   S.beads.forEach((b,i)=>{const cx=x0+bw*(i+0.5),a=num(b.a),g=num(b.g);
@@ -2528,7 +2557,7 @@ for(const id of ["hyp","qb1","qb2","qp1","qp2","sirens","c1","c2","c3a","c3b","c
 for(const id of ["c3c"])bind(id,S,id,"change");
 buildT22();buildT23();buildT24();buildT25();
 if(S.reveal){$("lawfig").hidden=false;drawLaw()}
-const redraw=()=>{drawBeads();if(S.reveal)drawLaw()};
+const redraw=()=>{if(S.reveal)drawLaw()};
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
