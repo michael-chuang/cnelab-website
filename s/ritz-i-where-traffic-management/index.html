@@ -2305,8 +2305,10 @@ function drawScope(){const W=sc.width,H=sc.height,x0=70,x1=W-24,mid=H/2+6,amp=H*
   g.strokeStyle="rgba(200,208,230,.55)";g.setLineDash([6,5]);g.beginPath();g.moveTo(x0,mid);g.lineTo(x1,mid);g.stroke();g.setLineDash([]);
   g.font="22px 'Noto Sans TC',sans-serif";g.fillStyle="#ff6b5b";g.fillText("壓縮",8,mid-amp+8);g.fillStyle="#5ea8ff";g.fillText("稀疏",8,mid+amp+8);g.fillStyle="#9ba5b7";g.fillText("平常",8,mid+8);
   g.font="18px 'Noto Sans TC',sans-serif";g.fillStyle="#9ba5b7";g.textAlign="center";for(let k=1;k<=SPAN;k++){g.fillText(k+" 秒前",x1-(x1-x0)*k/SPAN,H-4)}g.fillText("現在",x1,H-4);g.textAlign="left";
-  g.strokeStyle="#ffd166";g.lineWidth=3;g.beginPath();hist.forEach(([ht,p],i)=>{const x=x1-(t-ht)/SPAN*(x1-x0),y=mid-p*amp;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
-  if(hist.length){const p=hist[hist.length-1][1];g.fillStyle="#ffd166";g.beginPath();g.arc(x1,mid-p*amp,7,0,7);g.fill()}}
+  g.lineWidth=4;g.lineCap="round";let px=null,py=null;hist.forEach(([ht,p])=>{const x=x1-(t-ht)/SPAN*(x1-x0),y=mid-p*amp;if(px!==null){g.strokeStyle=pcol(p);g.beginPath();g.moveTo(px,py);g.lineTo(x,y);g.stroke()}px=x;py=y});
+  if(hist.length){const p=hist[hist.length-1][1];g.fillStyle=pcol(p);g.beginPath();g.arc(x1,mid-p*amp,8,0,7);g.fill()}}
+// 和空氣分子一樣的顏色：高＝粉紅（壓縮）、中間＝象牙白、低＝藍（稀疏）
+function pcol(p){const A=p>=0?[255,90,74]:[61,139,255],B=[233,237,245],k=Math.min(1,Math.abs(p));return `rgb(${Math.round(B[0]+(A[0]-B[0])*k)},${Math.round(B[1]+(A[1]-B[1])*k)},${Math.round(B[2]+(A[2]-B[2])*k)})`}
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(!stage.offsetParent){return}
