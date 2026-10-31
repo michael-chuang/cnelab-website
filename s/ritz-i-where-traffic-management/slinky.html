@@ -107,13 +107,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
       <div class="stage" id="airStage">
         <div class="hud">喇叭每秒振動 <b id="airHz">0.5</b> 次（放慢）</div>
-        <div class="views" id="airViews"><button data-v="side">側面看</button><button data-v="tilt" class="on">斜斜看</button></div>
+        <div class="views" id="airViews" style="top:auto;bottom:10px"><button data-v="side">側面看</button><button data-v="tilt" class="on">斜斜看</button></div>
       </div>
       <canvas class="scope" id="airScope" width="1100" height="260" aria-label="麥克風記錄到的壓力波形"></canvas>
     </div>
     <div class="card">
-      <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">大氣壓力：<span id="airWord" class="up">壓縮</span></div>
+      <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">大氣壓力：<span id="airWord">平常</span></div>
         <div class="legend"><span><i style="background:#ff5a4a"></i>擠在一起（壓縮）</span><span><i style="background:#e9edf5"></i>平常</span><span><i style="background:#3d8bff"></i>稀稀疏疏（稀疏）</span></div></div>
+      <div class="grp"><button class="go" id="airGo">▶ 讓喇叭開始振動</button><p class="note">一開始空氣是靜止的。按下去，喇叭開始前後振動，聲音一層一層往左傳出去。</p></div>
       <div class="grp"><h3>喇叭振動快慢</h3>
         <input type="range" id="airF" min="0.25" max="2" step="0.25" value="0.5" aria-label="喇叭每秒振動幾次">
         <div class="row"><button id="airPause">暫停</button></div></div>
@@ -208,8 +209,9 @@ let tween=null;
 function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
 cam.position.set(...VIEWS.tilt[0]);ctl.target.set(...VIEWS.tilt[1]);ctl.update();
-let f=0.5, t=0, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
+let f=0.5, t=0, tau=0, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
+$("airGo").addEventListener("click",()=>{running=!running;tau=0;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
 $("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
 // 波形（示波器）：最新在右邊
 const sc=$("airScope"), g=sc.getContext("2d"), SPAN=6;
@@ -225,16 +227,17 @@ function pcol(p){const A=p>=0?[255,90,74]:[61,139,255],B=[233,237,245],k=Math.mi
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(!stage.offsetParent){return}
-  if(!paused)t+=dt;
-  const w=2*Math.PI*f, k=2*Math.PI/LAMBDA;
-  cone.position.x=MX(A*Math.sin(w*t));
-  for(let i=0;i<N;i++){const ph=w*t-k*X0[i];M4.makeTranslation(MX(X0[i]+A*Math.sin(ph)),YY[i],ZZ[i]);mol.setMatrixAt(i,M4);
-    const p=Math.cos(ph);if(p>=0)C.copy(wht).lerp(red,p);else C.copy(wht).lerp(blue,-p);mol.setColorAt(i,C)}
+  if(!paused){t+=dt;if(running)tau+=dt}
+  const w=2*Math.PI*f, k=2*Math.PI/LAMBDA, front=LAMBDA*f*tau; // 聲音傳到哪裡（波前）
+  const env=x=>running?Math.max(0,Math.min(1,(front-x)/3)):0;
+  cone.position.x=MX(running?A*Math.sin(w*tau):0);
+  for(let i=0;i<N;i++){const ph=w*tau-k*X0[i],e=env(X0[i]);M4.makeTranslation(MX(X0[i]+e*A*Math.sin(ph)),YY[i],ZZ[i]);mol.setMatrixAt(i,M4);
+    const p=e*Math.cos(ph);if(p>=0)C.copy(wht).lerp(red,p);else C.copy(wht).lerp(blue,-p);mol.setColorAt(i,C)}
   mol.instanceMatrix.needsUpdate=true;if(mol.instanceColor)mol.instanceColor.needsUpdate=true;
-  const pm=Math.cos(w*t-k*MICX);
+  const pm=env(MICX)*Math.cos(w*tau-k*MICX);
   if(!paused){hist.push([t,pm]);while(hist.length&&t-hist[0][0]>SPAN)hist.shift()}
-  const w2=pm>=0?"壓縮":"稀疏";if(stW.textContent!==w2){stW.textContent=w2;stW.className=pm>=0?"up":"down"}
-  ring.material.color.set(pm>0?0xff8a5b:0x5ea8ff);
+  const w2=Math.abs(pm)<0.05&&env(MICX)<0.05?"平常":pm>=0?"壓縮":"稀疏";if(stW.textContent!==w2){stW.textContent=w2;stW.className=w2==="平常"?"":pm>=0?"up":"down"}
+  ring.material.color.set(Math.abs(pm)<0.05?0xffd166:pm>0?0xff8a5b:0x5ea8ff);
   drawScope();
   if(tween){const q=Math.min(1,(now-tween.s)/(reduce?1:1000)),e=q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(q>=1)tween=null}
   ctl.update();renderer.render(scene,cam)}
