@@ -49,13 +49,13 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 /* 3D */
 .sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){.stage{aspect-ratio:1/1}.result{font-size:13px;padding:6px 10px}}
+@media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
 .stage canvas{display:block;width:100%;height:100%}
 .views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
 .views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
 .views button.on{background:#18232b;color:#fff}
-.result{position:absolute;left:10px;bottom:10px;right:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.92);color:#18232b;font-size:15px;line-height:1.5}
+.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
 .ctrl{display:flex;flex-direction:column;gap:14px}
 .grp{display:flex;flex-direction:column;gap:6px}
 .grp h3{font-size:14px;color:var(--muted);font-weight:500}
@@ -103,13 +103,15 @@ svg text{font-family:var(--body)}
 <section>
   <h2>先在 3D 裡做一次</h2>
   <div class="sim">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
     <div class="stage" id="stage">
       <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
-      <div class="result" id="result">選一個角度，按「播放警笛」。戴耳機聽會更像真的。</div>
+    </div>
+    <div class="result" id="result">選一個角度，按「播放警笛」。戴耳機聽會更像真的。</div>
     </div>
     <div class="ctrl card">
       <div class="grp"><h3>1　播音員站在哪個角度？</h3>
-        <div class="row" id="angs"><button data-a="0" class="on">0° 正前方</button><button data-a="30">30°</button><button data-a="60">60°</button><button data-a="90">90° 正右方</button></div></div>
+        <div class="row" id="angs"><button data-a="0" class="on">0° 正前方</button><button data-a="30">30°</button><button data-a="60">60°</button><button data-a="90">90° 正右方</button><button data-a="120">120°</button><button data-a="150">150°</button><button data-a="180">180° 正後方</button><button data-a="210">210°</button><button data-a="240">240°</button><button data-a="270">270° 正左方</button><button data-a="300">300°</button><button data-a="330">330°</button></div><p class="note">3D 裡可以試一整圈 360°；真正的實驗只做 0°～90°。</p></div>
       <div class="grp"><h3>2　受試者的耳朵</h3>
         <div class="row" id="ears"><button data-e="a" class="seg-a on">未遮蔽</button><button data-e="b" class="seg-b">戴耳塞</button></div></div>
       <div class="grp"><button class="go" id="play">▶ 播放警笛（2 秒）</button>
@@ -297,16 +299,16 @@ const floor=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStan
 // 地上的膠帶：半徑 200 的四分之一圓＋0/30/60/90 線（角度：0°＝-z 正前方，90°＝+x 正右方）
 const tape=M(0xf7f3e8,{roughness:0.6});
 const dir=d=>new THREE.Vector3(Math.sin(d*Math.PI/180),0,-Math.cos(d*Math.PI/180));
-const arc=new THREE.Mesh(new THREE.RingGeometry(197,203,96,1,Math.PI/2-Math.PI/2,Math.PI/2),tape);arc.rotation.x=-Math.PI/2;arc.rotation.z=0;arc.position.y=0.3;
+const arc=new THREE.Mesh(new THREE.RingGeometry(197,203,180),tape);arc.rotation.x=-Math.PI/2;arc.rotation.z=0;arc.position.y=0.3;
 // RingGeometry 的角度從 +x 逆時針；轉到地上後 +x→+x、+y→-z，所以 0～90° 正好是 +x 到 -z
 scene.add(arc);
 function tapeLine(d){const g=new THREE.Mesh(new THREE.PlaneGeometry(5,200),tape);g.rotation.x=-Math.PI/2;g.rotation.z=-d*Math.PI/180;const p=dir(d).multiplyScalar(100);g.position.set(p.x,0.35,p.z);scene.add(g)}
-ANG.forEach(tapeLine);
+const ANG3=[...Array(12)].map((_,i)=>i*30);ANG3.forEach(tapeLine);
 function label(text,x,y,z,size=22,col="#18232b"){const c=document.createElement("canvas"),g=c.getContext("2d");g.font="bold 56px 'Noto Sans TC',sans-serif";const w=g.measureText(text).width+36;c.width=w;c.height=80;
   g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.moveTo(20,0);g.arcTo(w,0,w,80,20);g.arcTo(w,80,0,80,20);g.arcTo(0,80,0,0,20);g.arcTo(0,0,w,0,20);g.fill();
   g.font="bold 56px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textBaseline="middle";g.fillText(text,18,42);
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*w/80,size,1);s.position.set(x,y,z);s.renderOrder=9;scene.add(s);return s}
-ANG.forEach(d=>{const p=dir(d).multiplyScalar(235);label(d+"°",p.x,8,p.z,20)});
+ANG3.forEach(d=>{const p=dir(d).multiplyScalar(235);label(d+"°",p.x,8,p.z,d%90?16:20)});
 label("2 公尺",dir(15).x*120,6,dir(15).z*120,16,"#5b6872");
 // 受試者：椅子＋坐著的人（臉朝 -z）
 const kid=new THREE.Group();scene.add(kid);
@@ -367,20 +369,21 @@ function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();r
 const LOG=[];
 $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disabled=true;clearPoint();siren();playT=performance.now();
   $("result").textContent="警笛播放中……受試者在聽";
-  setTimeout(()=>{const sd=ear==="a"?7:24;let p=Math.round(angle+gauss()*sd);p=Math.max(-60,Math.min(135,p));const d=Math.abs(p-angle);
+  setTimeout(()=>{const sd=ear==="a"?7:24;let p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5; /* 前後搞混 */
+    p=((Math.round(p)%360)+360)%360;const sgn=((p-angle+540)%360)-180;const d=Math.abs(sgn);
     pointing=p;armTarget=p;armUp=1;
     const col=ear==="a"?0x2a6fb8:0xd9532c;pointM.color.setHex(col);fanM.color.setHex(col);setLine(ptLine,p);ptLine.visible=true;
-    const a0=Math.min(p,angle),a1=Math.max(p,angle);
+    const a0=Math.min(angle,angle+sgn),a1=Math.max(angle,angle+sgn);
     if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(150,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
     const mid=dir((a0+a1)/2).multiplyScalar(160);diffLabel=label("差 "+d+"°",mid.x,26,mid.z,22,ear==="a"?"#2a6fb8":"#d9532c");
-    $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
-    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(2," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>8)LOG.pop();
+    $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
+    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>8)LOG.pop();
     $("log").innerHTML=LOG.map(s=>`<span style="color:${s.startsWith("未")?"var(--a)":"var(--b)"}">${s}</span>`).join("");
     busy=false;$("play").disabled=false},2200)});
 let playT=-1e9;
 $("angs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;angle=+b.dataset.a;$("angs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();placeAnn();$("result").textContent="按「播放警笛」。"});
 $("ears").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;ear=b.dataset.e;$("ears").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();setEar();$("result").textContent=ear==="b"?"受試者戴上耳塞了（橘色）。按「播放警笛」。":"按「播放警笛」。"});
-const VIEWS={side:[[260,330,330],[60,40,-60]],top:[[60,620,-60],[60,0,-61]],kid:[[0,170,140],[0,80,-120]]};
+const VIEWS={side:[[300,420,460],[0,30,0]],top:[[0,820,1],[0,0,0]],kid:[[0,170,140],[0,80,-120]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();$("views").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v===k))}
 $("views").addEventListener("click",e=>{const b=e.target.closest("button");if(b)view(b.dataset.v)});
 view("side");
