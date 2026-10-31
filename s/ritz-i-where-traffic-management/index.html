@@ -77,7 +77,8 @@ td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
 .tabhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .summary{font-size:14px;color:var(--muted)}
 .tabs{margin-top:6px}
-.dpad{display:grid;grid-template-columns:repeat(3,minmax(0,92px));grid-template-areas:". n ." "w r e" ". s .";gap:8px}
+.dpad button small{font-size:12px;font-family:var(--body);opacity:.9}
+.dpad{display:grid;grid-template-columns:repeat(3,minmax(0,104px));grid-template-areas:". n ." "w r e" ". s .";gap:8px}
 .dpad button{width:100%}
 .dpad button[data-d="R"]{background:var(--amber);border-color:var(--amber);color:#1b1f22}
 .tab{font-family:var(--display);font-size:17px;border-radius:10px;padding:8px 18px}
@@ -120,11 +121,11 @@ td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
     <div class="group">
       <h2>3　車子從哪裡來？（按下就出發）</h2>
       <div id="dirs" class="dpad">
-        <button class="big" data-d="N" style="grid-area:n">北邊</button>
-        <button class="big" data-d="W" style="grid-area:w">西邊</button>
+        <button class="big" data-d="N" style="grid-area:n">北<br><small>惠來路</small></button>
+        <button class="big" data-d="W" style="grid-area:w">西<br><small>臺灣大道</small></button>
         <button class="big" data-d="R" style="grid-area:r">隨機</button>
-        <button class="big" data-d="E" style="grid-area:e">東邊</button>
-        <button class="big" data-d="S" style="grid-area:s">南邊</button>
+        <button class="big" data-d="E" style="grid-area:e">東<br><small>臺灣大道</small></button>
+        <button class="big" data-d="S" style="grid-area:s">南<br><small>惠中路</small></button>
       </div>
       <label class="chk"><input type="checkbox" id="challenge"> 挑戰：戴耳機，先用耳朵猜方向</label>
     </div>
@@ -429,7 +430,11 @@ function draw(){
   ctx.fillRect(C-HALF,C-STOPOFF-26,HALF,3);ctx.fillRect(C,C+STOPOFF+23,HALF,3);ctx.fillRect(C+STOPOFF+23,C-HALF,3,HALF);ctx.fillRect(C-STOPOFF-26,C,3,HALF);
   // 路名
   ctx.fillStyle=col["--fg"];ctx.font="bold 18px "+css("--body");ctx.textAlign="center";
-  ctx.fillText("北路",C+HALF+40,30);ctx.fillText("南路",C-HALF-40,S-16);ctx.fillText("東路",S-40,C+HALF+28);ctx.fillText("西路",40,C-HALF-16);
+  ctx.fillText("惠來路",C+HALF+48,30);ctx.fillText("惠中路",C-HALF-48,S-16);
+  ctx.fillText("臺灣大道",S-62,C+HALF+28);ctx.fillText("臺灣大道",62,C-HALF-34);
+  ctx.font="13px "+css("--body");ctx.fillStyle=col["--muted"];
+  ctx.fillText("往台中車站",S-62,C+HALF+46);ctx.fillText("往東海、沙鹿",62,C-HALF-16);
+  ctx.textAlign="left";ctx.fillText("台中市・臺灣大道 × 惠中路／惠來路",10,20);ctx.textAlign="center";ctx.fillStyle=col["--fg"];
   // 聲波
   for(const w of waves){ if(run&&run.hidden&&!run.guess)break; ctx.strokeStyle=col["--stop"];ctx.globalAlpha=Math.max(0,.55-w.r/1400);ctx.lineWidth=w.first?3:2;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,7);ctx.stroke()} ctx.globalAlpha=1;
   // 路口中央：聲音熱點圖（哪個方向的聲音最強，就越紅越亮）
