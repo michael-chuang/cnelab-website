@@ -29,7 +29,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","P
 <div id="app"></div>
 <div class="hud">
   <h1>小模型路口 3D：臺灣大道 × 惠中路</h1>
-  <nav style="pointer-events:auto;display:flex;gap:14px;flex-wrap:wrap;font-size:14px"><a href="./">← 智慧路口情境模擬</a></nav>
+<nav style="pointer-events:auto;display:flex;gap:14px;flex-wrap:wrap;font-size:14px"><a href="./">← 智慧路口情境模擬</a></nav>
   <p>四根透明壓克力柱撐起一片壓克力板，ReSpeaker 放在板子正中央（高 25 cm）・紅圈＝喇叭擺放位置（近 50 cm、遠 90 cm）</p>
 </div>
 <div class="ctrl">
@@ -99,6 +99,24 @@ const sticker=canvasTex(256,256,(g)=>{g.fillStyle="#f5f7fa";g.beginPath();g.arc(
 const st=new THREE.Mesh(new THREE.CircleGeometry(5.8,48),new THREE.MeshBasicMaterial({map:sticker,transparent:true})); st.rotation.x=-Math.PI/2; st.position.set(0,26.45,0); scene.add(st);
 const usbCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,26,4.8),new THREE.Vector3(0,26.4,12),new THREE.Vector3(8,26,15),new THREE.Vector3(14,12,16),new THREE.Vector3(20,0.8,22),new THREE.Vector3(45,0.8,30)]);
 scene.add(new THREE.Mesh(new THREE.TubeGeometry(usbCurve,60,0.25,8),M(0x222222)));
+
+/* ---------- 紅綠燈（分隔島上的燈桿，燈頭在車道正上方，紅黃綠會輪流變換） ---------- */
+const SIGS=[];
+function signal(px,pz,hx,hz,axis,face){
+  const pm=M(0x6b737a,{metalness:0.5,roughness:0.4});
+  cyl(0.6,16,pm,px,0.6,pz,12);
+  const hor=Math.abs(hx-px)>0.1, len=Math.hypot(hx-px,hz-pz)+2;
+  box(hor?len:0.5,0.5,hor?0.5:len,pm,(px+hx)/2,15.6,(pz+hz)/2);
+  box(hor?5.4:1.8,1.8,hor?1.8:5.4,M(0x1d2124),hx,12.8,hz);
+  const lamps=["red","yellow","green"].map((c,i)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(0.62,14,12),new THREE.MeshStandardMaterial({color:0x2a2f33}));
+    const k=i-1; m.position.set(hx+(hor?k*1.6:0)+face[0],13.7,hz+(hor?0:k*1.6)+face[1]); scene.add(m); const m2=new THREE.Mesh(m.geometry,m.material); m2.position.set(hx+(hor?k*1.6:0)-face[0],13.7,hz+(hor?0:k*1.6)-face[1]); scene.add(m2); return {m,c}});
+  SIGS.push({axis,lamps});
+}
+signal(0,-23,-6,-23,"NS",[0,-0.95]); signal(0,23,6,23,"NS",[0,0.95]); signal(23,0,23,-6,"EW",[0.95,0]); signal(-23,0,-23,6,"EW",[-0.95,0]);
+const LCOL={red:0xff3b30,yellow:0xffc21a,green:0x2ee07c};
+function lightsAt(t){ // 東西向（臺灣大道）綠 7 秒→黃 2→全紅 1→南北向綠 7→黃 2→全紅 1
+  const c=t%20; const ew=c<7?"green":c<9?"yellow":"red", ns=c<10?"red":c<17?"green":c<19?"yellow":"red"; return {EW:ew,NS:ns}}
+function updSignals(t){const L=lightsAt(t);for(const s of SIGS){for(const {m,c} of s.lamps){const on=L[s.axis]===c;m.material.color.setHex(on?LCOL[c]:0x2a2f33);m.material.emissive.setHex(on?LCOL[c]:0);m.material.emissiveIntensity=on?1.6:0}}}
 
 /* ---------- 台灣街景：建築與公園 ---------- */
 function windowsTex(base,frame,cols,rows){return canvasTex(256,256,(g,w,h)=>{g.fillStyle=base;g.fillRect(0,0,w,h);const cw=w/cols,rh=h/rows;
@@ -209,6 +227,7 @@ function tick(){const t=clock.getElapsedTime();
   waves.forEach(w=>{const p=(t*0.35+w.userData.ph)%1,r=4+p*90;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
   const on=Math.floor(t*6)%2; lbR.material.emissiveIntensity=on?2:0.2; lbB.material.emissiveIntensity=on?0.2:2;
   clouds.forEach((c,i)=>{c.position.x+=0.03*(i%2?1:-1)});
+  updSignals(t);
   ctl.update(); renderer.render(scene,cam); requestAnimationFrame(tick)}
 tick();
 </script>

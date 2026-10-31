@@ -95,7 +95,7 @@ td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
 <header style="display:flex;flex-direction:column;gap:6px">
   <h2>智「where」交通</h2>
   <h1>智慧路口情境模擬</h1>
-  <nav style="display:flex;gap:14px;flex-wrap:wrap;font-size:14px"><a href="./">智慧路口情境模擬</a><a href="3d.html">3D 小模型路口</a></nav>
+<nav style="display:flex;gap:14px;flex-wrap:wrap;font-size:14px"><a href="./">智慧路口情境模擬</a><a href="3d.html">3D 小模型路口</a></nav>
   <p class="lead">① 路口模式：路口聽出警笛方向，讓那邊變綠燈。② 駕駛艙模式：坐在車裡，儀表板的羅盤告訴你警笛從哪裡來。</p>
   <div class="row tabs" role="tablist">
     <button class="tab on" data-tab="tab1" role="tab">① 路口模式</button>
@@ -932,23 +932,28 @@ if(!window.THREE) return;
 const board=document.querySelector("#tab1 .board"), cv2d=document.getElementById("cv");
 const wrap=document.createElement("div"); wrap.style.cssText="position:absolute;inset:0;border-radius:14px;overflow:hidden"; board.insertBefore(wrap,board.firstChild);
 const sw=document.createElement("div"); sw.className="viewsw";
-sw.innerHTML='<button data-m="3d" class="on">3D</button><button data-m="2d">平面</button><button data-m="reset" title="回到預設視角">↺</button>';
+sw.innerHTML='<button data-m="3d" class="on">3D</button><button data-m="2d">平面</button><span class="vgrp"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">路口特寫</button><button data-v="spin">自動旋轉：關</button></span>';
 board.appendChild(sw);
-const st=document.createElement("style"); st.textContent=".viewsw{position:absolute;top:10px;right:10px;display:flex;gap:4px;z-index:5}.viewsw button{font-size:13px;padding:4px 10px;background:rgba(255,255,255,.85);color:#10202c;border:1px solid rgba(16,32,44,.2)}.viewsw button.on{background:#2360c4;color:#fff;border-color:#2360c4}";
+const st=document.createElement("style"); st.textContent=".viewsw{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;z-index:5}.viewsw .vgrp{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}.viewsw button{font-size:13px;padding:4px 10px;background:rgba(255,255,255,.85);color:#10202c;border:1px solid rgba(16,32,44,.2)}.viewsw button.on{background:#2360c4;color:#fff;border-color:#2360c4}";
 document.head.appendChild(st);
-let mode="3d";
+let mode="3d"; const RL=[];
 const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.outputEncoding=THREE.sRGBEncoding;
 wrap.appendChild(renderer.domElement); renderer.domElement.style.cssText="width:100%;height:100%;display:block";
 const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(40,1,1,4000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.48; ctl.minDistance=40; ctl.maxDistance=900;
-function home(){cam.position.set(150,210,250); ctl.target.set(0,0,10); ctl.update()}
+const VIEWS={v1:[[150,210,250],[0,0,10]],v2:[[0,430,1],[0,0,0]],v3:[[-150,13,15],[10,8,15]],v4:[[55,70,75],[0,4,0]]};
+function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();RL.forEach(l=>l.visible=(k==="v1"||k==="v2"))}
+function home(){view("v1")}
 home();
 function size(){const r=board.getBoundingClientRect();renderer.setSize(r.width,r.width,false);cam.aspect=1;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(board); size();
-function setMode(m){ if(m==="reset"){home();return} mode=m; wrap.style.display=m==="3d"?"block":"none"; cv2d.style.visibility=m==="3d"?"hidden":"visible";
-  sw.querySelectorAll("button[data-m='3d'],button[data-m='2d']").forEach(b=>b.classList.toggle("on",b.dataset.m===m)); sw.querySelector("[data-m=reset]").hidden=m!=="3d" }
-sw.addEventListener("click",e=>{const b=e.target.closest("button"); if(b) setMode(b.dataset.m)});
+function setMode(m){ mode=m; wrap.style.display=m==="3d"?"block":"none"; cv2d.style.visibility=m==="3d"?"hidden":"visible";
+  sw.querySelectorAll("button[data-m='3d'],button[data-m='2d']").forEach(b=>b.classList.toggle("on",b.dataset.m===m)); sw.querySelector(".vgrp").hidden=m!=="3d" }
+sw.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.m) setMode(b.dataset.m);
+  else if(b.dataset.v==="spin"){ctl.autoRotate=!ctl.autoRotate;ctl.autoRotateSpeed=0.6;b.textContent="自動旋轉："+(ctl.autoRotate?"開":"關")}
+  else if(b.dataset.v) view(b.dataset.v)});
 setMode("3d");
 
 // 天空、光
@@ -1012,7 +1017,7 @@ for(let p=55;p<190;p+=26) for(const s of [-1,1]){tree(p,s*(H2+9),0.75);tree(-p,s
 function roadLabel(text,x,y,z,sz){const c=document.createElement("canvas"),g=c.getContext("2d"),F="bold 64px 'Noto Sans TC','PingFang TC',sans-serif";g.font=F;
   const lines=text.split("\n"),w=Math.max(...lines.map(l=>g.measureText(l).width))+48;c.width=w;c.height=80*lines.length+24;g.font=F;
   g.fillStyle="rgba(255,255,255,.9)";g.fillRect(0,0,w,c.height);g.fillStyle="#2f8f5a";g.fillRect(0,0,w,10);g.fillStyle="#10202c";g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,18+i*80));
-  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(sz*c.width/c.height,sz,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s)}
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(sz*c.width/c.height,sz,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);RL.push(s)}
 roadLabel("惠中路",0,12,-105,9); roadLabel("惠中路",0,12,105,9);
 roadLabel("臺灣大道\n往台中車站",108,14,0,13); roadLabel("臺灣大道\n往東海、沙鹿",-108,14,0,13);
 // 紅綠燈（同 2D：分隔島上的燈桿＋懸臂燈頭）
@@ -1026,7 +1031,7 @@ for(const d in SIG){const {h:[hx,hy],p:[px,py],hor}=SIG[d];const x=X(px),z=Z(py)
   const len=Math.hypot(xh-x,zh-z)+10; const arm=box(hor?len:1,1,hor?1:len,M(0x3a3f44),(x+xh)/2+(hor?Math.sign(xh-x)*3:0),26,(z+zh)/2+(hor?0:Math.sign(zh-z)*3));
   box(hor?14:5,5,hor?5:14,M(0x1d2124),xh,21.5,zh);
   LAMP[d]=["red","yellow","green"].map((c,i)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1.6,14,12),lampMat());const k=(d==="N"||d==="W")?(i-1):(1-i);
-    m.position.set(xh+(hor?k*4.2:0),24,zh+(hor?0:k*4.2));scene.add(m);return {m,c}});
+    const fx={E:3,W:-3}[d]||0, fz={N:-3,S:3}[d]||0; m.position.set(xh+(hor?k*4.2:0)+fx,24,zh+(hor?0:k*4.2)+fz);scene.add(m);const m2=new THREE.Mesh(m.geometry,m.material);m2.position.set(xh+(hor?k*4.2:0)-fx,24,zh+(hor?0:k*4.2)-fz);scene.add(m2);return {m,c}});
   const nt=numTex(); const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:nt.t,depthTest:true}));sp.scale.set(12,6,1);sp.position.set(xh+(hor?0:(d==="E"?9:-9)),33,zh+(hor?(d==="N"?-9:9):0));scene.add(sp);LAMP[d].num=nt;
 }
 const LC={red:0xff3b30,yellow:0xffc21a,green:0x2ee07c};
