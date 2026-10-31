@@ -2056,6 +2056,11 @@ td.rng input{max-width:5em}
 #law,#beadbar{width:100%;height:auto}
 #law{max-width:640px;align-self:center}
 .drop span{text-align:center;padding:12px}
+.scope{width:100%;height:auto;display:block;border-radius:12px;background:#0f1424}
+.state{font-family:var(--display);font-size:20px;min-height:1.6em}
+.state.up{color:#ff6b5b}.state.down{color:#5ea8ff}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}
 </style>
 
 <div class="wrap">
@@ -2079,24 +2084,54 @@ td.rng input{max-width:5em}
 </section>
 
 <section>
-  <h2>一、頻率是什麼？每秒轉幾圈</h2>
-  <p class="lead">按「側面看」，粉紅色的點上上下下畫出一條波；按「正面看」，同一個點其實在轉圈圈。把速度調到 1、2、3 圈／秒，各按一次「開始數 10 秒」，結果會自動填進表 2-1。</p>
+  <h2>一、聲音是振動：頻率是什麼？</h2>
+  <p class="lead">先看喇叭怎麼推空氣，再用彩虹彈簧數圈數：把速度調到 1、2、3 圈／秒，各按一次「開始數 10 秒」，結果會自動填進表 2-1。</p>
+  <!-- AIR HTML START -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <h2>聲音怎麼跑到耳朵裡？喇叭推空氣</h2>
+  <p class="lead">喇叭的紙盆一直前後振動。往前推：把前面的空氣分子擠在一起（壓縮），壓力比平常大；往回縮：空氣分子變得稀稀疏疏（稀疏），壓力比平常小。麥克風把壓力的大小記下來，就畫出上上下下的波形。</p>
   <div class="sim">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <div class="stage" id="airStage">
+        <div class="hud">喇叭每秒振動 <b id="airHz">0.5</b> 次（放慢）</div>
+        <div class="views" id="airViews"><button data-v="side" class="on">側面看</button><button data-v="tilt">斜斜看</button><button data-v="top">從上面看</button></div>
+      </div>
+      <canvas class="scope" id="airScope" width="1100" height="260" aria-label="麥克風記錄到的壓力波形"></canvas>
+    </div>
+    <div class="card">
+      <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">—</div>
+        <div class="legend"><span><i style="background:#ff5a4a"></i>擠在一起（壓縮）</span><span><i style="background:#e9edf5"></i>平常</span><span><i style="background:#3d8bff"></i>稀稀疏疏（稀疏）</span></div></div>
+      <div class="grp"><h3>喇叭振動快慢</h3>
+        <input type="range" id="airF" min="0.25" max="2" step="0.25" value="0.5" aria-label="喇叭每秒振動幾次">
+        <div class="row"><button id="airPause">暫停</button></div></div>
+      <div class="grp"><h3>看懂波形</h3>
+        <p class="note">下面的波形和一般錄音軟體一樣：最新的在最右邊，越往左越久以前。<b style="color:#ff6b5b">波峰（往上）＝壓縮</b>，<b style="color:#5ea8ff">波谷（往下）＝稀疏</b>，中間的線＝平常的大氣壓力。</p></div>
+    </div>
+  </div>
+</section>
+<!-- AIR HTML END -->
+
+<h2>每秒振動幾次？用彩虹彈簧來數</h2>
+<p class="lead">喇叭前後振動一次，就像彈簧上的點轉一圈。從側面看是上上下下的波，從正面看是一個圓。</p>
+<!-- SLINKY HTML START -->
+<div class="sim">
   <div class="stage" id="stage">
-    <div class="hud" id="hud">每秒轉 <b id="hz">1</b> 圈</div>
+    <div class="hud" id="hud">每秒轉 <b id="hz">1</b> 圈<span id="slowTag"></span></div>
     <div class="views" id="views"><button data-v="side" class="on">側面看（波）</button><button data-v="end">正面看（圓）</button><button data-v="tilt">斜斜看</button><button data-v="spin">慢慢轉過去</button></div>
   </div>
   <div class="card">
     <div class="grp"><h3>1　彈簧每秒轉幾圈？</h3>
-      <div class="row"><span class="big" id="fv">1</span><span>圈／秒</span></div>
-      <input type="range" id="f" min="0.25" max="4" step="0.25" value="1" aria-label="每秒轉幾圈">
-      <div class="row"><button data-f="0.5">0.5</button><button data-f="1" class="on">1</button><button data-f="2">2</button><button data-f="3">3</button><button id="pause">暫停</button></div></div>
+      <div class="row"><span class="big" id="fv">1</span><span>圈／秒（Hz）</span></div>
+      <input type="range" id="f" min="0" max="1000" step="1" value="0" aria-label="每秒轉幾圈">
+      <div class="row note" style="justify-content:space-between"><span>0.25</span><span>1</span><span>10</span><span>100</span><span>1000</span></div>
+      <div class="row"><button data-f="1" class="on">1</button><button data-f="2">2</button><button data-f="3">3</button><button data-f="220">220</button><button data-f="440">440</button><button data-f="880">880</button><button id="pause">暫停</button></div>
+      <p class="note" id="slowNote">滑桿越往右，數字跳得越快：0.25～1000 圈／秒。</p></div>
     <div class="grp"><h3>2　數數看：10 秒轉幾圈？</h3>
       <button class="go" id="count">開始數 10 秒</button>
       <p class="count" id="cnt">看著粉紅色的點，每轉回最上面一次就算一圈。</p></div>
-    <div class="grp"><h3>3　聽聽真正的聲音（頻率高很多！）</h3>
-      <div class="row"><button data-t="220">220 Hz 低</button><button data-t="440">440 Hz 中</button><button data-t="880">880 Hz 高</button><button data-t="0">停</button></div>
-      <p class="note">真正的聲音每秒轉幾百圈，眼睛跟不上，所以畫面的彈簧是放慢的。播放時，彈簧轉的快慢照比例改變。</p></div>
+    <div class="grp"><h3>3　聽聽這個頻率</h3>
+      <div class="row"><button id="play">▶ 播放聲音</button></div>
+      <p class="note" id="playNote">每秒 20 圈以上，耳朵才聽得到。試試 220、440、880：數字越大，聲音越高還是越低？</p></div>
   </div>
 </div>
   <div class="steps">
@@ -2201,6 +2236,80 @@ td.rng input{max-width:5em}
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
 /* ===== 彩虹彈簧 ===== */
+/* ===== 空氣分子：喇叭推空氣（壓縮與稀疏） ===== */
+(()=>{ if(!window.THREE) return;
+const $=id=>document.getElementById(id);
+const stage=$("airStage"); if(!stage) return;
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio||1)); renderer.outputEncoding=THREE.sRGBEncoding;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0f1424);
+const cam=new THREE.PerspectiveCamera(36,16/10,0.5,800);
+const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=15; ctl.maxDistance=220;
+function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
+new ResizeObserver(size).observe(stage); size();
+scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.8));
+const key=new THREE.DirectionalLight(0xffffff,0.7); key.position.set(-20,40,40); scene.add(key);
+const L0=0, L1=64, RT=7, A=1.7, LAMBDA=21.3, MICX=44;
+// 透明管子
+const tube=new THREE.Mesh(new THREE.CylinderGeometry(RT,RT,L1-L0,40,1,true),new THREE.MeshBasicMaterial({color:0x8fb3ff,transparent:true,opacity:0.07,side:THREE.DoubleSide,depthWrite:false}));
+tube.rotation.z=Math.PI/2; tube.position.x=(L0+L1)/2; scene.add(tube);
+// 喇叭：箱子＋紙盆（往 +x 方向開口）
+const box=new THREE.Mesh(new THREE.BoxGeometry(6,18,18),new THREE.MeshStandardMaterial({color:0x2a2f38,roughness:0.6}));box.position.x=-5.5;scene.add(box);
+const cone=new THREE.Group();scene.add(cone);
+const coneM=new THREE.Mesh(new THREE.CylinderGeometry(7.2,2,3.2,40,1,true),new THREE.MeshStandardMaterial({color:0x8a8f99,roughness:0.7,side:THREE.DoubleSide}));coneM.rotation.z=-Math.PI/2;coneM.position.x=-1.6;cone.add(coneM);
+const cap=new THREE.Mesh(new THREE.SphereGeometry(2,20,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x444a55,roughness:0.4}));cap.rotation.z=-Math.PI/2;cap.position.x=-1.2;cone.add(cap);
+// 麥克風
+const mic=new THREE.Group();scene.add(mic);mic.position.set(MICX,RT+5,0);
+mic.add(new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.6,6,16),new THREE.MeshStandardMaterial({color:0x222831})));
+const mh=new THREE.Mesh(new THREE.SphereGeometry(1.6,20,16),new THREE.MeshStandardMaterial({color:0xb8c2d6,metalness:0.4,roughness:0.4}));mh.position.y=-3.6;mic.add(mh);
+const ring=new THREE.Mesh(new THREE.TorusGeometry(RT+0.2,0.18,8,64),new THREE.MeshBasicMaterial({color:0xffd166}));ring.rotation.y=Math.PI/2;ring.position.x=MICX;scene.add(ring);
+// 空氣分子
+const N=1700, X0=new Float32Array(N), YY=new Float32Array(N), ZZ=new Float32Array(N);
+for(let i=0;i<N;i++){X0[i]=L0+1.5+Math.random()*(L1-L0-2);const r=Math.sqrt(Math.random())*(RT-0.6),a=Math.random()*Math.PI*2;YY[i]=r*Math.cos(a);ZZ[i]=r*Math.sin(a)}
+const mol=new THREE.InstancedMesh(new THREE.SphereGeometry(0.32,8,6),new THREE.MeshStandardMaterial({roughness:0.5}),N);scene.add(mol);
+const M4=new THREE.Matrix4(), C=new THREE.Color(), red=new THREE.Color(0xff5a4a), blue=new THREE.Color(0x3d8bff), wht=new THREE.Color(0xe9edf5);
+function label(text,x,y,z,s,col){const c=document.createElement("canvas"),g=c.getContext("2d");c.width=512;c.height=96;g.font="bold 54px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textAlign="center";g.textBaseline="middle";g.fillText(text,256,50);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(s*5.33,s,1);sp.position.set(x,y,z);scene.add(sp);return sp}
+label("喇叭",-5.5,12.5,0,3,"#c8d0e6"); label("麥克風",MICX,RT+10,0,3,"#ffd166"); label("聲音往右邊傳出去",32,-RT-4,0,2.6,"#c8d0e6");
+// 視角
+const VIEWS={side:[[29,1,74],[29,1,0]],tilt:[[76,36,58],[28,-2,0]],top:[[29,88,0.01],[29,0,0]]};
+let tween=null;
+function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
+$("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
+cam.position.set(...VIEWS.side[0]);ctl.target.set(...VIEWS.side[1]);ctl.update();
+let f=0.5, t=0, paused=false, last=performance.now(); const hist=[];
+$("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
+$("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
+// 波形（示波器）：最新在右邊
+const sc=$("airScope"), g=sc.getContext("2d"), SPAN=6;
+function drawScope(){const W=sc.width,H=sc.height,x0=70,x1=W-24,mid=H/2+6,amp=H*0.36;g.clearRect(0,0,W,H);
+  g.strokeStyle="rgba(200,208,230,.18)";g.lineWidth=1;for(let k=0;k<=SPAN;k++){const x=x1-(x1-x0)*k/SPAN;g.beginPath();g.moveTo(x,18);g.lineTo(x,H-22);g.stroke()}
+  g.strokeStyle="rgba(200,208,230,.55)";g.setLineDash([6,5]);g.beginPath();g.moveTo(x0,mid);g.lineTo(x1,mid);g.stroke();g.setLineDash([]);
+  g.font="22px 'Noto Sans TC',sans-serif";g.fillStyle="#ff6b5b";g.fillText("壓縮",8,mid-amp+8);g.fillStyle="#5ea8ff";g.fillText("稀疏",8,mid+amp+8);g.fillStyle="#9ba5b7";g.fillText("平常",8,mid+8);
+  g.font="18px 'Noto Sans TC',sans-serif";g.fillStyle="#9ba5b7";g.textAlign="center";for(let k=1;k<=SPAN;k++){g.fillText(k+" 秒前",x1-(x1-x0)*k/SPAN,H-4)}g.fillText("現在",x1,H-4);g.textAlign="left";
+  g.strokeStyle="#ffd166";g.lineWidth=3;g.beginPath();hist.forEach(([ht,p],i)=>{const x=x1-(t-ht)/SPAN*(x1-x0),y=mid-p*amp;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+  if(hist.length){const p=hist[hist.length-1][1];g.fillStyle="#ffd166";g.beginPath();g.arc(x1,mid-p*amp,7,0,7);g.fill()}}
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(!stage.offsetParent){return}
+  if(!paused)t+=dt;
+  const w=2*Math.PI*f, k=2*Math.PI/LAMBDA;
+  cone.position.x=A*Math.sin(w*t);
+  for(let i=0;i<N;i++){const ph=w*t-k*X0[i];M4.makeTranslation(X0[i]+A*Math.sin(ph),YY[i],ZZ[i]);mol.setMatrixAt(i,M4);
+    const p=Math.cos(ph);if(p>=0)C.copy(wht).lerp(red,p);else C.copy(wht).lerp(blue,-p);mol.setColorAt(i,C)}
+  mol.instanceMatrix.needsUpdate=true;if(mol.instanceColor)mol.instanceColor.needsUpdate=true;
+  const pm=Math.cos(w*t-k*MICX);
+  if(!paused){hist.push([t,pm]);while(hist.length&&t-hist[0][0]>SPAN)hist.shift()}
+  const st=$("airState");if(pm>0.55){st.textContent="壓縮：擠在一起 → 波峰（往上）";st.className="state up"}else if(pm<-0.55){st.textContent="稀疏：稀稀疏疏 → 波谷（往下）";st.className="state down"}else{st.textContent="接近平常的大氣壓力";st.className="state"}
+  ring.material.color.set(pm>0?0xff8a5b:0x5ea8ff);
+  drawScope();
+  if(tween){const q=Math.min(1,(now-tween.s)/(reduce?1:1000)),e=q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(q>=1)tween=null}
+  ctl.update();renderer.render(scene,cam)}
+requestAnimationFrame(frame);
+})();
+<\/script>
+<script>
+/* ===== 彩虹彈簧：每秒轉幾圈（波形最新在右、往左是以前） ===== */
 (()=>{ if(!window.THREE) return;
 const $=id=>document.getElementById(id);
 const stage=$("stage");
@@ -2215,84 +2324,92 @@ new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));
 const key=new THREE.DirectionalLight(0xffffff,0.8); key.position.set(20,40,50); scene.add(key);
 
-/* 彩虹彈簧：沿 x 軸的螺旋，每一圈換一個顏色 */
-const R=6, TURNS=14, LEN=46, X0=-LEN/2;
+/* 彩虹彈簧：沿 x 軸的螺旋，放在右邊；追蹤點在最左端，波形往左畫出去 */
+const R=6, TURNS=14, LEN=40, X0=4;
 class Helix extends THREE.Curve{getPoint(t,v=new THREE.Vector3()){const a=t*TURNS*Math.PI*2;return v.set(X0+t*LEN,R*Math.cos(a),R*Math.sin(a))}}
 const geo=new THREE.TubeGeometry(new Helix(),TURNS*90,0.42,10,false);
-const cols=[];const nV=geo.attributes.position.count, ring=11;
-for(let i=0;i<nV;i++){const seg=Math.floor(i/ring)/(TURNS*90);const h=(seg*TURNS/TURNS)*0.85;const c=new THREE.Color().setHSL(h,0.85,0.56);cols.push(c.r,c.g,c.b)}
+const cols=[];const nV=geo.attributes.position.count, rg=11;
+for(let i=0;i<nV;i++){const seg=Math.floor(i/rg)/(TURNS*90);const c=new THREE.Color().setHSL(0.85-seg*0.85,0.85,0.56);cols.push(c.r,c.g,c.b)}
 geo.setAttribute("color",new THREE.Float32BufferAttribute(cols,3));
 const spring=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.35,metalness:0.25}));
 const rotor=new THREE.Group(); rotor.add(spring); scene.add(rotor);
-// 追蹤點：在彈簧最右端那一圈上
-const dotM=new THREE.MeshStandardMaterial({color:0xff3d6e,emissive:0x881030,roughness:0.3});
-const dot=new THREE.Mesh(new THREE.SphereGeometry(0.95,20,16),dotM);
-const endA=TURNS*Math.PI*2; dot.position.set(X0+LEN,R*Math.cos(endA),R*Math.sin(endA)); rotor.add(dot);
-// 中心軸（虛線）
-const axisG=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(X0-4,0,0),new THREE.Vector3(X0+LEN+40,0,0)]);
-const axis=new THREE.Line(axisG,new THREE.LineDashedMaterial({color:0x7a86a8,dashSize:1,gapSize:0.8}));axis.computeLineDistances();scene.add(axis);
-// 圓（正面看時點走的路）
-const circPts=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circPts.push(new THREE.Vector3(X0+LEN,R*Math.cos(a),R*Math.sin(a)))}
+const dot=new THREE.Mesh(new THREE.SphereGeometry(0.95,20,16),new THREE.MeshStandardMaterial({color:0xff3d6e,emissive:0x881030,roughness:0.3}));
+dot.position.set(X0,R,0); rotor.add(dot);
+const axis=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(X0-52,0,0),new THREE.Vector3(X0+LEN+4,0,0)]),new THREE.LineDashedMaterial({color:0x7a86a8,dashSize:1,gapSize:0.8}));axis.computeLineDistances();scene.add(axis);
+const circPts=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circPts.push(new THREE.Vector3(X0,R*Math.cos(a),R*Math.sin(a)))}
 scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(circPts),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.35})));
-// 波形軌跡：點的高度往右畫出去（像示波器）
-const TRN=900, trace=new Float32Array(TRN*3), trG=new THREE.BufferGeometry(); trG.setAttribute("position",new THREE.BufferAttribute(trace,3));
-const trLine=new THREE.Line(trG,new THREE.LineBasicMaterial({color:0xff3d6e})); scene.add(trLine);
-const hist=[]; const SPEED=10; // 軌跡往右跑的速度（單位／秒）
-// 刻度：1 秒一格
+const TRN=1200, trace=new Float32Array(TRN*3), trG=new THREE.BufferGeometry(); trG.setAttribute("position",new THREE.BufferAttribute(trace,3));
+scene.add(new THREE.Line(trG,new THREE.LineBasicMaterial({color:0xff3d6e})));
+const hist=[]; const SPEED=10, TICKS=4;
 const tick=new THREE.Group();scene.add(tick);
-function label(text,x,y,z,s=2.2,col="#c8d0e6"){const c=document.createElement("canvas"),g=c.getContext("2d");c.width=256;c.height=64;g.font="bold 40px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textAlign="center";g.textBaseline="middle";g.fillText(text,128,34);
-  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(s*4,s,1);sp.position.set(x,y,z);return sp}
-for(let k=0;k<=4;k++){const x=X0+LEN+k*SPEED;const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-R-1.2,0),new THREE.Vector3(x,-R-2.2,0)]),new THREE.LineBasicMaterial({color:0x7a86a8}));tick.add(l);if(k)tick.add(label(k+" 秒前",x,-R-3.8,0,1.6))}
+function mkLabel(){const c=document.createElement("canvas");c.width=320;c.height=64;const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(8,1.6,1);return {sp,c,t}}
+function setLabel(L,text){const g=L.c.getContext("2d");g.clearRect(0,0,320,64);g.font="bold 40px 'Noto Sans TC',sans-serif";g.fillStyle="#c8d0e6";g.textAlign="center";g.textBaseline="middle";g.fillText(text,160,34);L.t.needsUpdate=true}
+const LABS=[];
+for(let k=0;k<=TICKS;k++){const x=X0-k*SPEED;tick.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-R-1.2,0),new THREE.Vector3(x,-R-2.2,0)]),new THREE.LineBasicMaterial({color:0x7a86a8})));
+  const L=mkLabel();L.sp.position.set(x,-R-3.8,0);tick.add(L.sp);LABS.push(L)}
 
-/* 狀態 */
-let simT=0, f=1, phase=0, paused=false, last=performance.now(), audioF=0;
-const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-function setF(v){f=v;$("f").value=v;$("fv").textContent=v;$("hz").textContent=v;document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("on",+b.dataset.f===v))}
-$("f").addEventListener("input",e=>{setF(+e.target.value);stopTone()});
-document.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>{setF(+b.dataset.f);stopTone()}));
+/* 頻率：滑桿用 log 尺度（0.25～1000）；超過 3 圈／秒就放慢顯示 */
+const FMIN=0.25, FMAX=1000, VMAX=3;
+const toF=v=>FMIN*Math.pow(FMAX/FMIN,v/1000), toV=f=>Math.round(1000*Math.log(f/FMIN)/Math.log(FMAX/FMIN));
+const nice=f=>f<1?Math.round(f*4)/4:f<10?Math.round(f*2)/2:f<100?Math.round(f):Math.round(f/5)*5;
+let f=1, fv=1, simT=0, phase=0, paused=false, last=performance.now();
+function fmtT(sec){return sec>=1?(Math.round(sec*10)/10)+" 秒前":sec>=0.01?(Math.round(sec*1000))+" 毫秒前":(Math.round(sec*10000)/10)+" 毫秒前"}
+function setF(v){f=v;fv=Math.min(f,VMAX);const slow=f/fv;$("f").value=toV(f);$("fv").textContent=f;
+  $("hz").textContent=f;$("slowTag").textContent=slow>1?"（畫面放慢 "+Math.round(slow)+" 倍）":"";
+  LABS.forEach((L,k)=>setLabel(L,k?fmtT(k/slow):"現在"));
+  $("slowNote").textContent=slow>1?`每秒 ${f} 圈太快了，眼睛跟不上，畫面放慢 ${Math.round(slow)} 倍。看刻度：1 格只有 ${fmtT(1/slow).replace("前","")}！`:"滑桿越往右，數字跳得越快：0.25～1000 圈／秒。";
+  document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("on",+b.dataset.f===f));
+  $("count").disabled=f>VMAX||!!counting;
+  if(f>VMAX&&!counting)$("cnt").textContent="每秒 "+f+" 圈太快了，數不完！這就是為什麼要用機器（麥克風＋電腦）來量。";
+  else if(!counting)$("cnt").textContent="看著粉紅色的點，每轉回最上面一次就算一圈。";
+  if(osc)osc.frequency.setTargetAtTime(f,AC.currentTime,0.02)}
+$("f").addEventListener("input",e=>setF(nice(toF(+e.target.value))));
+document.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>setF(+b.dataset.f)));
 $("pause").addEventListener("click",()=>{paused=!paused;$("pause").textContent=paused?"繼續":"暫停";$("pause").classList.toggle("on",paused)});
 
 /* 視角 */
-const VIEWS={side:[[8,0,78],[8,0,0]],end:[[X0+LEN+60,0,0.01],[X0+LEN,0,0]],tilt:[[52,26,48],[6,0,0]]};
+const VIEWS={side:[[0,0,90],[0,0,0]],end:[[X0-60,0,0.01],[X0,0,0]],tilt:[[-44,28,56],[2,0,0]]};
 let tween=null, spinT=null;
 function goView(k){spinT=null;const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now(),d:reduce?1:1100};
   document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("views").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.v==="spin"){spinT={s:performance.now()};tween=null;document.querySelectorAll("#views button").forEach(x=>x.classList.toggle("on",x===b))}else goView(b.dataset.v)});
 cam.position.set(...VIEWS.side[0]);ctl.target.set(...VIEWS.side[1]);ctl.update();
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* 數 10 秒 */
 let counting=null;
-$("count").addEventListener("click",()=>{if(counting)return;paused=false;$("pause").textContent="暫停";$("pause").classList.remove("on");
+$("count").addEventListener("click",()=>{if(counting||f>VMAX)return;paused=false;$("pause").textContent="暫停";$("pause").classList.remove("on");
   counting={s:performance.now(),n:0,lastTop:null};$("count").disabled=true;$("cnt").innerHTML="數數中……看粉紅色的點每回到最上面一次，就數一圈。"});
 
-/* 真正的聲音：放慢 220 倍顯示（220 Hz → 1 圈／秒） */
+/* 播放：真正的頻率 */
 let AC=null, osc=null, gain=null;
-function stopTone(){if(osc){try{gain.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.15)}catch(e){}osc=null}audioF=0;document.querySelectorAll("[data-t]").forEach(b=>b.classList.remove("on"))}
-document.querySelectorAll("[data-t]").forEach(b=>b.addEventListener("click",()=>{stopTone();const hz=+b.dataset.t;if(!hz)return;
+function stopTone(){if(osc){try{gain.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.15)}catch(e){}osc=null}$("play").textContent="▶ 播放聲音";$("play").classList.remove("on")}
+$("play").addEventListener("click",()=>{if(osc){stopTone();return}
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
-  osc=AC.createOscillator();gain=AC.createGain();osc.type="sine";osc.frequency.value=hz;gain.gain.value=0;gain.gain.setTargetAtTime(0.15,AC.currentTime,0.03);osc.connect(gain);gain.connect(AC.destination);osc.start();
-  audioF=hz;b.classList.add("on");setF(hz/220);$("hz").textContent=hz/220+"（真正的聲音：每秒 "+hz+" 圈）"}));
+  osc=AC.createOscillator();gain=AC.createGain();osc.type="sine";osc.frequency.value=f;gain.gain.value=0;gain.gain.setTargetAtTime(0.15,AC.currentTime,0.03);osc.connect(gain);gain.connect(AC.destination);osc.start();
+  $("play").textContent="■ 停止";$("play").classList.add("on");
+  $("playNote").textContent=f<20?"每秒 "+f+" 圈太慢了，耳朵聽不到（要 20 圈以上）。把滑桿往右拉試試。":"正在播放每秒 "+f+" 圈的聲音。拉滑桿，聽聽聲音怎麼變。"});
+setF(1);
 
 function frame(now){requestAnimationFrame(frame);
   const dt=Math.min(0.05,(now-last)/1000);last=now;
-  if(!paused){phase+=dt*f*Math.PI*2;}
+  if(!stage.offsetParent)return;
+  if(!paused){phase+=dt*fv*Math.PI*2;simT+=dt}
   rotor.rotation.x=phase;
-  // 點的世界座標
   const wp=new THREE.Vector3();dot.getWorldPosition(wp);
-  if(!paused){simT+=dt;hist.unshift([simT,wp.y]);while(hist.length>TRN||(hist.length&&simT-hist[hist.length-1][0]>5))hist.pop()}
-  for(let i=0;i<hist.length;i++){trace[i*3]=X0+LEN+(simT-hist[i][0])*SPEED;trace[i*3+1]=hist[i][1];trace[i*3+2]=0}
+  if(!paused){hist.unshift([simT,wp.y]);while(hist.length>TRN||(hist.length&&simT-hist[hist.length-1][0]>TICKS+0.5))hist.pop()}
+  for(let i=0;i<hist.length;i++){trace[i*3]=X0-(simT-hist[i][0])*SPEED;trace[i*3+1]=hist[i][1];trace[i*3+2]=0}
   trG.attributes.position.needsUpdate=true;trG.setDrawRange(0,hist.length);
   tick.visible=Math.abs(cam.position.z)>25;
-  // 數圈：點經過最上面（y 由增轉減）
   if(counting&&!paused){const el=(now-counting.s)/1000;const top=wp.y>R*0.985;if(top&&!counting.lastTop)counting.n++;counting.lastTop=top;
     $("cnt").innerHTML=`已經 <b>${el.toFixed(1)}</b> 秒，數到 <b>${counting.n}</b> 圈`;
-    if(el>=10){const n=counting.n;counting=null;$("count").disabled=false;
-      window.dispatchEvent(new CustomEvent("slinkyCount",{detail:{n,f}}));$("cnt").innerHTML=`10 秒轉了 <b>${n}</b> 圈 → 每秒 <b>${n}</b> ÷ 10 ≈ <b>${(n/10).toFixed(1)}</b> 圈＝<b>${(n/10).toFixed(1)} Hz</b>（設定是 ${f} 圈／秒）`}}
-  // 視角動畫
+    if(el>=10){const n=counting.n;counting=null;$("count").disabled=f>VMAX;
+      window.dispatchEvent(new CustomEvent("slinkyCount",{detail:{n,f}}));
+      $("cnt").innerHTML=`10 秒轉了 <b>${n}</b> 圈 → 每秒 <b>${n}</b> ÷ 10 ≈ <b>${(n/10).toFixed(1)}</b> 圈＝<b>${(n/10).toFixed(1)} Hz</b>（設定是 ${f} 圈／秒）`}}
   if(tween){const k=Math.min(1,(now-tween.s)/tween.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(k>=1)tween=null}
-  if(spinT){const k=((now-spinT.s)/1000)%12/12,a=Math.sin(k*Math.PI*2)*0.5+0.5; // 側面↔正面來回
-    const ang=a*Math.PI/2, r=78; cam.position.set(8+Math.sin(ang)*(X0+LEN+52-8),0,Math.cos(ang)*r+0.01);ctl.target.set(8+(X0+LEN-8)*a,0,0)}
+  if(spinT){const k=((now-spinT.s)/1000)%12/12,a=Math.sin(k*Math.PI*2)*0.5+0.5;
+    const ang=a*Math.PI/2, r=78; cam.position.set(-Math.sin(ang)*(60-X0)+X0*a,0,Math.cos(ang)*90+0.01);ctl.target.set(X0*a,0,0)}
   ctl.update();renderer.render(scene,cam)}
 requestAnimationFrame(frame);
 })();
