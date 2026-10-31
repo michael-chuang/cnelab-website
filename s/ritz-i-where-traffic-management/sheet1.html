@@ -107,15 +107,17 @@ svg text{font-family:var(--body)}
     <div class="stage" id="stage">
       <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
     </div>
-    <div class="result" id="result">選一個角度，按「播放警笛」。戴耳機聽會更像真的。</div>
+    <div class="result" id="result">拉動滑桿讓播音員走到某個位置，按「播放警笛」。戴耳機聽會更像真的。</div>
     </div>
     <div class="ctrl card">
-      <div class="grp"><h3>1　播音員站在哪個角度？</h3>
-        <div class="row" id="angs"><button data-a="0" class="on">0° 正前方</button><button data-a="30">30°</button><button data-a="60">60°</button><button data-a="90">90° 正右方</button><button data-a="120">120°</button><button data-a="150">150°</button><button data-a="180">180° 正後方</button><button data-a="210">210°</button><button data-a="240">240°</button><button data-a="270">270° 正左方</button><button data-a="300">300°</button><button data-a="330">330°</button></div><p class="note">3D 裡可以試一整圈 360°；真正的實驗只做 0°～90°。</p></div>
+      <div class="grp"><h3>1　播音員走到哪裡？</h3>
+        <div class="row" style="align-items:center"><input type="range" id="angR" min="0" max="359" step="1" value="40" style="flex:1;min-width:140px" aria-label="播音員的位置"><span class="fill" id="angV">40°</span></div>
+        <div class="row"><button id="rand">隨便走一個位置</button></div>
+        <p class="note">0°＝正前方，順時針一圈 360°。真正實驗時，播音員自己選位置走過去。</p></div>
       <div class="grp"><h3>2　受試者的耳朵</h3>
         <div class="row" id="ears"><button data-e="a" class="seg-a on">未遮蔽</button><button data-e="b" class="seg-b">戴耳塞</button></div></div>
       <div class="grp"><button class="go" id="play">▶ 播放警笛（2 秒）</button>
-        <p class="note">受試者聽完會用手指方向。綠線＝真正的方向，彩色線＝手指的方向。這裡的手指方向是電腦模擬的，真正的數據要在實驗中量。</p></div>
+        <p class="note">受試者聽完會用手指方向。綠色繩子＝拉到播音員（真實角度），彩色繩子＝沿著手指拉（指的角度）。這裡的手指方向是電腦模擬的，真正的數據要在實驗中量。</p></div>
       <div class="grp"><h3>模擬紀錄</h3><div class="log" id="log"><span class="note">還沒有紀錄</span></div></div>
     </div>
   </div>
@@ -132,7 +134,7 @@ svg text{font-family:var(--body)}
   <h2>實驗步驟</h2>
   <div class="two">
     <div class="card"><h3>器材</h3><ul>
-      <li>粉筆或紙膠帶（在地上畫 0°～90°，每 30° 一條線）、大量角器、5 米捲尺</li>
+      <li>大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）</li>
       <li>藍牙喇叭＋救護車警笛聲、分貝計 APP</li>
       <li>遮光眼罩、隔音耳塞</li></ul></div>
     <div class="card"><h3>研究問題與假設</h3>
@@ -140,26 +142,25 @@ svg text{font-family:var(--body)}
       <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2" placeholder="例如：會變大，因為……"></textarea></div>
   </div>
   <ol class="card" style="padding-left:2.2em">
-    <li>以受試者為圓心、半徑 2 公尺，在地上畫出 0°、30°、60°、90° 四條線（0° 是正前方，90° 是正右方）。</li>
-    <li>受試者坐在圓心，戴上眼罩，臉朝 0°，頭不能轉。</li>
-    <li>播音員拿喇叭站到某一個角度，播 2 秒救護車警笛（每次音量一樣，約 75 dB）。</li>
-    <li>受試者用手指出聲音的方向，記錄員用量角器讀出「指的角度」。</li>
-    <li>角度差＝指的角度和真實角度相差幾度（大減小，都是正的）。</li>
-    <li><b style="color:var(--a)">A 未遮蔽</b>：4 個角度各做 1 次，順序打亂。<b style="color:var(--b)">B 戴上耳塞</b>後，再用另一種亂序做一次。</li>
+    <li>把大型量角器放在地上，圓心對準受試者坐的位置，量角器的正前方對準受試者的臉。</li>
+    <li>受試者坐在圓心，戴上眼罩，頭不能轉。</li>
+    <li>播音員自己選一個位置，安靜走過去（離受試者約 2 公尺），播 2 秒救護車警笛（每次音量一樣，約 75 dB）。</li>
+    <li>受試者用手指出聲音的方向，手先不要放下。</li>
+    <li><b>綠繩</b>：從量角器圓心拉到播音員腳下，讀出量角器上的刻度＝<b>真實角度</b>。<b>彩繩</b>：從圓心沿著受試者的手拉直，讀出刻度＝<b>指的角度</b>。</li>
+    <li>角度差＝兩條繩子的刻度相減（大減小，都是正的）。</li>
+    <li><b style="color:var(--a)">A 未遮蔽</b>做 5 次，每次換一個位置；<b style="color:var(--b)">B 戴上耳塞</b>後再做 5 次。</li>
   </ol>
 </section>
 
 <section>
   <h2>表 1-1　一位受試者的紀錄</h2>
-  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who" placeholder="名字或編號"><span class="note">輸入「指的角度」，角度差和平均會自動算好。</span></div>
-  <div class="two">
-    <div class="tbl"><table id="t1">
-      <thead><tr><th>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳塞<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
-      <tbody></tbody></table></div>
-    <div class="card" style="display:flex;flex-direction:column;gap:6px">
-      <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="量角器點圖：左邊未遮蔽、右邊戴耳塞"></svg>
-      <p class="cap">圖 1-1　每個點＝受試者指的方向（點旁的小字是真實角度）。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳塞</b>。</p>
-    </div>
+  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who" placeholder="名字或編號"><span class="note">輸入兩條繩子讀到的刻度，角度差和平均會自動算好。</span></div>
+  <div class="tbl"><table id="t1">
+    <thead><tr><th>第幾次</th><th class="a">A 未遮蔽<br>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳塞<br>真實角度</th><th class="b">B 戴耳塞<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
+    <tbody></tbody></table></div>
+  <div class="card" style="display:flex;flex-direction:column;gap:6px;max-width:680px;width:100%;align-self:center">
+    <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：左邊未遮蔽、右邊戴耳塞"></svg>
+    <p class="cap">圖 1-1　角度差幾度，就在幾度的地方點一個點（點旁的數字是第幾次）。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳塞</b>。點越靠近中間的 0°，指得越準。</p>
   </div>
   <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="demo">填入範例數據看看</button></div>
   <p class="note" id="addMsg" aria-live="polite"></p>
@@ -183,8 +184,8 @@ svg text{font-family:var(--body)}
   <h2>結果與結論</h2>
   <div class="card qa"><ol>
     <li>未遮蔽時平均差 <span class="fill" id="qa">　</span> 度，戴耳塞時平均差 <span class="fill" id="qb">　</span> 度，多了 <span class="fill" id="qd">　</span> 度。</li>
-    <li>戴耳塞時，哪一個角度指得最不準？ <input type="text" id="q2" style="max-width:10em"></li>
-    <li>看圖 1-1：左右兩邊的點比起來，哪一邊比較散、離 0°、30°、60°、90° 比較遠？ <input type="text" id="q3" style="max-width:10em"></li>
+    <li>戴耳塞時，播音員站在哪裡（前面、旁邊、後面）最容易指錯？ <input type="text" id="q2" style="max-width:10em"></li>
+    <li>看圖 1-1：左右兩邊的點比起來，哪一邊離中間的 0° 比較遠？ <input type="text" id="q3" style="max-width:10em"></li>
     <li>如果駕駛在關緊車窗的車裡，會不會聽不出救護車在哪裡？寫下你的結論：
       <textarea id="concl" rows="3"></textarea></li>
   </ol>
@@ -205,25 +206,27 @@ svg text{font-family:var(--body)}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 /* ================= 資料：表 1-1、表 1-2（存在瀏覽器） ================= */
-const ANG=[0,30,60,90];
-const KEY="ws1-occlusion-v1";
-let S={who:"",t1:{a:{},b:{}},t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
+const N=5; const ANG=[0,30,60,90];
+const KEY="ws1-occlusion-v2";
+const blank=()=>({a:[...Array(N)].map(()=>({r:"",p:""})),b:[...Array(N)].map(()=>({r:"",p:""}))});
+let S={who:"",t1:blank(),t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
 const num=v=>v===""||v===undefined||v===null||isNaN(+v)?null:+v;
-const diff=(p,t)=>p===null?null:Math.abs(p-t);
+const diff=(p,t)=>p===null||t===null?null:(d=>Math.min(d,360-d))(((Math.abs(p-t))%360));
+const dRow=x=>diff(num(x.p),num(x.r));
 const avg=xs=>{xs=xs.filter(x=>x!==null);return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null};
 const f1=x=>x===null?"":(Math.round(x*10)/10).toString();
 
 function buildT1(){const tb=$("t1").querySelector("tbody");tb.innerHTML="";
-  ANG.forEach(t=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${t}°${t===0?"（正前方）":t===90?"（正右方）":""}</td><td><input type="number" id="a${t}" min="-180" max="180" step="1" inputmode="numeric"></td><td class="num" id="da${t}"></td><td><input type="number" id="b${t}" min="-180" max="180" step="1" inputmode="numeric"></td><td class="num" id="db${t}"></td>`;
-    tb.appendChild(tr)});
-  const tr=document.createElement("tr");tr.className="avg";tr.innerHTML=`<td>平均</td><td>—</td><td class="num" id="ma"></td><td>—</td><td class="num" id="mb"></td>`;tb.appendChild(tr);
-  ANG.forEach(t=>{for(const k of ["a","b"]){const el=$(k+t);el.value=S.t1[k][t]??"";el.addEventListener("input",()=>{S.t1[k][t]=el.value;save();calcT1()})}})}
-function t1Avg(k){return avg(ANG.map(t=>diff(num(S.t1[k][t]),t)))}
-function calcT1(){ANG.forEach(t=>{for(const k of ["a","b"]){$("d"+k+t).textContent=f1(diff(num(S.t1[k][t]),t))}});
+  for(let i=0;i<N;i++){const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${i+1}</td>`+["a","b"].map(k=>`<td><input type="number" id="${k}r${i}" step="1" inputmode="numeric" aria-label="${k==="a"?"A":"B"} 第${i+1}次 真實角度"></td><td><input type="number" id="${k}p${i}" step="1" inputmode="numeric" aria-label="${k==="a"?"A":"B"} 第${i+1}次 指的角度"></td><td class="num" id="${k}d${i}"></td>`).join("");
+    tb.appendChild(tr)}
+  const tr=document.createElement("tr");tr.className="avg";tr.innerHTML=`<td>平均</td><td>—</td><td>—</td><td class="num" id="ma"></td><td>—</td><td>—</td><td class="num" id="mb"></td>`;tb.appendChild(tr);
+  for(let i=0;i<N;i++)for(const k of ["a","b"])for(const f of ["r","p"]){const e=$(k+f+i);e.value=S.t1[k][i][f]??"";e.addEventListener("input",()=>{S.t1[k][i][f]=e.value;save();calcT1()})}}
+function t1Avg(k,T1=S.t1){return avg(T1[k].map(dRow))}
+function calcT1(){for(let i=0;i<N;i++)for(const k of ["a","b"])$(k+"d"+i).textContent=f1(dRow(S.t1[k][i]));
   $("ma").textContent=f1(t1Avg("a"));$("mb").textContent=f1(t1Avg("b"));drawProt()}
 
 /* 圖 1-1：量角器點圖（左＝未遮蔽，右＝戴耳塞，中間垂直線＝0°） */
@@ -240,17 +243,16 @@ function drawProt(s=$("prot"),T1=S.t1,P=pal()){s.innerHTML="";const cx=300,cy=30
     el("line",{x1,y1,x2,y2,stroke:ink,"stroke-width":d%10===0?1.4:.7},s);
     if(d%10===0&&!(d===0&&side<0)){el("text",{x:cx+side*(R-48)*Math.sin(a),y:cy-(R-48)*Math.cos(a)+5,"text-anchor":"middle","font-size":13,fill:muted},s,String(d))}}
   el("line",{x1:cx,y1:cy,x2:cx,y2:cy-R-14,stroke:ink,"stroke-width":2},s);
-  el("text",{x:cx,y:cy-R-20,"text-anchor":"middle","font-size":14,"font-weight":700,fill:ink},s,"0°（正前方）");
-  el("circle",{cx,cy:cy-14,r:14,fill:"none",stroke:ink,"stroke-width":1.5},s);
-  el("text",{x:cx-R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:ca},s,"← 未遮蔽");
-  el("text",{x:cx+R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:cb},s,"戴耳塞 →");
+  el("text",{x:cx,y:cy-R-20,"text-anchor":"middle","font-size":14,"font-weight":700,fill:ink},s,"0°（完全指對）");
+  el("text",{x:cx-R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:ca},s,"← 未遮蔽的角度差");
+  el("text",{x:cx+R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:cb},s,"戴耳塞的角度差 →");
   let n=0;
-  for(const [k,side,col] of [["a",-1,ca],["b",1,cb]]) ANG.forEach((t,i)=>{const p=num(T1[k][t]);if(p===null)return;n++;
-    const d=Math.max(-90,Math.min(90,p)),a=d*Math.PI/180,r=R-80-i*22;
-    const x=cx+side*r*Math.sin(a),y=cy-r*Math.cos(a);
-    el("circle",{cx:x,cy:y,r:8,fill:col,stroke:"#fff","stroke-width":2},s);
-    el("text",{x:x+side*12,y:y+4,"text-anchor":side<0?"end":"start","font-size":12,fill:muted},s,t+"°")});
-  if(!n) el("text",{x:cx,y:cy-90,"text-anchor":"middle","font-size":15,fill:muted},s,"在表 1-1 輸入指的角度，點會出現在這裡")}
+  for(const [k,side,col] of [["a",-1,ca],["b",1,cb]]) T1[k].forEach((x,i)=>{const d0=dRow(x);if(d0===null)return;n++;
+    const d=Math.min(90,d0),a=d*Math.PI/180,r=R-70-i*24;
+    const px=cx+side*r*Math.sin(a),py=cy-r*Math.cos(a);
+    el("circle",{cx:px,cy:py,r:9,fill:col,stroke:"#fff","stroke-width":2},s);
+    el("text",{x:px+side*13,y:py+4,"text-anchor":side<0?"end":"start","font-size":12,fill:muted},s,String(i+1))});
+  if(!n) el("text",{x:cx,y:cy-90,"text-anchor":"middle","font-size":15,fill:muted},s,"在表 1-1 輸入數字，點會出現在這裡")}
 
 /* 表 1-2＋圖 1-2 */
 function buildT2(){const tb=$("t2").querySelector("tbody");tb.innerHTML="";
@@ -277,10 +279,10 @@ function drawBar(A,B,s=$("bar"),P=pal()){s.innerHTML="";
 
 $("addSub").addEventListener("click",()=>{const a=t1Avg("a"),b=t1Avg("b");if(a===null&&b===null)return;
   S.t2.push({name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b),t1:JSON.parse(JSON.stringify(S.t1))});save();buildT2();$("addMsg").textContent="已加入表 1-2，原始紀錄也存起來了。可以按「清空表 1-1，換下一位」。"});
-$("clr1").addEventListener("click",()=>{S.t1={a:{},b:{}};S.who="";$("who").value="";save();buildT1();calcT1()});
+$("clr1").addEventListener("click",()=>{S.t1=blank();S.who="";$("who").value="";save();buildT1();calcT1()});
 $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();buildT2()});
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
-  S.t1={a:{0:"3",30:"36",60:"52",90:"81"},b:{0:"-12",30:"55",60:"84",90:"62"}};save();buildT1();calcT1()});
+  S.t1={a:[["40","46"],["95","88"],["130","118"],["15","10"],["160","152"]].map(([r,p])=>({r,p})),b:[["70","92"],["20","45"],["150","126"],["100","70"],["35","20"]].map(([r,p])=>({r,p}))};save();buildT1();calcT1()});
 $("who").value=S.who;$("who").addEventListener("input",e=>{S.who=e.target.value;save()});
 for(const id of ["hyp","q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
 buildT1();calcT1();buildT2();
@@ -309,19 +311,22 @@ const wood=ctex(512,512,(g,w,h)=>{for(let i=0;i<8;i++){g.fillStyle=["#c9a57a","#
 wood.wrapS=wood.wrapT=THREE.RepeatWrapping; wood.repeat.set(6,6);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({map:wood,roughness:0.75}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
 // 地上的膠帶：半徑 200 的四分之一圓＋0/30/60/90 線（角度：0°＝-z 正前方，90°＝+x 正右方）
-const tape=M(0xf7f3e8,{roughness:0.6});
 const dir=d=>new THREE.Vector3(Math.sin(d*Math.PI/180),0,-Math.cos(d*Math.PI/180));
-const arc=new THREE.Mesh(new THREE.RingGeometry(197,203,180),tape);arc.rotation.x=-Math.PI/2;arc.rotation.z=0;arc.position.y=0.3;
-// RingGeometry 的角度從 +x 逆時針；轉到地上後 +x→+x、+y→-z，所以 0～90° 正好是 +x 到 -z
-scene.add(arc);
-function tapeLine(d){const g=new THREE.Mesh(new THREE.PlaneGeometry(5,200),tape);g.rotation.x=-Math.PI/2;g.rotation.z=-d*Math.PI/180;const p=dir(d).multiplyScalar(100);g.position.set(p.x,0.35,p.z);scene.add(g)}
-const ANG3=[...Array(12)].map((_,i)=>i*30);ANG3.forEach(tapeLine);
+// 地上的大型量角器（透明壓克力圓盤；0°＝正前方，順時針一圈 360°）
+const PR=90;
+const protTex=ctex(1024,1024,(g,w,h)=>{const c=w/2,R=c-6;g.clearRect(0,0,w,h);
+  g.fillStyle="rgba(240,250,255,0.78)";g.beginPath();g.arc(c,c,R,0,7);g.fill();g.strokeStyle="#1e3a5a";g.lineWidth=5;g.stroke();
+  g.lineWidth=2;g.beginPath();g.arc(c,c,R*0.62,0,7);g.stroke();
+  for(let d=0;d<360;d++){const a=(d-90)*Math.PI/180,L=d%10===0?60:d%5===0?40:22;g.lineWidth=d%10===0?4:2;g.beginPath();g.moveTo(c+Math.cos(a)*R,c+Math.sin(a)*R);g.lineTo(c+Math.cos(a)*(R-L),c+Math.sin(a)*(R-L));g.stroke()}
+  g.fillStyle="#1e3a5a";g.textAlign="center";g.textBaseline="middle";
+  for(let d=0;d<360;d+=10){const a=(d-90)*Math.PI/180;g.save();g.translate(c+Math.cos(a)*(R-95),c+Math.sin(a)*(R-95));g.rotate(a+Math.PI/2);g.font=(d%30?"bold 30px":"bold 40px")+" sans-serif";g.fillText(String(d),0,0);g.restore()}
+  g.lineWidth=3;g.beginPath();g.moveTo(c,c-R*0.62);g.lineTo(c,c+R*0.62);g.moveTo(c-R*0.62,c);g.lineTo(c+R*0.62,c);g.stroke();
+  g.font="bold 34px sans-serif";g.fillText("正前方",c,c-R*0.45)});
+const prot3=new THREE.Mesh(new THREE.CircleGeometry(PR,96),new THREE.MeshStandardMaterial({map:protTex,transparent:true,roughness:0.3}));prot3.rotation.x=-Math.PI/2;prot3.position.y=0.6;prot3.receiveShadow=true;scene.add(prot3);
 function label(text,x,y,z,size=22,col="#18232b"){const c=document.createElement("canvas"),g=c.getContext("2d");g.font="bold 56px 'Noto Sans TC',sans-serif";const w=g.measureText(text).width+36;c.width=w;c.height=80;
   g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.moveTo(20,0);g.arcTo(w,0,w,80,20);g.arcTo(w,80,0,80,20);g.arcTo(0,80,0,0,20);g.arcTo(0,0,w,0,20);g.fill();
   g.font="bold 56px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textBaseline="middle";g.fillText(text,18,42);
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*w/80,size,1);s.position.set(x,y,z);s.renderOrder=9;scene.add(s);return s}
-ANG3.forEach(d=>{const p=dir(d).multiplyScalar(235);label(d+"°",p.x,8,p.z,d%90?16:20)});
-label("2 公尺",dir(15).x*120,6,dir(15).z*120,16,"#5b6872");
 // 受試者：椅子＋坐著的人（臉朝 -z）
 const kid=new THREE.Group();scene.add(kid);
 const chairM=M(0x6b7b88),skin=M(0xf1c9a5),shirt=M(0x3f7fbf),pants=M(0x34404a),hair=M(0x2b211b);
@@ -352,14 +357,14 @@ part(new THREE.CircleGeometry(4.5,20),M(0x444a50),-5,118,-27.1,ann).rotation.y=M
 const circ=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
 const waves=[...Array(5)].map((_,i)=>{const l=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xe23b3b,transparent:true,opacity:0}));l.position.y=112;l.userData.ph=i/5;scene.add(l);return l});
 // 真實方向（綠）與手指方向（彩色）＋差的扇形
-const greenM=new THREE.MeshBasicMaterial({color:0x1f9a6a}), pointM=new THREE.MeshBasicMaterial({color:0x2a6fb8});
-const trueLine=new THREE.Mesh(new THREE.PlaneGeometry(4,200),greenM);trueLine.rotation.x=-Math.PI/2;trueLine.position.y=0.6;scene.add(trueLine);
-const ptLine=new THREE.Mesh(new THREE.PlaneGeometry(4,200),pointM);ptLine.rotation.x=-Math.PI/2;ptLine.position.y=0.7;ptLine.visible=false;scene.add(ptLine);
+const greenM=M(0x22a06b,{roughness:0.9}), pointM=M(0x2a6fb8,{roughness:0.9});
+function rope(mat,y){const g=new THREE.Group();const m=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,215,8),mat);m.rotation.x=Math.PI/2;m.position.set(0,y,-107.5);m.castShadow=true;g.add(m);scene.add(g);return g}
+const trueLine=rope(greenM,1.6), ptLine=rope(pointM,2.6); ptLine.visible=false;
 const fanM=new THREE.MeshBasicMaterial({color:0x2a6fb8,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false});
 let fan=null, diffLabel=null;
-function setLine(m,d){m.rotation.z=-d*Math.PI/180;const p=dir(d).multiplyScalar(100);m.position.x=p.x;m.position.z=p.z}
+function setLine(g,d){g.rotation.y=-d*Math.PI/180}
 
-let angle=0, ear="a", pointing=null, busy=false;
+let angle=40, ear="a", pointing=null, busy=false;
 function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,0,p.z);ann.rotation.y=-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
 function setEar(){plugs.forEach(p=>p.visible=ear==="b")}
 function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}arm.rotation.y=0;armTarget=null;armAngle=0;armUp=0}
@@ -388,14 +393,16 @@ $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disab
     pointing=p;armTarget=p;armUp=1;
     const col=ear==="a"?0x2a6fb8:0xd9532c;pointM.color.setHex(col);fanM.color.setHex(col);setLine(ptLine,p);ptLine.visible=true;
     const a0=Math.min(angle,angle+sgn),a1=Math.max(angle,angle+sgn);
-    if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(150,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
+    if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(PR+40,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
     const mid=dir((a0+a1)/2).multiplyScalar(160);diffLabel=label("差 "+d+"°",mid.x,26,mid.z,22,ear==="a"?"#2a6fb8":"#d9532c");
     $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
     LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>40)LOG.pop();save();
     renderLog();
     busy=false;$("play").disabled=false},2200)});
 let playT=-1e9;
-$("angs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;angle=+b.dataset.a;$("angs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();placeAnn();$("result").textContent="按「播放警笛」。"});
+function setAngle(v){angle=((Math.round(v)%360)+360)%360;$("angR").value=angle;$("angV").textContent=angle+"°";clearPoint();placeAnn();$("result").textContent="播音員走到 "+angle+"°（綠繩）。按「播放警笛」。"}
+$("angR").addEventListener("input",e=>setAngle(+e.target.value));
+$("rand").addEventListener("click",()=>setAngle(Math.random()*360));
 $("ears").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;ear=b.dataset.e;$("ears").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();setEar();$("result").textContent=ear==="b"?"受試者戴上耳塞了（橘色）。按「播放警笛」。":"按「播放警笛」。"});
 const VIEWS={side:[[300,420,460],[0,30,0]],top:[[0,820,1],[0,0,0]],kid:[[0,170,140],[0,80,-120]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();$("views").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v===k))}
@@ -433,12 +440,12 @@ btn.addEventListener("click",async()=>{
     const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:22})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
     const table=(head,rows,ws)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,w:ws&&ws[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{w:ws&&ws[i],bold:r.bold}))}))]});
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
-    const t1Rows=T1=>{const rows=ANG.map(t=>{const a=num(T1.a[t]),b=num(T1.b[t]);return [t+"°"+(t===0?"（正前方）":t===90?"（正右方）":""),a??"",f1(diff(a,t)),b??"",f1(diff(b,t))]});
-      const ma=avg(ANG.map(t=>diff(num(T1.a[t]),t))),mb=avg(ANG.map(t=>diff(num(T1.b[t]),t)));const r=["平均","—",f1(ma),"—",f1(mb)];r.bold=true;rows.push(r);return rows};
-    const H1=["真實角度","A 未遮蔽 指的角度","A 角度差","B 戴耳塞 指的角度","B 角度差"];
+    const t1Rows=T1=>{const rows=[...Array(N)].map((_,i)=>{const a=T1.a[i],b=T1.b[i];return [i+1,a.r,a.p,f1(dRow(a)),b.r,b.p,f1(dRow(b))]});
+      const r=["平均","—","—",f1(t1Avg("a",T1)),"—","—",f1(t1Avg("b",T1))];r.bold=true;rows.push(r);return rows};
+    const H1=["第幾次","A 真實角度","A 指的角度","A 角度差","B 真實角度","B 指的角度","B 角度差"];
     // 受試者清單：表 1-2 裡有原始紀錄的人＋目前表 1-1（若還沒加入）
     const subs=S.t2.filter(r=>r.t1).map(r=>({name:r.name,t1:r.t1}));
-    const cur=ANG.some(t=>num(S.t1.a[t])!==null||num(S.t1.b[t])!==null);
+    const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
     body.push(P("智「where」交通　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
@@ -450,16 +457,16 @@ btn.addEventListener("click",async()=>{
     body.push(P("問題：耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？"));
     body.push(P("我的假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
     body.push(H("參、實驗步驟"));
-    ["以受試者為圓心、半徑 2 公尺，在地上畫出 0°、30°、60°、90° 四條線。","受試者坐在圓心，戴上眼罩，臉朝 0°，頭不能轉。","播音員拿喇叭站到某一個角度，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向，記錄員用量角器讀出「指的角度」。","角度差＝指的角度和真實角度相差幾度。","A 未遮蔽、B 戴耳塞各做 4 個角度，順序打亂。"].forEach(t=>body.push(P(t,{bullet:true})));
+    ["把大型量角器放在地上，圓心對準受試者坐的位置。","受試者坐在圓心，戴上眼罩，頭不能轉。","播音員自己選一個位置走過去，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向。","綠繩從圓心拉到播音員，讀出真實角度；彩繩沿著受試者的手拉直，讀出指的角度。","角度差＝兩條繩子的刻度相減。","A 未遮蔽做 5 次、B 戴耳塞做 5 次，每次換位置。"].forEach(t=>body.push(P(t,{bullet:true})));
     body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
       body.push(P(`受試者：${x.name}`,{bold:true}));
-      body.push(table(H1,t1Rows(x.t1),[24,19,19,19,19]));
+      body.push(table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
       body.push(cap(`表 1-1（${i+1}）、${x.name} 的紀錄`));
       const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT);
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
-      body.push(cap(`圖 1-1（${i+1}）、${x.name} 指的方向（左：未遮蔽；右：戴耳塞）`));
+      body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳塞；越靠近 0° 越準）`));
     }
     body.push(H("伍、全組整理（表 1-2、圖 1-2）"));
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
@@ -472,8 +479,8 @@ btn.addEventListener("click",async()=>{
     body.push(cap("圖 1-2、未遮蔽和戴耳塞的平均角度差"));
     body.push(H("陸、結果與結論"));
     body.push(P(`1. 未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳塞時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`));
-    body.push(P("2. 戴耳塞時，哪一個角度指得最不準？"+(S.q2||"＿＿＿＿")));
-    body.push(P("3. 左右兩邊的點比起來，哪一邊比較散？"+(S.q3||"＿＿＿＿")));
+    body.push(P("2. 戴耳塞時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
+    body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
     body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
     if(LOGX().length){body.push(H("附錄：3D 模擬紀錄（電腦模擬，不是真實數據）"));LOGX().slice().reverse().forEach(t=>body.push(P(t.replace(/\s+/g," "),{size:20})))}
