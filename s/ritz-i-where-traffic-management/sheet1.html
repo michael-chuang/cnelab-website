@@ -489,6 +489,7 @@ btn.addEventListener("click",async()=>{
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
     let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){const r=await window.parent.__saveFile(blob,fn);msg.textContent=r||("已存好 "+fn);done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
     if(window.claude&&typeof window.claude.use==="function"){
       const dl=await window.claude.use("downloads");
       if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。";done=true}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。";done=true}}
