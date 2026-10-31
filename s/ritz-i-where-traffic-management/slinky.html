@@ -133,13 +133,13 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="views" id="views"><button id="reveal" class="go2">✨ 變出彈簧</button><button data-v="side" class="on">側面看（波）</button><button data-v="end">正面看（圓）</button><button data-v="tilt">斜斜看</button><button data-v="spin">慢慢轉過去</button></div>
   </div>
   <div class="card">
-    <div class="grp"><h3>1　彈簧每秒轉幾圈？</h3>
+    <div class="grp"><h3>彈簧每秒轉幾圈？</h3>
       <div class="row"><span class="big" id="fv">1</span><span>圈／秒</span></div>
       <input type="range" id="f" min="0" max="1000" step="1" value="0" aria-label="每秒轉幾圈">
       <div class="row note" style="justify-content:space-between"><span>0.25</span><span>1</span><span>10</span><span>100</span><span>1000</span></div>
       <div class="row"><button data-f="1" class="on">1</button><button data-f="2">2</button><button data-f="3">3</button><button data-f="220">220</button><button data-f="440">440</button><button data-f="880">880</button><button id="pause">暫停</button></div>
       <p class="note" id="slowNote">滑桿越往右，數字跳得越快：0.25～1000 圈／秒。</p></div>
-    <div class="grp"><h3>2　數數看：10 秒轉幾圈？</h3>
+    <div hidden><div class="grp"><h3>2　數數看：10 秒轉幾圈？</h3>
       <button class="go" id="count">開始數 10 秒</button>
       <p class="count" id="cnt">看著粉紅色的點，每轉回最上面一次就算一圈。</p></div>
     <div class="grp"><h3>3　聽聽這個頻率</h3>
@@ -153,7 +153,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <h2>從轉圈圈到「赫茲」</h2>
   <div class="steps">
     <div class="step"><span class="k">① 振動＝轉圈圈</span><p>按「正面看」：點在繞圓圈。按「側面看」：同一個點只是上上下下。上下振動和轉圈圈，是同一件事從不同方向看。</p></div>
-    <div class="step"><span class="k">② 每秒轉幾圈</span><p>1 秒內轉了幾圈，就叫做頻率。英文叫 cycles per second（每秒幾個循環）。</p><div class="formula">頻率＝圈數 ÷ 秒數</div></div>
+    <div class="step"><span class="k">② 每秒轉幾圈</span><p>1 秒內轉了幾圈，就叫做頻率。英文叫 cycles per second（每秒幾個循環）。</p><div class="formula">頻率＝圈數 ÷ 秒數</div></div></div>
     <div class="step key"><span class="k">③ 單位：赫茲 Hz</span><p>為了紀念科學家赫茲，「每秒 1 圈」就叫 1 赫茲（1 Hz）。我們說話的聲音大約 100～400 Hz：大人男生比較低（約 100 Hz），小朋友比較高（約 300 Hz）。也就是說話時，喉嚨裡的聲帶每秒振動好幾百次！</p><div class="formula">每秒 440 圈＝440 Hz</div></div>
   </div>
   <div class="step fam-card"><span class="k">④ 聲音的家族：誰聽得到？</span>
