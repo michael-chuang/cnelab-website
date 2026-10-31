@@ -567,7 +567,7 @@ resize(); requestAnimationFrame(loop);
       <h2>3　按喇叭（看羅盤找得到嗎？）</h2>
       <div class="row" id="honks2">
         <button data-h="truck">大貨車（後面）</button><button data-h="carR">轎車（右前）</button>
-        <button data-h="moto">機車（右邊）</button><button data-h="carF">轎車（正前方）</button><button data-h="rand">隨便一台</button>
+        <button data-h="moto">機車（右前）</button><button data-h="carF">轎車（正前方）</button><button data-h="rand">隨便一台</button>
       </div>
     </div>
     <div class="group">
@@ -618,7 +618,7 @@ function baseScene(){
     {id:"carR2",type:"car",  x0:1.75,  side:1.4,  z:38,  v:CRUISE,    w:1.8,h:1.5, color:"#e8e8e2",label:"轎車"},
     {id:"truck",type:"truck",x0:-1.75, side:-1.2, z:-15, v:CRUISE,    w:2.5,h:3.3,color:"#3d6f9e",label:"大貨車"},
     {id:"carB", type:"car",  x0:1.75,  side:1.4,  z:-8,  v:CRUISE,    w:1.8,h:1.45,color:"#5f9e7a",label:"轎車"},
-    {id:"moto", type:"moto", x0:4.5,   side:0.6,  z:3,   v:CRUISE,    w:0.7,h:1.45,color:"#c08a3e",label:"機車"},
+    {id:"moto", type:"moto", x0:4.3,   side:0.6,  z:11,   v:CRUISE,    w:0.7,h:1.45,color:"#c08a3e",label:"機車"},
     {id:"moto2",type:"moto", x0:4.6,   side:0.5,  z:17,  v:CRUISE,    w:0.7,h:1.45,color:"#9a6fb0",label:"機車"},
   ];
   objs.forEach(o=>o.x=o.x0);
