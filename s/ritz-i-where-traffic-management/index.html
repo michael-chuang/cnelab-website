@@ -2052,7 +2052,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .sw{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-3px;border:1px solid var(--line)}
 select{font:inherit;font-size:15px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 td.rng{white-space:nowrap}
-td.rng input{max-width:5em}
+td.rng .rngw{display:flex;align-items:center;gap:4px;justify-content:center}
+td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
+#t24{min-width:820px}
+#t24 td{vertical-align:middle}
+#t24 select{min-width:8em}
+#t24 input[id^=su]{max-width:16em}
 #law,#beadbar{width:100%;height:auto}
 #law{max-width:640px;align-self:center}
 .drop span{text-align:center;padding:12px}
@@ -2524,7 +2529,7 @@ function buildT23(){const tb=$("t23").querySelector("tbody");tb.innerHTML="";
     tb.appendChild(tr);bind("vr"+i,r,"reg","change");bind("vp"+i,r,"peak","change");bind("vh"+i,r,"hz")})}
 function buildT24(){const tb=$("t24").querySelector("tbody");tb.innerHTML="";
   S.t24.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name" placeholder="${["救護車","警車","消防車","火災警報器",""][i]||""}"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
+    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name" placeholder="${["救護車","警車","消防車","火災警報器",""][i]||""}"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><div class="rngw"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></div></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
     tb.appendChild(tr);bind("ss"+i,r,"s");bind("su"+i,r,"url");bind("sh"+i,r,"hz");bind("sl"+i,r,"lo");bind("sx"+i,r,"hi");bind("sf"+i,r,"form","change")})}
 function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
   S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
