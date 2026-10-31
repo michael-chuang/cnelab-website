@@ -67,7 +67,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 /* 空氣分子：壓縮與稀疏 */
 .scope{width:100%;height:auto;display:block;border-radius:12px;background:#0f1424}
 .state{font-family:var(--display);font-size:20px;min-height:1.6em}
-.state.up{color:#ff6b5b}.state.down{color:#5ea8ff}
+.state .up{color:#ff6b5b}.state .down{color:#5ea8ff}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -96,7 +96,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <canvas class="scope" id="airScope" width="1100" height="260" aria-label="麥克風記錄到的壓力波形"></canvas>
     </div>
     <div class="card">
-      <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">—</div>
+      <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">大氣壓力：<span id="airWord" class="up">壓縮</span></div>
         <div class="legend"><span><i style="background:#ff5a4a"></i>擠在一起（壓縮）</span><span><i style="background:#e9edf5"></i>平常</span><span><i style="background:#3d8bff"></i>稀稀疏疏（稀疏）</span></div></div>
       <div class="grp"><h3>喇叭振動快慢</h3>
         <input type="range" id="airF" min="0.25" max="2" step="0.25" value="0.5" aria-label="喇叭每秒振動幾次">
@@ -187,7 +187,7 @@ let tween=null;
 function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
 cam.position.set(...VIEWS.side[0]);ctl.target.set(...VIEWS.side[1]);ctl.update();
-let f=0.5, t=0, paused=false, last=performance.now(); const hist=[];
+let f=0.5, t=0, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
 $("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
 // 波形（示波器）：最新在右邊
@@ -210,7 +210,7 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-las
   mol.instanceMatrix.needsUpdate=true;if(mol.instanceColor)mol.instanceColor.needsUpdate=true;
   const pm=Math.cos(w*t-k*MICX);
   if(!paused){hist.push([t,pm]);while(hist.length&&t-hist[0][0]>SPAN)hist.shift()}
-  const st=$("airState");if(pm>0.55){st.textContent="壓縮：擠在一起 → 波峰（往上）";st.className="state up"}else if(pm<-0.55){st.textContent="稀疏：稀稀疏疏 → 波谷（往下）";st.className="state down"}else{st.textContent="接近平常的大氣壓力";st.className="state"}
+  const w2=pm>=0?"壓縮":"稀疏";if(stW.textContent!==w2){stW.textContent=w2;stW.className=pm>=0?"up":"down"}
   ring.material.color.set(pm>0?0xff8a5b:0x5ea8ff);
   drawScope();
   if(tween){const q=Math.min(1,(now-tween.s)/(reduce?1:1000)),e=q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(q>=1)tween=null}
