@@ -105,7 +105,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
       <div class="stage" id="airStage">
         <div class="hud">喇叭每秒振動 <b id="airHz">0.5</b> 次（放慢）</div>
-        <div class="views" id="airViews"><button data-v="side" class="on">側面看</button><button data-v="tilt">斜斜看</button><button data-v="top">從上面看</button></div>
+        <div class="views" id="airViews"><button data-v="side">側面看</button><button data-v="tilt" class="on">斜斜看</button></div>
       </div>
       <canvas class="scope" id="airScope" width="1100" height="260" aria-label="麥克風記錄到的壓力波形"></canvas>
     </div>
@@ -201,11 +201,11 @@ function label(text,x,y,z,s,col){const c=document.createElement("canvas"),g=c.ge
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(s*5.33,s,1);sp.position.set(x,y,z);scene.add(sp);return sp}
 label("喇叭",MX(-5.5),12.5,0,3,"#c8d0e6"); label("麥克風",MX(MICX),RT+10,0,3,"#ffd166"); label("聲音往左邊傳出去",32,-RT-4,0,2.6,"#c8d0e6");
 // 視角
-const VIEWS={side:[[35,1,74],[35,1,0]],tilt:[[-12,36,58],[36,-2,0]],top:[[35,88,0.01],[35,0,0]]};
+const VIEWS={side:[[35,1,74],[35,1,0]],tilt:[[8,34,78],[32,-1,0]],top:[[35,88,0.01],[35,0,0]]};
 let tween=null;
 function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
-cam.position.set(...VIEWS.side[0]);ctl.target.set(...VIEWS.side[1]);ctl.update();
+cam.position.set(...VIEWS.tilt[0]);ctl.target.set(...VIEWS.tilt[1]);ctl.update();
 let f=0.5, t=0, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
 $("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
