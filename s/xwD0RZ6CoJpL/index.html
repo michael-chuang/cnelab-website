@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>智慧路口救護車遊戲</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout：左邊是路口（正方形畫布），右邊是控制與「系統在做什麼」五步驟；下方是每一次的紀錄表。手機時上下堆疊 */
+:root{
+  --bg:#eef1ec; --panel:#ffffff; --fg:#1b1f22; --muted:#5a646b; --line:#d5dbd3; --chip:#eef1ec;
+  --accent:#2360c4; --go:#14874a; --stop:#d23a3a; --amber:#e3a008;
+  --grass:#cfdcc6; --asphalt:#4a5054; --mark:#f4f4ef; --lane:#e9b62c;
+  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#131618; --panel:#1c2023; --fg:#e8ebe7; --muted:#a0a9af; --line:#33393d; --chip:#252a2d;
+  --accent:#6aa0ff; --go:#3fcf83; --stop:#ff6b6b; --amber:#f2b632;
+  --grass:#2c3a2c; --asphalt:#3a4044; --mark:#d9dbd5; --lane:#d9a722; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#131618; --panel:#1c2023; --fg:#e8ebe7; --muted:#a0a9af; --line:#33393d; --chip:#252a2d;
+  --accent:#6aa0ff; --go:#3fcf83; --stop:#ff6b6b; --amber:#f2b632;
+  --grass:#2c3a2c; --asphalt:#3a4044; --mark:#d9dbd5; --lane:#d9a722; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.6vw,40px);line-height:1.2;margin:0;text-wrap:balance}
+h2{font-size:15px;margin:0;color:var(--muted);letter-spacing:.06em}
+p{margin:0}
+.lead{color:var(--muted);max-width:64ch}
+.game{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.game{grid-template-columns:minmax(0,1fr)}}
+.board{width:100%;max-width:620px;aspect-ratio:1/1;justify-self:center;position:relative}
+canvas{width:100%;height:100%;display:block;border-radius:14px}
+.cap{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--panel);border:2px solid var(--amber);box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:15px;line-height:1.5}
+.cap #capText{flex:1;min-width:0}
+.cap button{flex:none;background:var(--amber);border-color:var(--amber);color:#1b1f22;font-weight:700}
+@media (max-width:480px){.cap{font-size:13px;padding:8px}}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.group{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:999px;padding:6px 14px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.big{font-family:var(--display);font-size:18px;padding:8px 18px;border-radius:12px;background:var(--stop);border-color:var(--stop);color:#fff}
+button.big:hover:not(:disabled){filter:brightness(1.08)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+label.chk{display:flex;gap:8px;align-items:center;font-size:15px;cursor:pointer}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:6px 8px;border-radius:8px;color:var(--muted)}
+.steps li b{display:block;color:inherit}
+.steps li .n{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700}
+.steps li.now{background:var(--chip);color:var(--fg)}
+.steps li.now .n{border-color:var(--accent);background:var(--accent);color:#fff}
+.steps li.done{color:var(--fg)}
+.steps li.done .n{border-color:var(--go);background:var(--go);color:#fff}
+.steps li.bad .n{border-color:var(--stop);background:var(--stop);color:#fff}
+.msg{font-size:15px;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:3.2em}
+.msg.good{border-left:5px solid var(--go)} .msg.bad{border-left:5px solid var(--stop)}
+.guess{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;border:2px dashed var(--amber);background:var(--panel)}
+.tablebox{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+.tabhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.summary{font-size:14px;color:var(--muted)}
+.tabs{margin-top:6px}
+.dpad{display:grid;grid-template-columns:repeat(3,minmax(0,92px));grid-template-areas:". n ." "w r e" ". s .";gap:8px}
+.dpad button{width:100%}
+.dpad button[data-d="R"]{background:var(--amber);border-color:var(--amber);color:#1b1f22}
+.tab{font-family:var(--display);font-size:17px;border-radius:10px;padding:8px 18px}
+.board.cockpit{aspect-ratio:900/620;max-width:none}
+#tab2 .game{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+@media (max-width:820px){#tab2 .game{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header style="display:flex;flex-direction:column;gap:6px">
+  <h2>智「where」交通</h2>
+  <h1>智慧路口救護車遊戲</h1>
+  <p class="lead">① 路口模式：路口聽出警笛方向，讓那邊變綠燈。② 駕駛艙模式：坐在車裡，儀表板的羅盤告訴你警笛從哪裡來。</p>
+  <div class="row tabs" role="tablist">
+    <button class="tab on" data-tab="tab1" role="tab">① 路口模式</button>
+    <button class="tab" data-tab="tab2" role="tab">② 駕駛艙模式</button>
+  </div>
+</header>
+
+<div id="tab1" style="display:flex;flex-direction:column;gap:20px">
+<div class="game">
+  <div class="board"><canvas id="cv" aria-label="十字路口俯視圖"></canvas><div class="cap" id="cap" hidden><div id="capText"></div></div></div>
+  <div class="side">
+    <div class="group">
+      <h2>1　哪一種車？</h2>
+      <div class="row" id="sirens">
+        <button data-s="amb" class="on">救護車（高低音）</button><button data-s="fire">消防車（慢慢升降）</button><button data-s="police">警車（快速升降）</button><button data-s="trash">垃圾車（給愛麗絲）</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>2　遇到路口要怎麼走？</h2>
+      <div class="row" id="turns">
+        <button data-t="S">直行</button><button data-t="L" class="on">左轉（最危險情形）</button><button data-t="R">右轉</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>3　車子從哪裡來？（按下就出發）</h2>
+      <div id="dirs" class="dpad">
+        <button class="big" data-d="N" style="grid-area:n">北邊</button>
+        <button class="big" data-d="W" style="grid-area:w">西邊</button>
+        <button class="big" data-d="R" style="grid-area:r">隨機</button>
+        <button class="big" data-d="E" style="grid-area:e">東邊</button>
+        <button class="big" data-d="S" style="grid-area:s">南邊</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="challenge"> 挑戰：戴耳機，先用耳朵猜方向</label>
+    </div>
+    <div class="group">
+      <h2>4　路口偵測系統</h2>
+      <div class="row" id="systems">
+        <button data-m="0">關閉（一般紅綠燈）</button><button data-m="2">2 支麥克風</button><button data-m="4" class="on">4 支麥克風</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="sound" checked> 播放警報聲</label>
+    </div>
+    <div class="group">
+      <h2>5　動畫速度</h2>
+      <div class="row" id="speeds">
+        <button data-v="1">正常</button><button data-v="0.5" class="on">慢動作（½）</button><button data-v="0.25">超慢（¼）</button>
+      </div>
+    </div>
+    <div class="guess" id="guess" hidden>
+      <b>聽聽看，車子從哪裡來？</b>
+      <div class="row"><button data-g="N">北</button><button data-g="E">東</button><button data-g="S">南</button><button data-g="W">西</button></div>
+      <span class="summary">東西從左右耳來；北南呢？</span>
+    </div>
+    <ol class="steps" id="steps">
+      <li data-k="hear"><span class="n">1</span><span><b>聽到警笛</b></span></li>
+      <li data-k="decide"><span class="n">2</span><span><b>判斷方向</b></span></li>
+      <li data-k="light"><span class="n">3</span><span><b>改變號誌</b></span></li>
+      <li data-k="pass"><span class="n">4</span><span><b>車子通過</b></span></li>
+    </ol>
+    <div class="msg" id="msg">按上面的方向按鈕，讓車子出發。</div>
+  </div>
+</div>
+
+<section style="display:flex;flex-direction:column;gap:10px">
+  <div class="tabhead">
+    <h2>我們的紀錄（可以抄進紀錄單）</h2>
+    <div class="row"><button id="copy">複製表格</button><button id="clear">清除紀錄</button></div>
+  </div>
+  <div class="tablebox"><table>
+    <thead><tr><th>次數</th><th>方向</th><th>車種</th><th>偵測系統</th><th>系統判斷</th><th>等紅燈（秒）</th><th>結果</th></tr></thead>
+    <tbody id="log"><tr><td colspan="7" class="summary">還沒有紀錄。</td></tr></tbody>
+  </table></div>
+  <p class="summary" id="avg"></p>
+</section>
+</div>
+</div>
+
+<script>
+/* ===== 基本設定 ===== */
+const S=600, C=S/2, RW=60, HALF=RW, STOPOFF=HALF+10; // 路寬 120（每向一車道 60）
+const NAME={N:"北邊",E:"東邊",S:"南邊",W:"西邊"}, SIREN={amb:"救護車",fire:"消防車",police:"警車",trash:"垃圾車"}, SYS={0:"關閉",2:"2 支麥克風",4:"4 支麥克風"};
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let col={}; function readColors(){["--grass","--asphalt","--mark","--lane","--go","--stop","--amber","--accent","--fg","--panel","--muted"].forEach(k=>col[k]=css(k))}
+readColors();
+function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*d;ctx.setTransform(r.width*d/S,0,0,r.width*d/S,0,0)}
+new ResizeObserver(resize).observe(cv);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
+new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* 每個方向的車道：靠右行駛。s＝從出發點走了多遠 */
+const START=-40, LEN=S+80;
+const lanes={
+  N:{pos:s=>[C-RW/2, START+s], ang:Math.PI/2},
+  S:{pos:s=>[C+RW/2, S-START-s], ang:-Math.PI/2},
+  E:{pos:s=>[S-START-s, C-RW/2], ang:Math.PI},
+  W:{pos:s=>[START+s, C+RW/2], ang:0}};
+const STOP=C-STOPOFF-40-START; // 停止線的 s（車頭停在停止線後面，不壓斑馬線）
+const AXIS={N:"NS",S:"NS",E:"EW",W:"EW"};
+const BOXEND=STOP+2*(STOPOFF+40)+8; // 車頭超過這裡，車尾也離開路口
+
+/* ===== 紅綠燈控制 ===== */
+let light={N:"red",S:"red",E:"red",W:"red"};
+let ctl={mode:"cycle",phase:"NS",stage:"green",t:0,target:null,hold:0};
+const G=12,Y=2,AR=1;
+function setAxis(axis,c){(axis==="NS"?["N","S"]:["E","W"]).forEach(d=>light[d]=c)}
+function updateLights(dt){
+  ctl.t+=dt;
+  if(ctl.mode==="cycle"){
+    const other=ctl.phase==="NS"?"EW":"NS";
+    if(ctl.stage==="green"){setAxis(ctl.phase,"green");setAxis(other,"red");if(ctl.t>G){ctl.stage="yellow";ctl.t=0}}
+    else if(ctl.stage==="yellow"){setAxis(ctl.phase,"yellow");if(ctl.t>Y){ctl.stage="allred";ctl.t=0}}
+    else {setAxis("NS","red");setAxis("EW","red");if(ctl.t>AR){ctl.phase=other;ctl.stage="green";ctl.t=0}}
+  }else{ // priority
+    const tg=ctl.target;
+    if(ctl.stage==="clear"){ // 其他方向先黃燈
+      let any=false; for(const d in light){ if(d!==tg && light[d]==="green"){light[d]="yellow"} if(d!==tg&&light[d]==="yellow")any=true }
+      if(light[tg]!=="green"&&light[tg]!=="red")light[tg]="red";
+      if(!any||ctl.t>Y){for(const d in light)if(d!==tg)light[d]="red";ctl.stage="allred";ctl.t=0}
+      if(light[tg]==="green"&&!any){ctl.stage="hold";ctl.t=0}
+    }else if(ctl.stage==="allred"){ if(ctl.t>AR){light[tg]="green";ctl.stage="hold";ctl.t=0;step("light","done");
+      if(run) caption(run.wrong?`<b>④ ${NAME[tg]}綠燈</b>，但${VN()}在${NAME[run.d]}，被紅燈擋住了！`:`<b>④ ${NAME[tg]}綠燈！</b>${VN()}通過，其他方向紅燈。`)} }
+    else if(ctl.stage==="hold"){
+      for(const d in light)if(d!==tg)light[d]="red"; light[tg]="green";
+      const amb=run&&run.veh; const passed=amb&&run.track&&run.track.leaving&&run.track.dist>HALF+70;
+      if(passed||(run&&run.wrong&&ctl.t>5)||(!run&&ctl.t>2)){ctl.stage="back";ctl.t=0;light[tg]="yellow"}
+    }else if(ctl.stage==="back"){
+      if(ctl.t>Y){for(const d in light)light[d]="red"}
+      if(ctl.t>Y+AR){ctl.mode="cycle";ctl.phase=AXIS[tg]==="NS"?"EW":"NS";ctl.stage="green";ctl.t=0;ctl.target=null}
+    }
+  }
+}
+function priority(d){const before=remain(d);ctl.mode="priority";ctl.target=d;ctl.stage="clear";ctl.t=0;
+  const after=remain(d); if(light[d]!=="green"&&before!=null&&after!=null&&before-after>1.5) shortened={d,from:Math.ceil(before),to:Math.ceil(after),t:0}}
+let shortened=null;
+/* 每個方向還剩幾秒（紅燈＝還要等幾秒變綠；綠燈、黃燈＝還剩幾秒） */
+function remain(d){
+  const a=AXIS[d], t=ctl.t;
+  if(ctl.mode==="cycle"){
+    const mine=ctl.phase===a;
+    if(ctl.stage==="green") return mine?G-t:(G-t)+Y+AR;
+    if(ctl.stage==="yellow") return mine?Y-t:(Y-t)+AR;
+    return mine?(AR-t)+G+Y+AR:AR-t; // 全紅
+  }
+  if(d===ctl.target){
+    if(ctl.stage==="clear") return light[d]==="green"?null:(Y-t)+AR;
+    if(ctl.stage==="allred") return AR-t;
+    if(ctl.stage==="back") return light[d]==="yellow"?Math.max(0,Y-t):null;
+    return null; // 優先綠燈：等救護車通過
+  }
+  return null; // 其他方向：暫停倒數，等緊急車輛通過
+}
+
+/* ===== 車子 ===== */
+let cars=[]; const CARC=["#5b7db1","#9a6fb0","#5f9e7a","#c08a3e","#7d8790","#b5655e","#e8e8e2","#3c4348"];
+let spawnT={N:0.3,E:0.9,S:1.5,W:2.1};
+function newVehicle(d){const r=Math.random(), color=CARC[Math.floor(Math.random()*CARC.length)];
+  if(r<0.4) return {d,s:0,type:"moto",len:16,w:8,v:95+Math.random()*25,color,off:(Math.random()<.5?-1:1)*12,amb:false};
+  if(r<0.9) return {d,s:0,type:"car",len:34,w:22,v:85+Math.random()*20,color,off:0,amb:false};
+  return {d,s:0,type:"bus",len:62,w:26,v:70,color:"#2f8f6a",off:0,amb:false};}
+function laneCars(d){return cars.filter(v=>v.d===d).sort((a,b)=>b.s-a.s)}
+function updateCars(dt){
+  for(const d of ["N","E","S","W"]){
+    spawnT[d]-=dt;
+    const lc=laneCars(d), last=lc[lc.length-1];
+    if(spawnT[d]<=0&&(!last||last.s-last.len>14)&&!(run&&run.veh&&run.veh.d===d&&run.veh.s<60)){
+      cars.push(newVehicle(d));
+      spawnT[d]=1.1+Math.random()*1.9;
+    }
+    let ahead=null;
+    for(const v of laneCars(d)){
+      let lim=Infinity; const l=light[d];
+      const inside=v.s>STOP+1;
+      // 路口裡還有「橫向」的車沒開走，就先等，不衝進去（避免相撞）
+      const boxBusy=!inside&&cars.some(o=>AXIS[o.d]!==AXIS[d]&&o.s>STOP+1&&o.s-o.len<BOXEND);
+      const canGo=inside||((l==="green"||(l==="yellow"&&STOP-v.s<18))&&!boxBusy);
+      if(!canGo&&v.s<=STOP+1) lim=STOP;
+      if(ahead) lim=Math.min(lim,ahead.s-ahead.len-(v.type==="moto"&&ahead.type==="moto"?4:9));
+      const ns=Math.max(v.s,Math.min(v.s+v.v*dt,lim));
+      v.moving=ns-v.s>v.v*dt*0.3; v.s=ns; ahead=v;
+    }
+  }
+  cars=cars.filter(v=>v.s<LEN+60||v.amb);
+}
+
+/* ===== 一次救護車任務 ===== */
+let run=null, waves=[], sirenType="amb", micMode=4, history=[];
+let speed=0.5, paused=false;
+const capEl=()=>document.getElementById("cap");
+function caption(t){
+  const top=run&&run.d==="S"; capEl().style.top=top?"10px":"auto"; capEl().style.bottom=top?"auto":"10px";
+  capEl().hidden=false; document.getElementById("capText").innerHTML=t; }
+function hideCap(){capEl().hidden=true;paused=false}
+function mics(){ return micMode===2?[[C-18,C],[C+18,C]]:[[C-15,C-15],[C+15,C-15],[C+15,C+15],[C-15,C+15]] }
+let turnType="L"; const TURNN={S:"直行",L:"左轉",R:"右轉"};
+function makeRoute(d,turn){
+  const h={N:[0,1],S:[0,-1],E:[-1,0],W:[1,0]}[d], r=[-h[1],h[0]], st=lanes[d].pos(0);
+  if(turn==="S") return null;
+  const h2=turn==="L"?[h[1],-h[0]]:r, r2=[-h2[1],h2[0]], BE=HALF+6;
+  const E=[C+r[0]*30-h[0]*BE, C+r[1]*30-h[1]*BE], Q=[C+r[0]*30+r2[0]*30, C+r[1]*30+r2[1]*30], X=[C+r2[0]*30+h2[0]*BE, C+r2[1]*30+h2[1]*BE];
+  const sE=Math.hypot(E[0]-st[0],E[1]-st[1]);
+  const bz=t=>[(1-t)*(1-t)*E[0]+2*(1-t)*t*Q[0]+t*t*X[0],(1-t)*(1-t)*E[1]+2*(1-t)*t*Q[1]+t*t*X[1]];
+  let Lb=0,prev=E; for(let i=1;i<=40;i++){const q=bz(i/40);Lb+=Math.hypot(q[0]-prev[0],q[1]-prev[1]);prev=q}
+  const pos=s=>{ if(s<=sE) return [st[0]+h[0]*s, st[1]+h[1]*s];
+    if(s<=sE+Lb) return bz((s-sE)/Lb); const k=s-sE-Lb; return [X[0]+h2[0]*k, X[1]+h2[1]*k] };
+  const ang=s=>{ if(s<=sE) return Math.atan2(h[1],h[0]); if(s>=sE+Lb) return Math.atan2(h2[1],h2[0]);
+    const a=pos(s-1),b=pos(s+1); return Math.atan2(b[1]-a[1],b[0]-a[0]) };
+  return {pos,ang,sE,Lb};
+}
+const vpos=v=>v.route?v.route.pos(v.s):lanes[v.d].pos(v.s);
+const vang=v=>v.route?v.route.ang(v.s):lanes[v.d].ang;
+/* 持續追蹤：每一幀估計緊急車輛的距離，看它是靠近還是遠離 */
+function track(dt){ if(!run||micMode===0||run.kind==="trash"||!run.heard) return;
+  const [x,y]=vpos(run.veh), d=Math.hypot(x-C,y-C), T=run.track||(run.track={dist:d,prev:d,leaving:false,said:false});
+  T.prev=T.dist; T.dist=T.dist*0.8+d*0.2; T.leaving=T.dist>T.prev+0.05&&run.veh.s>STOP;
+  if(T.leaving&&T.dist>HALF+70&&!T.said&&run.decided&&!run.wrong){T.said=true;
+    caption(`<b>持續追蹤：${VN()}遠離中（${Math.round(T.dist/6)} 公尺）</b>，聲音越來越遠，紅綠燈恢復正常。`)} }
+function cleared(v){return v.s>(v.route?v.route.sE+v.route.Lb:STOP+2*(STOPOFF+40))+30}
+function startRun(d){
+  if(run) return;
+  const hide=document.getElementById("challenge").checked;
+  if(d==="R"||hide&&d==="R") d=["N","E","S","W"][Math.floor(Math.random()*4)];
+  const kind=sirenType, LENS={amb:44,fire:58,police:40,trash:56};
+  const veh={d,s:-320,len:LENS[kind],v:kind==="trash"?80:115,amb:true,kind,color:"#fff",turn:turnType,route:makeRoute(d,turnType)};
+  cars.push(veh);
+  run={d,veh,kind,t:0,wait:0,hidden:hide,guess:null,heard:false,order:[],decided:null,wrong:false,emit:0,firstWave:null,stage:"go",done:false};
+  waves=[]; shortened=null;
+  steps.forEach(li=>li.className="");
+  if(hide){document.getElementById("guess").hidden=false;say("仔細聽！車子從哪一邊來？選一個方向。","");}
+  else {say(`${SIREN[kind]}從${NAME[d]}出發了。`,"");introCap(d)}
+  setButtons(true); sirenOn(d);
+}
+const VN=()=>SIREN[run?run.kind:sirenType];
+function introCap(d){caption(run&&run.kind==="trash"?`<b>① 垃圾車從${NAME[d]}來</b>，播著〈給愛麗絲〉。紅色圓圈＝聲音。`:`<b>① ${VN()}從${NAME[d]}來，要${TURNN[turnType]}</b>，鳴著警笛。紅色圓圈＝聲音。`)}
+function decide(){
+  const d=run.d, [x,y]=vpos({...run.veh,s:Math.max(run.veh.s,-300)}); let est,why;
+  if(micMode===4){
+    const a=Math.atan2(x-C,C-y)*180/Math.PI; // 0＝北，順時針
+    est=["N","E","S","W"][Math.round(((a+360)%360)/90)%4];
+    why="4 支麥克風分得出四個方向。";
+  }else{
+    const m=mics(), dW=Math.hypot(x-m[0][0],y-m[0][1]), dE=Math.hypot(x-m[1][0],y-m[1][1]);
+    const sin=Math.max(-1,Math.min(1,(dW-dE)/36)), ang=Math.asin(sin)*180/Math.PI;
+    if(Math.abs(ang)>45){est=ang>0?"E":"W";why=`${ang>0?"東":"西"}邊麥克風先聽到。`}
+    else{est=Math.random()<.5?"N":"S";why="兩支同時聽到，分不出北南，只好用猜的。"}
+  }
+  run.decided=est; run.wrong=est!==d;
+  step("decide",run.wrong?"bad":"done");
+  say(`判斷：${NAME[est]}。${why}`,run.wrong?"bad":"good");
+  priority(est); step("light","now");
+  caption(`${shortened&&shortened.d===est?`<b>紅燈倒數 ${shortened.from} 秒 → ${shortened.to} 秒！</b> `:""}<b>③ 判斷：${VN()}在${NAME[est]}</b>${run.wrong?"（猜錯了！2 支麥克風分不出前後）":""}。${turnType==="L"?"它要<b>左轉</b>，會穿過對向車道，所以":"緊急車輛可能轉彎，所以"}<b>其他三個方向都要紅燈</b>。`);
+}
+function finishRun(){
+  const r=run; sirenOff();
+  step("pass","done");
+  const ok=r.kind==="trash"?"不是警笛，不讓路":(r.decided===null?"—":(r.wrong?"判斷錯誤":"判斷正確"));
+  history.push({n:history.length+1,d:NAME[r.d],s:SIREN[r.kind]+"（"+TURNN[r.veh.turn]+"）",m:SYS[micMode],est:r.decided?NAME[r.decided]:"—",wait:r.wait,ok,guess:r.guess?NAME[r.guess]:null});
+  renderLog();
+  const w=r.wait<0.15?"完全不用等紅燈":`等了 ${r.wait.toFixed(1)} 秒紅燈`;
+  say(`${SIREN[r.kind]}通過，${w}。`,r.wait<0.15?"good":"bad");
+  run=null; setButtons(false); setTimeout(hideCap,2500);
+}
+function updateRun(dt){
+  if(!run) return;
+  const r=run, v=r.veh;
+  if(r.hidden&&!r.guess){ v.s=-320; updateSirenGain(); return }
+  r.t+=dt;
+  if(!v.moving && v.s<=STOP+1 && v.s>STOP-420) r.wait+=dt;
+  // 聲波
+  if(v.s<STOP+STOPOFF){ r.emit-=dt; if(r.emit<=0){const [x,y]=vpos(v);waves.push({x,y,r:0,first:!r.firstWave});if(!r.firstWave)r.firstWave=waves[waves.length-1];r.emit=0.55} }
+  if(micMode>0&&r.kind!=="trash"&&r.firstWave&&!r.decided&&!r.deciding){
+    const w=r.firstWave, m=mics();
+    m.forEach((p,i)=>{const dd=Math.hypot(p[0]-w.x,p[1]-w.y); if(w.r>=dd&&!r.order.includes(i)){r.order.push(i); if(r.order.length===1){r.heard=true;step("hear","done");step("order","now");
+        caption(`<b>② 路口的麥克風聽到警笛</b>，聲音先到哪一邊，${VN()}就在那一邊。`)}}});
+    if(r.order.length===m.length){r.deciding=true;step("order","done");step("decide","now");
+      say(`聽到的順序：${r.order.map(i=>micName(i)).join(" → ")}。`,"");
+      const amb2=micMode===2&&(r.d==="N"||r.d==="S");
+      /* 不說明麥克風順序 */
+      r.decideT=0.6}
+  }
+  if(r.decideT!==undefined&&!r.decided){r.decideT-=dt;if(r.decideT<=0)decide()}
+  if(r.kind==="trash"&&micMode>0&&!r.heard&&r.firstWave){const w=r.firstWave;if(w.r>Math.hypot(C-w.x,C-w.y)){r.heard=true;step("hear","bad");say("這是垃圾車的音樂，不是警笛。","");
+    caption("<b>② 麥克風聽到〈給愛麗絲〉</b>：頻率和節奏都不像警笛，所以<b>不改變號誌</b>，垃圾車照常等紅燈。")}}
+  if(micMode===0&&!r.heard&&r.firstWave){const w=r.firstWave;if(w.r>Math.hypot(C-w.x,C-w.y)){r.heard=true;step("hear","bad");say("系統關閉：只能等一般紅綠燈。","bad");
+    caption(`<b>② 路口沒有麥克風</b>，紅綠燈照常輪流，${VN()}只能排隊等。`)}}
+  if(v.s>STOP+1&&!r.through){r.through=true;step("light",r.wrong||micMode===0||r.kind==="trash"?"bad":"done");step("pass","now");
+    caption(`<b>⑤ ${VN()}開進路口</b>，${r.wait<0.15?"沒有停下來。":`等了 ${r.wait.toFixed(1)} 秒。`}`)}
+  {const [px,py]=vpos(v); if(v.s>STOP&&(px<-60||px>S+60||py<-60||py>S+60)){cars=cars.filter(c=>c!==v);finishRun()}}
+  updateSirenGain();
+}
+function micName(i){return micMode===2?["西","東"][i]:["西北","東北","東南","西南"][i]}
+
+/* ===== 警報聲（Web Audio） ===== */
+let ac=null, osc=null, gain=null, pan=null, sch=null;
+function sirenOn(d){
+  if(!document.getElementById("sound").checked) return;
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume(); }catch(e){return}
+  osc=ac.createOscillator(); osc.type="triangle"; gain=ac.createGain(); gain.gain.value=0.0001;
+  pan=ac.createStereoPanner?ac.createStereoPanner():null; if(pan) pan.pan.value=d==="E"?0.85:d==="W"?-0.85:0;
+  const lp=ac.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=3000;
+  osc.connect(lp); lp.connect(gain); (pan?gain.connect(pan).connect(ac.destination):gain.connect(ac.destination));
+  const f=osc.frequency, t0=ac.currentTime; let t=t0;
+  if(sirenType==="trash"){ // 給愛麗絲（貝多芬，1810）開頭，垃圾車常用的電子音色
+    osc.type="square"; lp.frequency.value=1800;
+    const env=ac.createGain(); lp.disconnect(); lp.connect(env); env.connect(gain);
+    const NT={E5:659.3,Ds5:622.3,B4:493.9,D5:587.3,C5:523.3,A4:440,C4:261.6,E4:329.6,Gs4:415.3,R:0};
+    const mel=["E5","Ds5","E5","Ds5","E5","B4","D5","C5","A4","A4","R","C4","E4","A4","B4","B4","R","E4","Gs4","B4","C5","C5","R","E4",
+               "E5","Ds5","E5","Ds5","E5","B4","D5","C5","A4","A4","R","C4","E4","A4","B4","B4","R","E4","C5","B4","A4","A4","A4","R"];
+    const q=0.2;
+    while(t<t0+90){ for(const n of mel){ if(NT[n]){f.setValueAtTime(NT[n],t);env.gain.setValueAtTime(1,t);env.gain.setValueAtTime(0.0001,t+q*0.85)} else env.gain.setValueAtTime(0.0001,t); t+=q } t+=0.6 }
+    osc.start(); return }
+  while(t<t0+60){
+    if(sirenType==="amb"){f.setValueAtTime(700,t);f.setValueAtTime(950,t+0.4);t+=1.0}
+    else if(sirenType==="fire"){f.setValueAtTime(700,t);f.linearRampToValueAtTime(1500,t+1.5);f.linearRampToValueAtTime(700,t+5);t+=5}
+    else {f.setValueAtTime(700,t);f.linearRampToValueAtTime(1500,t+0.23);f.linearRampToValueAtTime(700,t+0.33);t+=0.33}
+  }
+  osc.start();
+}
+function updateSirenGain(){ if(!gain||!run) return; const [x,y]=vpos(run.veh); const dist=Math.hypot(x-C,y-C);
+  const g=0.05+0.17*Math.max(0,1-dist/700); gain.gain.setTargetAtTime(g,ac.currentTime,0.1) }
+function sirenOff(){ if(osc){try{gain.gain.setTargetAtTime(0.0001,ac.currentTime,0.15);osc.stop(ac.currentTime+0.6)}catch(e){} osc=null;gain=null} }
+
+/* ===== 畫面 ===== */
+function draw(){
+  ctx.fillStyle=col["--grass"];ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=col["--asphalt"];ctx.fillRect(0,C-HALF,S,RW*2);ctx.fillRect(C-HALF,0,RW*2,S);
+  // 分隔島（道路中間，種小樹叢；紅綠燈桿就立在分隔島靠路口的那一端）
+  const MW=10, M0=STOPOFF+26;
+  [[0,C-MW/2,C-M0,MW],[C+M0,C-MW/2,S-C-M0,MW],[C-MW/2,0,MW,C-M0],[C-MW/2,C+M0,MW,S-C-M0]].forEach(([x,y,w,h])=>{
+    ctx.fillStyle="#b9bdb5";roundRect(x,y,w,h,4);ctx.fill();ctx.fillStyle="#6f9a5c";roundRect(x+2,y+2,w-4,h-4,3);ctx.fill()});
+  // 斑馬線＋停止線
+  ctx.fillStyle=col["--mark"];
+  for(let i=-HALF+6;i<HALF-4;i+=14){ctx.fillRect(C+i,C-STOPOFF-22,8,18);ctx.fillRect(C+i,C+STOPOFF+4,8,18);ctx.fillRect(C-STOPOFF-22,C+i,18,8);ctx.fillRect(C+STOPOFF+4,C+i,18,8)}
+  ctx.fillRect(C-HALF,C-STOPOFF-26,HALF,3);ctx.fillRect(C,C+STOPOFF+23,HALF,3);ctx.fillRect(C+STOPOFF+23,C-HALF,3,HALF);ctx.fillRect(C-STOPOFF-26,C,3,HALF);
+  // 路名
+  ctx.fillStyle=col["--fg"];ctx.font="bold 18px "+css("--body");ctx.textAlign="center";
+  ctx.fillText("北路",C+HALF+40,30);ctx.fillText("南路",C-HALF-40,S-16);ctx.fillText("東路",S-40,C+HALF+28);ctx.fillText("西路",40,C-HALF-16);
+  // 聲波
+  for(const w of waves){ if(run&&run.hidden&&!run.guess)break; ctx.strokeStyle=col["--stop"];ctx.globalAlpha=Math.max(0,.55-w.r/1400);ctx.lineWidth=w.first?3:2;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,7);ctx.stroke()} ctx.globalAlpha=1;
+  // 路口中央：聲音熱點圖（哪個方向的聲音最強，就越紅越亮）
+  if(micMode>0) drawHeat();
+  // 車
+  for(const v of cars){ if(v.amb&&run&&run.hidden&&!run.guess)continue; const [x,y]=vpos(v);ctx.save();ctx.translate(x,y);ctx.rotate(vang(v));ctx.translate(0,v.off||0);
+    if(v.type==="moto"){ctx.fillStyle=v.color;ctx.strokeStyle="#1b1f22";ctx.lineWidth=1;roundRect(-v.len,-v.w/2,v.len,v.w,3);ctx.fill();ctx.stroke();ctx.fillStyle="#f2c14e";ctx.beginPath();ctx.arc(-v.len*0.45,0,3.6,0,7);ctx.fill();ctx.stroke();ctx.restore();continue}
+    if(v.amb){drawSpecial(v);ctx.restore();continue}
+    const L=v.len,W=v.w;
+    ctx.fillStyle=v.color;ctx.strokeStyle="#1b1f22";ctx.lineWidth=1.5;
+    roundRect(-L,-W/2,L,W,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(20,30,40,.55)";ctx.fillRect(-12,-W/2+3,7,W-6);
+    ctx.restore()}
+  // 紅綠燈（為了好懂，畫在「自己這一側」停止線前的分隔島上，懸臂伸到車道正上方，燈頭橫向排列，面對開過來的車）
+  const F=STOPOFF+28, PO=HALF+16;
+  const sig={ // 燈頭位置、分隔島上的燈桿、橫放或直放
+    N:{h:[C-32,C-F],p:[C,C-F],hor:true},  S:{h:[C+32,C+F],p:[C,C+F],hor:true},
+    E:{h:[C+F,C-32],p:[C+F,C],hor:false}, W:{h:[C-F,C+32],p:[C-F,C],hor:false}};
+  for(const d in sig){const {h:[x,y],p:[px,py],hor}=sig[d];
+    ctx.strokeStyle="#2a2f33";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(hor?x+(x<C?-20:20):px,hor?py:y+(y<C?-20:20));ctx.stroke();
+    ctx.fillStyle="#2a2f33";ctx.beginPath();ctx.arc(px,py,7,0,7);ctx.fill();
+    ctx.fillStyle="#1d2124";hor?roundRect(x-27,y-10,54,20,6):roundRect(x-10,y-27,20,54,6);ctx.fill();
+    ["red","yellow","green"].forEach((c,i)=>{const on=light[d]===c;ctx.fillStyle=on?(c==="red"?"#ff4545":c==="yellow"?"#ffc21a":"#2ee07c"):"#3b4246";
+      const k=(d==="N"||d==="W")?(i-1):(1-i); const lx=hor?x+k*16:x, ly=hor?y:y+k*16;
+      if(on){ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=12}ctx.beginPath();ctx.arc(lx,ly,6.5,0,7);ctx.fill();ctx.shadowBlur=0});
+    // 倒數秒數
+    const off={N:[-46,0],S:[46,0],E:[0,-44],W:[0,44]}[d], bx=x+off[0], by=y+off[1], r=remain(d);
+    ctx.fillStyle="#111416";roundRect(bx-17,by-12,34,24,5);ctx.fill();
+    const lc=light[d]==="green"?"#2ee07c":light[d]==="yellow"?"#ffc21a":"#ff4545";
+    ctx.fillStyle=lc;ctx.font="bold 16px "+css("--num");ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(r==null?(ctl.mode==="priority"?(d===ctl.target?"GO":"--"):""):String(Math.max(0,Math.ceil(r))),bx,by+1);ctx.textBaseline="alphabetic";
+    if(shortened&&shortened.d===d&&shortened.t<3){const a=Math.min(1,3-shortened.t);ctx.globalAlpha=a;
+      ctx.fillStyle="#ffc21a";roundRect(bx-62,by+16,124,26,8);ctx.fill();ctx.fillStyle="#1b1f22";ctx.font="bold 14px "+css("--body");
+      ctx.fillText(`紅燈縮短 ${shortened.from}→${shortened.to} 秒`,bx,by+34);ctx.globalAlpha=1}
+  }
+  // 麥克風盒掛在東北角的桿子上
+  ctx.textAlign="left";
+}
+function drawSpecial(v){ // 車頭朝 +x
+  const L=v.len, on=Math.floor(performance.now()/180)%2; ctx.strokeStyle="#1b1f22";ctx.lineWidth=1.5;
+  const bar=(a,b)=>{ctx.fillStyle=on?a:b;ctx.fillRect(-11,-11,5,11);ctx.fillStyle=on?b:a;ctx.fillRect(-11,0,5,11)};
+  if(v.kind==="amb"){ ctx.fillStyle="#ffffff";roundRect(-L,-13,L,26,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#d23a3a";ctx.fillRect(-30,-3,14,6);ctx.fillRect(-26,-7,6,14);ctx.fillStyle="#e85d2a";ctx.fillRect(-L+2,-13,L-4,3);ctx.fillRect(-L+2,10,L-4,3); bar("#ff3b3b","#2f7cff") }
+  else if(v.kind==="fire"){ ctx.fillStyle="#d32f2f";roundRect(-L,-13,L,26,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#cfd4d8";ctx.fillRect(-L+4,-4,L-20,8);ctx.strokeStyle="#7d858b";ctx.lineWidth=1;for(let x=-L+8;x<-16;x+=6){ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x,4);ctx.stroke()}
+    ctx.fillStyle="rgba(20,30,40,.55)";ctx.fillRect(-6,-10,4,20); bar("#ff3b3b","#ffd23b") }
+  else if(v.kind==="police"){ ctx.fillStyle="#f4f6f8";roundRect(-L,-12,L,24,6);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#1f4fa8";ctx.fillRect(-L+3,-12,L-6,4);ctx.fillRect(-L+3,8,L-6,4);ctx.fillStyle="rgba(20,30,40,.55)";ctx.fillRect(-12,-8,6,16);ctx.fillRect(-L+5,-8,5,16);
+    ctx.fillStyle="#1f4fa8";ctx.font="bold 7px sans-serif";ctx.textAlign="center";ctx.save();ctx.rotate(-Math.PI/2);ctx.restore(); bar("#ff3b3b","#2f7cff") }
+  else { ctx.fillStyle="#f2c230";roundRect(-L,-13,L,26,4);ctx.fill();ctx.stroke(); // 臺灣垃圾車：黃色
+    ctx.fillStyle="#8a8f93";roundRect(-L+2,-11,L-18,22,3);ctx.fill();ctx.fillStyle="#f2c230";ctx.fillRect(-L+6,-11,3,22);ctx.fillRect(-L+14,-11,3,22);
+    ctx.fillStyle="rgba(20,30,40,.55)";ctx.fillRect(-10,-10,5,20);
+    ctx.fillStyle=on?"#ffb000":"#7a5a00";ctx.beginPath();ctx.arc(-14,0,3.5,0,7);ctx.fill() }
+}
+function heatColor(v){ // 0→藍 0.5→黃 1→紅
+  const stops=[[0,[40,90,200]],[0.45,[60,200,160]],[0.7,[255,210,40]],[1,[230,40,40]]];
+  for(let i=1;i<stops.length;i++){ if(v<=stops[i][0]){const [a,ca]=stops[i-1],[b,cb]=stops[i],t=(v-a)/(b-a);
+    return `rgb(${ca.map((c,k)=>Math.round(c+(cb[k]-c)*t)).join(",")})`} } return "rgb(230,40,40)" }
+function drawHeat(){
+  const R0=12, R1=60, N=72;
+  ctx.fillStyle="rgba(15,20,25,.35)";ctx.beginPath();ctx.arc(C,C,R1+3,0,7);ctx.fill();
+  let a=null, loud=0, lobes=[];
+  if(run&&run.heard){ const [x,y]=vpos(run.veh); a=Math.atan2(x-C,C-y)*180/Math.PI; const d=Math.hypot(x-C,y-C);
+    loud=Math.max(0.4,Math.min(1,1-(d-60)/900)); lobes=[a]; if(micMode===2) lobes.push(180-a); }
+  const sig=micMode===2?26:16, t=performance.now()/1000;
+  for(let k=0;k<N;k++){ const th=k*360/N; let v=0;
+    for(const L of lobes){const dd=((th-L+540)%360)-180; v=Math.max(v,Math.exp(-dd*dd/(2*sig*sig)))}
+    v=v*loud + 0.06+0.03*Math.sin(t*3+k); // 背景雜訊
+    if(run&&run.kind==="trash"&&run.heard) v=Math.min(v,0.35); // 不是警笛：不當成目標
+    const a0=(th-90-360/N/2)*Math.PI/180, a1=(th-90+360/N/2)*Math.PI/180;
+    ctx.fillStyle=heatColor(Math.min(1,v)); ctx.globalAlpha=0.35+0.6*Math.min(1,v);
+    ctx.beginPath();ctx.arc(C,C,R1,a0,a1);ctx.arc(C,C,R0,a1,a0,true);ctx.closePath();ctx.fill() }
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#f4f4ef";ctx.font="bold 10px "+css("--body");ctx.textAlign="center";ctx.textBaseline="middle";
+  [["北",0,-1],["東",1,0],["南",0,1],["西",-1,0]].forEach(([tx,x,y])=>ctx.fillText(tx,C+x*(R1+9),C+y*(R1+9)));
+  ctx.textBaseline="alphabetic";
+  if(run&&run.track){ctx.fillStyle="#f4f4ef";ctx.font="bold 11px "+css("--body");ctx.fillText(run.track.leaving?"遠離中":"靠近中",C,C+4)}
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+/* ===== 介面 ===== */
+const steps=[...document.querySelectorAll("#steps li")];
+function step(k,state){const li=steps.find(l=>l.dataset.k===k); if(li) li.className=state}
+function say(t,c){const m=document.getElementById("msg");m.textContent=t;m.className="msg "+(c||"")}
+function setButtons(busy){document.querySelectorAll("#dirs button,#sirens button,#systems button").forEach(b=>b.disabled=busy)}
+document.querySelectorAll("#dirs button").forEach(b=>b.addEventListener("click",()=>{
+  let d=b.dataset.d; if(document.getElementById("challenge").checked) d="R"; startRun(d)}));
+document.querySelectorAll("#turns button").forEach(b=>b.addEventListener("click",()=>{turnType=b.dataset.t;document.querySelectorAll("#turns button").forEach(x=>x.classList.toggle("on",x===b))}));
+document.querySelectorAll("#sirens button").forEach(b=>b.addEventListener("click",()=>{sirenType=b.dataset.s;document.querySelectorAll("#sirens button").forEach(x=>x.classList.toggle("on",x===b))}));
+document.querySelectorAll("#systems button").forEach(b=>b.addEventListener("click",()=>{micMode=+b.dataset.m;document.querySelectorAll("#systems button").forEach(x=>x.classList.toggle("on",x===b))}));
+document.querySelectorAll("#guess button").forEach(b=>b.addEventListener("click",()=>{
+  if(!run||run.guess) return; run.guess=b.dataset.g; document.getElementById("guess").hidden=true; introCap(run.d);
+  const ok=run.guess===run.d;
+  say(`你猜「${NAME[run.guess]}」，${SIREN[run.kind]}其實在${NAME[run.d]}。${ok?"猜對了！":"猜錯了。"}${(run.d==="N"||run.d==="S")?"北和南最容易搞混。":""}`,ok?"good":"bad")}));
+document.getElementById("challenge").addEventListener("change",e=>{document.querySelectorAll("#dirs button").forEach(b=>{if(b.dataset.d!=="R")b.style.opacity=e.target.checked?.45:1})});
+function renderLog(){
+  const tb=document.getElementById("log");
+  if(!history.length){tb.innerHTML='<tr><td colspan="7" class="summary">還沒有紀錄。</td></tr>';document.getElementById("avg").textContent="";return}
+  tb.innerHTML=history.map(h=>`<tr><td>${h.n}</td><td>${h.d}${h.guess?`（猜：${h.guess}）`:""}</td><td>${h.s}</td><td>${h.m}</td><td>${h.est}</td><td class="num">${h.wait.toFixed(1)}</td><td>${h.ok}</td></tr>`).join("");
+  const by={}; history.forEach(h=>{(by[h.m]=by[h.m]||[]).push(h.wait)});
+  document.getElementById("avg").textContent="平均等紅燈："+Object.entries(by).map(([k,a])=>`${k} ${(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)} 秒（${a.length} 次）`).join("　");
+}
+document.getElementById("copy").addEventListener("click",async()=>{
+  const t=["次數\t方向\t車種\t偵測系統\t系統判斷\t等紅燈（秒）\t結果",...history.map(h=>[h.n,h.d,h.s,h.m,h.est,h.wait.toFixed(1),h.ok].join("\t"))].join("\n");
+  try{await navigator.clipboard.writeText(t);say("表格已複製，可以貼到 Excel 或 Google 試算表。","good")}catch(e){say("這裡不能直接複製，請用滑鼠選取表格再複製。","")}});
+document.querySelectorAll("#speeds button").forEach(b=>b.addEventListener("click",()=>{speed=+b.dataset.v;document.querySelectorAll("#speeds button").forEach(x=>x.classList.toggle("on",x===b))}));
+document.getElementById("clear").addEventListener("click",()=>{history=[];renderLog()});
+
+/* ===== 主迴圈 ===== */
+let last=performance.now();
+function loop(t){const dt=paused?0:Math.min(0.05,(t-last)/1000)*speed;last=t;
+  if(document.getElementById("tab1").hidden){requestAnimationFrame(loop);return}
+  updateLights(dt); updateRun(dt); track(dt); updateCars(dt); if(shortened)shortened.t+=dt;
+  for(const w of waves) w.r+=360*dt; waves=waves.filter(w=>w.r<900);
+  draw(); requestAnimationFrame(loop)}
+resize(); requestAnimationFrame(loop);
+</script>
+<div class="wrap" id="tab2" hidden style="margin-top:20px">
+<div class="game">
+  <div style="display:flex;flex-direction:column;gap:10px;min-width:0"><div class="board cockpit"><canvas id="cv2" aria-label="開車時從駕駛座看出去的畫面與儀表板"></canvas></div><div class="cap" id="cap2" hidden style="position:static"><div id="capText2"></div></div></div>
+  <div class="side">
+    <div class="group">
+      <h2>1　哪一種車？</h2>
+      <div class="row" id="kinds2">
+        <button data-k="amb" class="on">救護車</button><button data-k="fire">消防車</button><button data-k="police">警車</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>2　警笛從哪裡來？（按下就開始）</h2>
+      <div class="row" id="dirs2">
+        <button class="big" data-d="B">後方</button><button class="big" data-d="F">前方（對向車道）</button><button class="big" data-d="X">隨機</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>3　按喇叭（看羅盤找得到嗎？）</h2>
+      <div class="row" id="honks2">
+        <button data-h="truck">大貨車（後面）</button><button data-h="carR">轎車（右前）</button>
+        <button data-h="moto">機車（右邊）</button><button data-h="carF">轎車（正前方）</button><button data-h="rand">隨便一台</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>4　駕駛艙設定</h2>
+      <div class="row" id="win2"><button data-w="1" class="on">車窗關上（隔音）</button><button data-w="0">車窗打開</button></div>
+      <div class="row" id="cmp2"><button data-c="1" class="on">聲音羅盤：開</button><button data-c="0">羅盤：關</button></div>
+      <label class="chk"><input type="checkbox" id="guessmode2"> 先用耳朵猜警笛在前還是後，再看羅盤（建議戴耳機）</label>
+    </div>
+    <div class="guess" id="guess2" hidden>
+      <b>警笛在前面還是後面？</b>
+      <div class="row"><button data-g="F">前面</button><button data-g="B">後面</button></div>
+    </div>
+    <div class="msg" id="msg2">你正開在兩線道的左車道。按「後方」或「前方」讓緊急車輛出現，或按喇叭試試羅盤。</div>
+  </div>
+</div>
+<section style="display:flex;flex-direction:column;gap:10px">
+  <div class="tabhead">
+    <h2>駕駛艙紀錄</h2>
+    <div class="row"><button id="copy2">複製表格</button><button id="clear2">清除紀錄</button></div>
+  </div>
+  <div class="tablebox"><table>
+    <thead><tr><th>次數</th><th>聲音</th><th>真正方向</th><th>車窗</th><th>羅盤</th><th>駕駛猜</th><th>猜對？</th><th>反應（秒）</th></tr></thead>
+    <tbody id="log2"><tr><td colspan="8" class="summary">還沒有紀錄。</td></tr></tbody>
+  </table></div>
+  <p class="summary" id="avg2"></p>
+</section>
+</div>
+
+<script>
+/* ================= 第二版：駕駛艙（行駛中，兩線道） ================= */
+(()=>{
+const cv=document.getElementById("cv2"), g=cv.getContext("2d");
+const W=900, H=620, HOR=236, F=640, CAMH=1.25, DASH=440;
+const DIRN={F:"前方",B:"後方"}, KN={amb:"救護車",fire:"消防車",police:"警車"};
+const CRUISE=13.9; // 50 km/h
+let kind="amb", winClosed=true, compassOn=true, run=null, objs=[], horns=[], hist=[], hornMark=null;
+let camX=-1.75, egoV=CRUISE, travel=0;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*H/W*d;g.setTransform(r.width*d/W,0,0,r.width*d/W,0,0)}
+new ResizeObserver(resize).observe(cv);
+
+/* 道路（x＝往右公尺）：對向車道 -11～-4，雙黃線 -3.6，左車道中心 -1.75，車道線 0，右車道中心 +1.75，路邊線 +3.6，機車道到 +5.6
+   z＝在我前面幾公尺（負＝後面）。每台車有 x0（原本車道）與 side（讓道時往哪邊靠） */
+function baseScene(){
+  objs=[
+    {id:"carF", type:"car",  x0:-1.75, side:-1.4, z:24,  v:CRUISE,    w:1.8,h:1.45,color:"#5b7db1",label:"轎車"},
+    {id:"carR", type:"car",  x0:1.75,  side:1.4,  z:11,  v:CRUISE,    w:1.8,h:1.45,color:"#b5655e",label:"轎車"},
+    {id:"carR2",type:"car",  x0:1.75,  side:1.4,  z:38,  v:CRUISE,    w:1.8,h:1.5, color:"#e8e8e2",label:"轎車"},
+    {id:"truck",type:"truck",x0:-1.75, side:-1.2, z:-15, v:CRUISE,    w:2.5,h:3.3,color:"#3d6f9e",label:"大貨車"},
+    {id:"carB", type:"car",  x0:1.75,  side:1.4,  z:-8,  v:CRUISE,    w:1.8,h:1.45,color:"#5f9e7a",label:"轎車"},
+    {id:"moto", type:"moto", x0:4.5,   side:0.6,  z:3,   v:CRUISE,    w:0.7,h:1.45,color:"#c08a3e",label:"機車"},
+    {id:"moto2",type:"moto", x0:4.6,   side:0.5,  z:17,  v:CRUISE,    w:0.7,h:1.45,color:"#9a6fb0",label:"機車"},
+  ];
+  objs.forEach(o=>o.x=o.x0);
+}
+baseScene();
+let oncoming=[], oncT=1;
+
+/* ---------- 聲音 ---------- */
+let ac=null, master=null, lp=null;
+function audio(){ if(ac){ac.resume();return ac} try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}
+  master=ac.createGain(); lp=ac.createBiquadFilter(); lp.type="lowpass"; master.connect(lp); lp.connect(ac.destination); applyWin(); return ac }
+function applyWin(){ if(!ac) return; master.gain.setTargetAtTime(winClosed?0.35:1,ac.currentTime,0.1); lp.frequency.setTargetAtTime(winClosed?800:16000,ac.currentTime,0.1) }
+function panner(x,z){const p=ac.createPanner(); p.panningModel="HRTF"; p.distanceModel="inverse"; p.refDistance=6; p.rolloffFactor=1.1; setPos(p,x,z); p.connect(master); return p}
+function setPos(p,x,z){ x-=camX; if(p.positionX){p.positionX.value=x;p.positionY.value=0;p.positionZ.value=-z} else p.setPosition(x,0,-z) }
+let siren=null;
+function sirenStart(){ if(!audio()) return;
+  const o=ac.createOscillator(); o.type="triangle"; const gn=ac.createGain(); gn.gain.value=0.55; const p=panner(run.v.x,run.v.z);
+  o.connect(gn); gn.connect(p); const f=o.frequency, t0=ac.currentTime; let t=t0;
+  while(t<t0+60){ if(kind==="amb"){f.setValueAtTime(700,t);f.setValueAtTime(950,t+0.4);t+=1}
+    else if(kind==="fire"){f.setValueAtTime(700,t);f.linearRampToValueAtTime(1500,t+1.5);f.linearRampToValueAtTime(700,t+5);t+=5}
+    else {f.setValueAtTime(700,t);f.linearRampToValueAtTime(1500,t+0.23);f.linearRampToValueAtTime(700,t+0.33);t+=0.33} }
+  o.start(); siren={o,gn,p} }
+function sirenStop(){ if(siren){ try{siren.gn.gain.setTargetAtTime(0.0001,ac.currentTime,0.1);siren.o.stop(ac.currentTime+0.5)}catch(e){} siren=null } }
+let shaper=null;
+function getShaper(){ if(shaper) return shaper; shaper=new Float32Array(1024); for(let i=0;i<1024;i++){const x=i/512-1;shaper[i]=Math.tanh(2.2*x)} return shaper }
+function honkSound(o){ if(!audio()) return;
+  const t=ac.currentTime, p=panner(o.x,o.z), out=ac.createGain(); out.connect(p);
+  const ws=ac.createWaveShaper(); ws.curve=getShaper(); const bp=ac.createBiquadFilter(); bp.type="bandpass";
+  const env=ac.createGain(); env.gain.value=0; ws.connect(bp); bp.connect(env); env.connect(out);
+  let tones,wave,beeps,len,vol;
+  if(o.type==="truck"){tones=[185,233,277];wave="sawtooth";beeps=1;len=1.1;vol=0.9;bp.frequency.value=600;bp.Q.value=0.5}
+  else if(o.type==="car"){tones=[415,523];wave="sawtooth";beeps=2;len=0.28;vol=0.55;bp.frequency.value=1100;bp.Q.value=0.6}
+  else {tones=[440,880];wave="square";beeps=2;len=0.16;vol=0.35;bp.frequency.value=1400;bp.Q.value=0.8}
+  const mix=ac.createGain(); mix.gain.value=0.6; mix.connect(ws); const end=t+beeps*(len+0.09);
+  tones.forEach((fr,i)=>{const os=ac.createOscillator();os.type=wave;os.frequency.value=fr*(1+(Math.random()-.5)*0.01);const gg=ac.createGain();gg.gain.value=i===0?1:0.7;os.connect(gg);gg.connect(mix);os.start(t);os.stop(end+0.05)});
+  for(let i=0;i<beeps;i++){const s=t+i*(len+0.09);env.gain.setValueAtTime(0,s);env.gain.linearRampToValueAtTime(vol,s+0.012);env.gain.setValueAtTime(vol,s+len-0.02);env.gain.linearRampToValueAtTime(0,s+len)}
+}
+function honk(id){
+  const cand=objs.filter(o=>o.type!=="emerg");
+  const o=id==="rand"?cand[Math.floor(Math.random()*cand.length)]:objs.find(x=>x.id===id); if(!o) return;
+  audio(); honkSound(o); horns.push({o,t:0});
+  const a=bearing(o.x-camX,o.z); hornMark={o,t:0};
+  hist.push({n:hist.length+1,k:`喇叭（${o.label}）`,d:word(a),w:winClosed?"關上":"打開",c:compassOn?"開":"關",g:"—",ok:"—",rt:null}); render();
+  say(`叭！${o.label}在你的${word(a)}按喇叭。${compassOn?"羅盤上亮起黃色。":""}`,"");
+}
+
+/* ---------- 警笛任務 ---------- */
+function start(d){
+  if(run) return; audio();
+  if(d==="X") d=Math.random()<.5?"F":"B";
+  const v={type:"emerg",kind,w:kind==="fire"?2.5:2.0,h:kind==="fire"?3.0:2.3};
+  if(d==="B") Object.assign(v,{x:0,z:-75,v:27,front:false});
+  else Object.assign(v,{x:-7.5,z:190,v:-18,front:true});
+  const gm=document.getElementById("guessmode2").checked;
+  run={d,v,t:0,guess:null,gm,rt:null,endT:null,kind,yieldMsg:false};
+  sirenStart(); setBtns(true);
+  if(gm){document.getElementById("guess2").hidden=false; say("聽！警笛在前面還是後面？先用耳朵猜。",""); cap(`<b>聽到警笛了！</b>先不要看羅盤，用耳朵猜它在前面還是後面。`)}
+  else {say(`${KN[kind]}從${DIRN[d]}開過來。`,""); cap(`<b>${KN[kind]}從${DIRN[d]}來</b>。看羅盤哪裡變紅。`)}
+}
+function finish(){
+  const r=run; sirenStop();
+  hist.push({n:hist.length+1,k:`${KN[r.kind]}警笛`,d:DIRN[r.d],w:winClosed?"關上":"打開",c:compassOn?"開":"關",g:r.guess?DIRN[r.guess]:"—",ok:r.guess?(r.guess===r.d?"對":"錯"):"—",rt:r.rt});
+  render(); run=null; setBtns(false); document.getElementById("guess2").hidden=true;
+  setTimeout(()=>{if(!run)document.getElementById("cap2").hidden=true},2000);
+}
+function bearing(x,z){return Math.atan2(x,z)*180/Math.PI}
+function word(a){const s=[["前方",0],["右前方",45],["右邊",90],["右後方",135],["後方",180],["左後方",-135],["左邊",-90],["左前方",-45]];
+  let best=s[0][0],m=999; for(const [t,v] of s){const dd=Math.abs(((a-v+540)%360)-180); if(dd<m){m=dd;best=t}} return best}
+
+/* ---------- 畫面 ---------- */
+const P=(x,z,y=0)=>[W/2+(x-camX)/z*F, HOR+(CAMH-y)/z*F];
+function quad(pts,fill){g.fillStyle=fill;g.beginPath();pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill()}
+function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+const ZN=1.5, ZF=420;
+function scene(){
+  const sky=g.createLinearGradient(0,0,0,HOR); sky.addColorStop(0,"#7fb2e0"); sky.addColorStop(1,"#e6eef3"); g.fillStyle=sky; g.fillRect(0,0,W,HOR);
+  // 遠山
+  g.fillStyle="#9fb3a4"; g.beginPath(); g.moveTo(0,HOR); for(let x=0;x<=W;x+=30){g.lineTo(x,HOR-18-14*Math.sin(x/90)-8*Math.sin(x/37))} g.lineTo(W,HOR); g.fill();
+  const gr=g.createLinearGradient(0,HOR,0,DASH); gr.addColorStop(0,"#a9bf98"); gr.addColorStop(1,"#7f9d6c"); g.fillStyle=gr; g.fillRect(0,HOR,W,DASH-HOR);
+  // 路面
+  quad([P(-11.5,ZN),P(5.8,ZN),P(5.8,ZF),P(-11.5,ZF)],"#555b5f");
+  quad([P(3.6,ZN),P(5.8,ZN),P(5.8,ZF),P(3.6,ZF)],"#5e6468"); // 機慢車道
+  quad([P(5.8,ZN),P(7,ZN),P(7,ZF),P(5.8,ZF)],"#b7b4aa");     // 人行道
+  // 標線
+  const line=(x,c,wd)=>quad([P(x-wd/2,ZN),P(x+wd/2,ZN),P(x+wd/2,ZF),P(x-wd/2,ZF)],c);
+  line(-3.75,"#e7b82a",0.12); line(-3.45,"#e7b82a",0.12); line(3.6,"#f0f0ea",0.14);
+  const off=travel%10;
+  for(let z=-off;z<ZF;z+=10){ const z0=Math.max(ZN,z), z1=z+4; if(z1<=ZN) continue; quad([P(-0.07,z0),P(0.07,z0),P(0.07,z1),P(-0.07,z1)],"#f0f0ea") }
+  for(let z=-off;z<ZF;z+=10){ const z0=Math.max(ZN,z), z1=z+4; if(z1<=ZN) continue; quad([P(-7.62,z0),P(-7.48,z0),P(-7.48,z1),P(-7.62,z1)],"#d8d8d0") }
+  // 路樹與路燈（往後退，表示車子在前進）
+  const items=[]; const tO=travel%16, lO=travel%32, bO=travel%45;
+  for(let z=-tO+4;z<ZF;z+=16){items.push({z,kind:"tree",x:8.2});items.push({z:z+8,kind:"tree",x:-13})}
+  for(let z=-lO+6;z<ZF;z+=32) items.push({z,kind:"lamp",x:6.4});
+  for(let z=-bO+10;z<300;z+=45){items.push({z,kind:"bld",x:11,c:["#cbb89c","#aebdca","#d6c7b6","#b9c4b0"][Math.floor((z+travel)/45)%4|0]});items.push({z:z+20,kind:"bld",x:-17,c:"#c4ccd4"})}
+  return items;
+}
+function drawItem(it){
+  if(it.z<ZN+0.2) return;
+  if(it.kind==="tree"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.fillStyle="#6b4f35"; g.fillRect(x-0.15*s,y-2*s,0.3*s,2*s); g.fillStyle="#4e7d48"; g.beginPath(); g.arc(x,y-2.8*s,1.4*s,0,7); g.fill(); g.fillStyle="#5f9157"; g.beginPath(); g.arc(x-0.4*s,y-3.1*s,0.8*s,0,7); g.fill() }
+  else if(it.kind==="lamp"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.strokeStyle="#3a3f43"; g.lineWidth=Math.max(1,0.15*s); g.beginPath(); g.moveTo(x,y); g.lineTo(x,y-7*s); g.lineTo(x-1.4*s,y-7.2*s); g.stroke(); g.fillStyle="#f6f1c8"; g.fillRect(x-1.7*s,y-7.3*s,0.6*s,0.25*s) }
+  else { const h=it.x>0?14:18, d=12, xn=it.x>0?it.x:it.x+6, xf=it.x>0?it.x+12:it.x-6;
+    if(it.z+d<ZN) return; const z0=Math.max(ZN+0.2,it.z);
+    quad([P(xn,z0,h),P(xn,it.z+d,h),P(xn,it.z+d),P(xn,z0)],it.c); }
+}
+function wheelPair(x,y,w,h){g.fillStyle="#141719";g.fillRect(x-w/2+w*0.04,y-h*0.12,w*0.16,h*0.14);g.fillRect(x+w/2-w*0.2,y-h*0.12,w*0.16,h*0.14)}
+function drawVeh(o){
+  if(o.z<ZN+0.5) return; const [x,y]=P(o.x,o.z), s=F/o.z, w=o.w*s, h=o.h*s; if(w<1.5) return;
+  g.fillStyle="rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(x,y,w*0.6,h*0.08,0,0,7); g.fill();
+  if(o.type==="moto"){ g.fillStyle="#1d2124"; g.fillRect(x-w*0.12,y-h*0.45,w*0.24,h*0.45); g.fillStyle=o.color; rr(x-w*0.5,y-h*0.72,w,h*0.34,w*0.15); g.fill();
+    g.fillStyle="#d23a3a"; g.fillRect(x-w*0.15,y-h*0.42,w*0.3,h*0.05); g.fillStyle="#f2f2ec"; g.beginPath(); g.arc(x,y-h*0.88,w*0.3,0,7); g.fill(); return }
+  const front=o.front; // 對向車看到車頭
+  if(o.type==="emerg"){ const on=Math.floor(performance.now()/170)%2, body=o.kind==="fire"?"#d32f2f":"#f6f7f8";
+    wheelPair(x,y,w,h); g.fillStyle=body; rr(x-w/2,y-h*0.95,w,h*0.85,w*0.08); g.fill(); g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=1; g.stroke();
+    g.fillStyle="rgba(35,45,55,.75)"; rr(x-w*0.36,y-h*0.86,w*0.72,h*0.26,w*0.05); g.fill();
+    if(o.kind==="amb"){g.fillStyle="#e85d2a";g.fillRect(x-w/2,y-h*0.42,w,h*0.07);g.fillStyle="#d23a3a";g.fillRect(x-w*0.05,y-h*0.55,w*0.1,h*0.26);g.fillRect(x-w*0.13,y-h*0.47,w*0.26,h*0.09)}
+    if(o.kind==="police"){g.fillStyle="#1f4fa8";g.fillRect(x-w/2,y-h*0.45,w,h*0.1)}
+    if(o.kind==="fire"){g.fillStyle="#e6e6e0";g.fillRect(x-w/2,y-h*0.36,w,h*0.05)}
+    g.fillStyle=front?"#fff8d8":"#ff3030"; g.fillRect(x-w*0.46,y-h*0.3,w*0.14,h*0.08); g.fillRect(x+w*0.32,y-h*0.3,w*0.14,h*0.08);
+    g.fillStyle=on?"#ff2a2a":"#2a6bff"; g.fillRect(x-w*0.34,y-h*1.04,w*0.34,h*0.1); g.fillStyle=on?"#2a6bff":(o.kind==="fire"?"#ffd23b":"#ff2a2a"); g.fillRect(x,y-h*1.04,w*0.34,h*0.1);
+    if(on){g.fillStyle="rgba(255,60,60,.18)";g.beginPath();g.arc(x-w*0.17,y-h,w*0.7,0,7);g.fill()} return }
+  wheelPair(x,y,w,h);
+  if(o.type==="truck"){ g.fillStyle="#e3e5e6"; rr(x-w/2,y-h,w,h*0.88,w*0.04); g.fill(); g.strokeStyle="rgba(0,0,0,.3)"; g.stroke();
+    g.fillStyle=o.color; g.fillRect(x-w/2,y-h*0.25,w,h*0.13); g.fillStyle="#ff3030"; g.fillRect(x-w*0.46,y-h*0.2,w*0.1,h*0.05); g.fillRect(x+w*0.36,y-h*0.2,w*0.1,h*0.05); return }
+  g.fillStyle=o.color; rr(x-w/2,y-h*0.62,w,h*0.5,w*0.12); g.fill(); rr(x-w*0.38,y-h*0.98,w*0.76,h*0.42,w*0.14); g.fill();
+  g.fillStyle="rgba(35,45,55,.7)"; rr(x-w*0.32,y-h*0.92,w*0.64,h*0.3,w*0.08); g.fill();
+  g.fillStyle=front?"#fff8d8":"#ff3030"; g.fillRect(x-w*0.46,y-h*0.52,w*0.16,h*0.08); g.fillRect(x+w*0.3,y-h*0.52,w*0.16,h*0.08);
+  g.fillStyle="#2a2f33"; g.fillRect(x-w*0.48,y-h*0.22,w*0.96,h*0.08);
+}
+const MX=W/2-125, MY=12, MW=250, MH=72, MF=190;
+function mirror(){
+  g.save(); g.fillStyle="#15191b"; rr(MX-7,MY-7,MW+14,MH+14,16); g.fill(); rr(MX,MY,MW,MH,11); g.clip();
+  g.fillStyle="#d8e4ec"; g.fillRect(MX,MY,MW,MH); g.fillStyle="#9fb39a"; g.fillRect(MX,MY+MH*0.55,MW,MH);
+  const mz=MY+MH*0.55, mP=(x,z)=>[MX+MW/2+(x-camX)/z*MF, mz+CAMH/z*MF*0.55];
+  g.fillStyle="#555b5f"; g.beginPath(); let a=mP(-4,4),b=mP(4,4),c=mP(4,300),d=mP(-4,300); g.moveTo(...a);g.lineTo(...b);g.lineTo(...c);g.lineTo(...d);g.fill();
+  [...objs,...(run?[run.v]:[])].filter(o=>o.z<-2).sort((p,q)=>p.z-q.z).forEach(o=>{ const z=-o.z, [x,y]=mP(o.x,z), s=MF/z, w=o.w*s*0.9, h=o.h*s*0.9;
+    if(o.type==="emerg"){const on=Math.floor(performance.now()/170)%2;g.fillStyle=o.kind==="fire"?"#d32f2f":"#f6f7f8";g.fillRect(x-w/2,y-h,w,h);
+      g.fillStyle="#fff8d8";g.fillRect(x-w*0.45,y-h*0.3,w*0.15,h*0.1);g.fillRect(x+w*0.3,y-h*0.3,w*0.15,h*0.1);
+      g.fillStyle=on?"#ff2a2a":"#2a6bff";g.fillRect(x-w*0.35,y-h*1.08,w*0.35,h*0.12);g.fillStyle=on?"#2a6bff":"#ff2a2a";g.fillRect(x,y-h*1.08,w*0.35,h*0.12);return}
+    g.fillStyle=o.type==="truck"?"#e3e5e6":o.color;g.fillRect(x-w/2,y-h,w,h);g.fillStyle="rgba(35,45,55,.6)";g.fillRect(x-w*0.38,y-h*0.92,w*0.76,h*0.3);
+    g.fillStyle="#fff8d8";g.fillRect(x-w*0.45,y-h*0.3,w*0.12,h*0.08);g.fillRect(x+w*0.33,y-h*0.3,w*0.12,h*0.08) });
+  g.restore();
+}
+function bubbles(){
+  for(const hb of horns){ const a=1-hb.t/1.4; if(a<=0) continue; g.globalAlpha=a; let x,y; const o=hb.o;
+    if(o.z>ZN+0.5){[x,y]=P(o.x,o.z,o.h+0.9)} else if(o.z<-2){x=MX+MW/2+(o.x-camX)/(-o.z)*MF;y=MY+MH+38} else {x=o.x>camX?W-110:110;y=HOR+40}
+    x=Math.max(60,Math.min(W-60,x));
+    g.fillStyle="#fff7d6";g.strokeStyle="#c98a00";g.lineWidth=2;rr(x-52,y-34,104,28,9);g.fill();g.stroke();
+    g.fillStyle="#1b1f22";g.font="bold 15px "+css("--body");g.textAlign="center";g.fillText(`叭！${o.label}`,x,y-14); g.globalAlpha=1 }
+}
+function heat(cx,cy,R0,R1,lobes){ // 與路口模式相同：藍→綠→黃→紅，越強越亮
+  const N=72, t=performance.now()/1000;
+  g.fillStyle="rgba(15,20,25,.35)"; g.beginPath(); g.arc(cx,cy,R1+3,0,7); g.fill();
+  for(let k=0;k<N;k++){ const th=k*5; let v=0;
+    for(const L of lobes){const dd=((th-L.a+540)%360)-180; v=Math.max(v,L.v*Math.exp(-dd*dd/(2*16*16)))}
+    v=v+0.06+0.03*Math.sin(t*3+k);
+    const a0=(th-90-2.5)*Math.PI/180, a1=(th-90+2.5)*Math.PI/180;
+    g.fillStyle=heatColor(Math.min(1,v)); g.globalAlpha=0.35+0.6*Math.min(1,v);
+    g.beginPath();g.arc(cx,cy,R1,a0,a1);g.arc(cx,cy,R0,a1,a0,true);g.closePath();g.fill() }
+  g.globalAlpha=1;
+}
+function dashboard(){
+  const y0=DASH;
+  // A 柱、儀表板
+  g.fillStyle="#1f2427"; g.beginPath(); g.moveTo(0,0); g.lineTo(54,0); g.lineTo(24,y0+6); g.lineTo(0,y0+16); g.fill();
+  g.beginPath(); g.moveTo(W,0); g.lineTo(W-54,0); g.lineTo(W-24,y0+6); g.lineTo(W,y0+16); g.fill();
+  const dg=g.createLinearGradient(0,y0-20,0,H); dg.addColorStop(0,"#2c3236"); dg.addColorStop(1,"#15191b");
+  g.fillStyle=dg; g.beginPath(); g.moveTo(0,y0+16); g.quadraticCurveTo(W/2,y0-36,W,y0+16); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
+  // 速度表
+  const sx=175, sy=y0+96, sR=58, kmh=egoV*3.6;
+  g.fillStyle="#0e1214"; g.beginPath(); g.arc(sx,sy,sR+8,0,7); g.fill();
+  g.strokeStyle="#3b4348"; g.lineWidth=5; g.beginPath(); g.arc(sx,sy,sR,Math.PI*0.75,Math.PI*2.25); g.stroke();
+  for(let k=0;k<=8;k++){const a=Math.PI*0.75+k/8*Math.PI*1.5; g.strokeStyle="#8a949b"; g.lineWidth=2; g.beginPath(); g.moveTo(sx+Math.cos(a)*(sR-4),sy+Math.sin(a)*(sR-4)); g.lineTo(sx+Math.cos(a)*(sR-12),sy+Math.sin(a)*(sR-12)); g.stroke()}
+  const na=Math.PI*0.75+Math.min(1,kmh/80)*Math.PI*1.5; g.strokeStyle="#ff6b3d"; g.lineWidth=3; g.beginPath(); g.moveTo(sx,sy); g.lineTo(sx+Math.cos(na)*(sR-8),sy+Math.sin(na)*(sR-8)); g.stroke();
+  g.fillStyle="#e8ebe7"; g.font="bold 22px "+css("--num"); g.textAlign="center"; g.fillText(Math.round(kmh),sx,sy+4); g.font="11px "+css("--body"); g.fillText("km/h",sx,sy+20);
+  // 方向盤
+  g.strokeStyle="#0d1012"; g.lineWidth=24; g.beginPath(); g.arc(175,H+175,210,Math.PI*1.22,Math.PI*1.78); g.stroke();
+  // 聲音羅盤（熱點）
+  const cx=W/2+45, cy=y0+88, R1=66, R0=24;
+  g.fillStyle="#0e1214"; g.beginPath(); g.arc(cx,cy,R1+10,0,7); g.fill();
+  const lobes=[];
+  if(compassOn){
+    if(hornMark&&hornMark.t<2.5) lobes.push({a:bearing(hornMark.o.x-camX,hornMark.o.z),v:0.72*Math.min(1,2.5-hornMark.t)});
+    if(run&&(!run.gm||run.guess)) lobes.push({a:bearing(run.v.x-camX,run.v.z),v:Math.max(0.45,Math.min(1,1-(Math.hypot(run.v.x-camX,run.v.z)-10)/160))});
+    heat(cx,cy,R0,R1,lobes);
+  } else { g.strokeStyle="#3b4348"; g.lineWidth=3; g.beginPath(); g.arc(cx,cy,R1,0,7); g.stroke() }
+  g.fillStyle="#e8ebe7"; rr(cx-8,cy-14,16,28,4); g.fill(); g.fillStyle="#3b4246"; g.fillRect(cx-6,cy-9,12,7);
+  g.fillStyle="#c7cfd4"; g.font="bold 12px "+css("--body"); g.textAlign="center"; g.textBaseline="middle";
+  [["前",0,-1],["右",1,0],["後",0,1],["左",-1,0]].forEach(([t,x,y])=>g.fillText(t,cx+x*(R1+9),cy+y*(R1+9)));
+  g.textBaseline="alphabetic";
+  // 文字
+  const tx=cx+R1+30; let ty=y0+62; g.textAlign="left";
+  g.fillStyle="#8a949b"; g.font="bold 12px "+css("--body"); g.fillText("聲音羅盤",tx,ty); ty+=26;
+  if(!compassOn){g.fillStyle="#6b757c";g.font="15px "+css("--body");g.fillText("已關閉",tx,ty);return}
+  if(run){ if(run.gm&&!run.guess){g.fillStyle="#ff8a8a";g.font="bold 17px "+css("--body");g.fillText("警笛！先用耳朵猜",tx,ty)}
+    else{const a=bearing(run.v.x-camX,run.v.z),d=Math.hypot(run.v.x-camX,run.v.z); g.fillStyle="#ff6b6b";g.font="bold 18px "+css("--body");g.fillText(`${KN[run.kind]}警笛・${word(a)}`,tx,ty);
+      g.fillStyle="#e8ebe7";g.font="14px "+css("--body");g.fillText(`約 ${Math.round(d)} 公尺　${run.v.front?(run.v.z>0?"迎面而來":"已經過去"):(run.v.z<0?"從後面靠近":"超過我們了")}`,tx,ty+22)}
+    ty+=50 }
+  if(hornMark&&hornMark.t<2.5){g.globalAlpha=Math.min(1,2.5-hornMark.t);g.fillStyle="#ffc21a";g.font="bold 16px "+css("--body");g.fillText(`喇叭・${hornMark.o.label}・${word(bearing(hornMark.o.x-camX,hornMark.o.z))}`,tx,ty);g.globalAlpha=1}
+}
+function draw(){
+  const items=scene();
+  const vs=[...objs,...oncoming,...(run?[run.v]:[])].map(o=>({...o,_veh:true,_o:o}));
+  [...items,...vs].filter(o=>o.z>ZN).sort((a,b)=>b.z-a.z).forEach(o=>o._veh?drawVeh(o._o):drawItem(o));
+  if(winClosed){g.fillStyle="rgba(120,150,170,.10)";g.fillRect(0,0,W,DASH)}
+  // 右邊旁邊的機車（在窗邊）
+  const m=objs.find(o=>o.id==="moto"); if(m&&m.z<ZN+0.5&&m.z>-1.5){const xx=W-70+(m.x-m.x0)*30;g.fillStyle="#1d2124";g.fillRect(xx-6,HOR+120,14,80);g.fillStyle=m.color;rr(xx-20,HOR+90,44,40,8);g.fill();g.fillStyle="#f2f2ec";g.beginPath();g.arc(xx+2,HOR+72,16,0,7);g.fill()}
+  mirror(); bubbles(); hud(); dashboard();
+}
+function hud(){ if(!run) return; let t=null, c="#ffd23b";
+  if(run.gm&&!run.guess) t="聽到警笛…在前面還是後面？";
+  else if(run.endT!==null){t=`${KN[run.kind]}已通過・恢復車道`;c="#7be3a5"}
+  else if(run.yieldMsg) t=`自動讓道中・減速到 ${Math.round(egoV*3.6)} km/h`;
+  else if(run.detected){t=`偵測到${KN[run.kind]}警笛・${word(bearing(run.v.x-camX,run.v.z))}`;c="#ff8a8a"}
+  if(!t) return; g.font="bold 18px "+css("--body"); const w=g.measureText(t).width+36, x=W/2-w/2, y=MY+MH+26;
+  g.fillStyle="rgba(15,20,25,.72)"; rr(x,y,w,34,10); g.fill(); g.strokeStyle=c; g.lineWidth=2; g.stroke();
+  g.fillStyle=c; g.textAlign="center"; g.fillText(t,W/2,y+23) }
+
+/* ---------- 更新 ---------- */
+function update(dt){
+  horns.forEach(h=>h.t+=dt); horns=horns.filter(h=>h.t<1.4); if(hornMark) hornMark.t+=dt;
+  const v=run&&run.v;
+  // 讓道：緊急車輛在後方 70 公尺內、或前方 120 公尺內迎面而來
+  let yf=0;
+  if(v){ const d=Math.hypot(v.x-camX,v.z); if(!v.front) yf=v.z<30?Math.max(0,Math.min(1,(75-d)/35)):Math.max(0,1-(v.z-30)/25);
+         else yf=v.z>-10?Math.max(0,Math.min(1,(130-v.z)/50))*0.6:0 }
+  const slow=CRUISE-(CRUISE-6)*yf;
+  egoV+=(slow-egoV)*Math.min(1,dt*1.5); travel+=egoV*dt;
+  const camTarget=-1.75+(v&&!v.front?-1.3*yf:0.5*yf*0); camX+=(camTarget-camX)*Math.min(1,dt*2);
+  objs.forEach(o=>{ const tx=o.x0+(v&&!v.front?o.side*yf:0); o.x+=(tx-o.x)*Math.min(1,dt*2);
+    o.v+=((slow+(o.id==="moto2"?0.5:0))-o.v)*Math.min(1,dt*1.5); o.z+=(o.v-egoV)*dt;
+    if(o.z>60) o.z-=110; if(o.z<-50) o.z+=110; });
+  // 對向車流
+  oncT-=dt; if(oncT<=0){ const ln=Math.random()<.5?-5.7:-9.3; oncoming.push({type:Math.random()<.3?"moto":"car",front:true,x:ln,lane0:ln,z:220,v:-14,w:1.8,h:1.45,color:["#7d8790","#5b7db1","#c08a3e","#e8e8e2"][Math.floor(Math.random()*4)]}); oncT=1.2+Math.random()*2 }
+  oncoming.forEach(o=>{ if(o.type==="moto"){o.w=0.7} const vv=(v&&v.front&&yf>0.1)?-6:o.v; o.z+=(vv-egoV)*dt; if(v&&v.front&&yf>0.1){const tx=o.lane0>-7.5?-4.6:-10.6; o.x+=(tx-o.x)*Math.min(1,dt*1.5)} });
+  oncoming=oncoming.filter(o=>o.z>-5);
+  if(v){ run.t+=dt; v.z+=(v.v-egoV)*dt; if(siren) setPos(siren.p,v.x,v.z);
+    const passed=(!v.front&&v.z>45)||(v.front&&v.z<-25);
+    if(passed&&run.endT===null){run.endT=0;cap(`<b>${KN[run.kind]}過去了！</b>大家回到原本的車道，繼續往前開。`)}
+    if(run.endT!==null){run.endT+=dt; if(run.endT>1.0) finish()}
+    else if(!run.detected&&(!run.gm||run.guess)&&(v.front?v.z<160:v.z>-95)){run.detected=true;
+      cap(`<b>偵測到${KN[run.kind]}警笛！</b>聲音羅盤算出它在你的<b>${word(bearing(v.x-camX,v.z))}</b>，約 ${Math.round(Math.hypot(v.x-camX,v.z))} 公尺，${v.front?"迎面而來":"正從後面靠近"}。`)}
+    else if(yf>0.2&&!run.yieldMsg){run.yieldMsg=true; if(!run.gm||run.guess) cap(v.front?`<b>自動讓道：</b>你的車自動減速；對向車道的車往路邊靠，讓${KN[run.kind]}通過。`:`<b>自動讓道：</b>你的車自動<b>減速、往左靠</b>；右車道的車往右靠，中間讓出一條路給${KN[run.kind]}。`)} }
+}
+let last=performance.now();
+function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t; if(!document.getElementById("tab2").hidden){update(dt);draw()} requestAnimationFrame(loop)}
+requestAnimationFrame(loop); resize();
+
+/* ---------- 介面 ---------- */
+function say(t,c){const m=document.getElementById("msg2");m.textContent=t;m.className="msg "+(c||"")}
+function cap(t){const c=document.getElementById("cap2");c.hidden=false;document.getElementById("capText2").innerHTML=t}
+function setBtns(b){document.querySelectorAll("#dirs2 button,#kinds2 button").forEach(x=>x.disabled=b)}
+const pick=(sel,fn)=>document.querySelectorAll(sel).forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(sel).forEach(x=>x.classList.toggle("on",x===b));fn(b)}));
+pick("#kinds2 button",b=>kind=b.dataset.k);
+pick("#win2 button",b=>{winClosed=b.dataset.w==="1";applyWin()});
+pick("#cmp2 button",b=>compassOn=b.dataset.c==="1");
+document.querySelectorAll("#honks2 button").forEach(b=>b.addEventListener("click",()=>honk(b.dataset.h)));
+document.querySelectorAll("#dirs2 button").forEach(b=>b.addEventListener("click",()=>start(b.dataset.d)));
+document.querySelectorAll("#guess2 button").forEach(b=>b.addEventListener("click",()=>{ if(!run||run.guess) return;
+  run.guess=b.dataset.g; run.rt=run.t; document.getElementById("guess2").hidden=true; const ok=run.guess===run.d;
+  say(`你猜「${DIRN[run.guess]}」，${KN[run.kind]}其實在${DIRN[run.d]}。${ok?"猜對了！":"猜錯了。"}`,ok?"good":"bad");
+  cap(`<b>${ok?"猜對了！":"猜錯了！前和後最容易搞混。"}</b>${KN[run.kind]}在${DIRN[run.d]}。${compassOn?"看羅盤哪裡變紅。":""}`)}));
+function render(){const tb=document.getElementById("log2");
+  if(!hist.length){tb.innerHTML='<tr><td colspan="8" class="summary">還沒有紀錄。</td></tr>';document.getElementById("avg2").textContent="";return}
+  tb.innerHTML=hist.map(h=>`<tr><td>${h.n}</td><td>${h.k}</td><td>${h.d}</td><td>${h.w}</td><td>${h.c}</td><td>${h.g}</td><td>${h.ok}</td><td class="num">${h.rt==null?"—":h.rt.toFixed(1)}</td></tr>`).join("");
+  const grp={}; hist.filter(h=>h.ok!=="—").forEach(h=>{const k="車窗"+h.w;(grp[k]=grp[k]||[]).push(h.ok==="對")});
+  document.getElementById("avg2").textContent=Object.keys(grp).length?"警笛猜對比例："+Object.entries(grp).map(([k,a])=>`${k} ${a.filter(Boolean).length}/${a.length}`).join("　"):""}
+document.getElementById("copy2").addEventListener("click",async()=>{const t=["次數\t聲音\t真正方向\t車窗\t羅盤\t駕駛猜\t猜對\t反應（秒）",...hist.map(h=>[h.n,h.k,h.d,h.w,h.c,h.g,h.ok,h.rt==null?"":h.rt.toFixed(1)].join("\t"))].join("\n");
+  try{await navigator.clipboard.writeText(t);say("表格已複製。","good")}catch(e){say("請用滑鼠選取表格再複製。","")}});
+document.getElementById("clear2").addEventListener("click",()=>{hist=[];render()});
+window.__cockpitStop=()=>{sirenStop()};
+window.__ck={get run(){return run},get objs(){return objs},honk};
+})();
+</script>
+
+<script>
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  const t=b.dataset.tab; document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
+  if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
+  if(t!=="tab2"&&window.__cockpitStop) window.__cockpitStop();
+  window.dispatchEvent(new Event("resize"));
+}));
+</script>
+
+</body>
+</html>
