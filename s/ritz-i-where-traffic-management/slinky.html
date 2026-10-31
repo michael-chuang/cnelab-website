@@ -196,7 +196,7 @@ function frame(now){requestAnimationFrame(frame);
   if(counting&&!paused){const el=(now-counting.s)/1000;const top=wp.y>R*0.985;if(top&&!counting.lastTop)counting.n++;counting.lastTop=top;
     $("cnt").innerHTML=`已經 <b>${el.toFixed(1)}</b> 秒，數到 <b>${counting.n}</b> 圈`;
     if(el>=10){const n=counting.n;counting=null;$("count").disabled=false;
-      $("cnt").innerHTML=`10 秒轉了 <b>${n}</b> 圈 → 每秒 <b>${n}</b> ÷ 10 ≈ <b>${(n/10).toFixed(1)}</b> 圈＝<b>${(n/10).toFixed(1)} Hz</b>（設定是 ${f} 圈／秒）`}}
+      window.dispatchEvent(new CustomEvent("slinkyCount",{detail:{n,f}}));$("cnt").innerHTML=`10 秒轉了 <b>${n}</b> 圈 → 每秒 <b>${n}</b> ÷ 10 ≈ <b>${(n/10).toFixed(1)}</b> 圈＝<b>${(n/10).toFixed(1)} Hz</b>（設定是 ${f} 圈／秒）`}}
   // 視角動畫
   if(tween){const k=Math.min(1,(now-tween.s)/tween.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(k>=1)tween=null}
   if(spinT){const k=((now-spinT.s)/1000)%12/12,a=Math.sin(k*Math.PI*2)*0.5+0.5; // 側面↔正面來回

@@ -105,6 +105,7 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
     <button class="tab" data-tab="tab2" role="tab">② 駕駛艙模式</button>
     <button class="tab" data-tab="tab3" role="tab">③ 實驗模型</button>
     <button class="tab" data-tab="tab4" role="tab">𖥕 學習單(一) 人因工程篇</button>
+    <button class="tab" data-tab="tab5" role="tab">𖥕 學習單(二) 傅立葉轉換篇</button>
   </div>
 </header>
 
@@ -1432,9 +1433,16 @@ document.getElementById("mviews").addEventListener("click",e=>{const b=e.target.
 })();
 </script>
 <!-- TAB3 END -->
+<!-- SAVEFILE START -->
+<script>
+window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer()],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+  if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return "已存好 "+fn}}
+  const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return "已下載 "+fn};
+</script>
+<!-- SAVEFILE END -->
 <!-- TAB4 START -->
 <div class="wrap" id="tab4" hidden style="margin-top:20px">
-<iframe id="ws1frame" title="學習單（一）人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws1frame" title="學習單(一) 人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws1src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>紀錄單一：有沒有遮蔽</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1933,17 +1941,537 @@ function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.hei
 window.__ws1Show=on=>{if(!on||loaded)return;loaded=true;
   f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
   f.srcdoc=document.getElementById("ws1src").textContent.replace(/<\\\/script/g,"<"+"/script");};
-addEventListener("resize",fit);
-window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer()],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return "已存好 "+fn}}
-  const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return "已下載 "+fn};})();
+addEventListener("resize",fit);})();
 </script>
 <!-- TAB4 END -->
+<!-- TAB5 START -->
+<div class="wrap" id="tab5" hidden style="margin-top:20px">
+<iframe id="ws2frame" title="學習單(二) 傅立葉轉換篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+</div>
+<script type="text/plain" id="ws2src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>紀錄單二：頻率與聲譜</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout：一欄式學習單（二）。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+:root{
+  --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
+  --a:#2a6fb8;        /* 未遮蔽 */
+  --b:#d9532c;        /* 有遮蔽（戴耳塞） */
+  --accent:#1f7a5a;   /* 真實方向、按鈕 */
+  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:14px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3vw,26px);margin:0;text-wrap:balance}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.lead{color:var(--muted);max-width:66ch}
+section{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
+.tag.a{background:var(--a)} .tag.b{background:var(--b)}
+/* 3D */
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.stage{aspect-ratio:1/1}}
+.stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
+.stage canvas{display:block;width:100%;height:100%}
+.views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
+.views button.on{background:#18232b;color:#fff}
+.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp h3{font-size:14px;color:var(--muted);font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 14px}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+button.seg-a.on{background:var(--a);border-color:var(--a);color:#fff}
+button.seg-b.on{background:var(--b);border-color:var(--b);color:#fff}
+button.go{font-family:var(--display);font-size:18px;border-radius:12px;padding:10px 18px;background:var(--accent);border-color:var(--accent);color:#fff}
+button.go:disabled{opacity:.5;cursor:wait}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3a008;outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}
+.log{display:flex;flex-direction:column;gap:2px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* 表格 */
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:14px;line-height:1.35;white-space:nowrap}
+th.a{color:var(--a)} th.b{color:var(--b)}
+td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+tr.avg td{font-weight:700;border-bottom:0}
+input[type=number],input[type=text]{font:inherit;font-size:15px;width:100%;max-width:7em;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center}
+input[type=text].name{max-width:9em}
+textarea{font:inherit;width:100%;min-height:5em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+.fill{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:2px solid var(--ink);text-align:center;font-family:var(--num);font-weight:700}
+.cap{font-size:14px;color:var(--muted);text-align:center}
+svg text{font-family:var(--body)}
+.xbtn{padding:2px 9px;font-size:13px;white-space:nowrap}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa li{line-height:2}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 彩虹彈簧＋學習單二專用 */
+.stage{background:#0f1424}
+.hud{position:absolute;left:12px;top:10px;color:#fff;font-size:14px;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none}
+.hud b{font-family:var(--num);font-size:22px}
+.views{max-width:70%}
+.big{font-family:var(--num);font-size:30px;font-weight:500;font-variant-numeric:tabular-nums}
+.count{font-size:15px;line-height:1.6;min-height:3.2em}
+.count b{font-family:var(--num)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.step .k{font-family:var(--display);font-size:19px;color:var(--accent)}
+.formula{font-family:var(--num);background:var(--bg);border-radius:10px;padding:8px 10px;font-size:15px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.photo{display:flex;flex-direction:column;gap:8px}
+.drop{display:flex;align-items:center;justify-content:center;min-height:180px;border:2px dashed var(--line);border-radius:12px;cursor:pointer;color:var(--muted);overflow:hidden;background:var(--bg)}
+.drop:hover{border-color:var(--accent)}
+.drop img{width:100%;height:auto;display:block}
+.photo .xbtn{align-self:flex-start}
+.sw{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-3px;border:1px solid var(--line)}
+select{font:inherit;font-size:15px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+td.rng{white-space:nowrap}
+td.rng input{max-width:5em}
+#law,#beadbar{width:100%;height:auto}
+#law{max-width:640px;align-self:center}
+.drop span{text-align:center;padding:12px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">智「where」交通　科展實驗紀錄單（二）傅立葉轉換篇</div>
+  <h1>聲音裡藏了哪些頻率？</h1>
+  <p class="lead">自然課學過：聲音是物體在振動。這張學習單先認識「頻率」（每秒振動幾次），再用串珠了解「聲譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
+</header>
+
+<section>
+  <div class="two">
+    <div class="card"><h3>研究問題與假設</h3>
+      <p>警笛聲裡面有哪些頻率？跟我們說話、唱歌的聲音一樣嗎？</p>
+      <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2" placeholder="例如：警笛的頻率比較高，因為……"></textarea></div>
+    <div class="card"><h3>器材</h3><ul>
+      <li>彩色串珠一大盒（拆散）、手機或相機（拍照）</li>
+      <li>手機安裝 Phyphox，用「音訊示波器」和「音訊頻譜」</li>
+      <li>電腦或平板（播 YouTube）、喇叭</li>
+      <li>要量音量（分貝）時：建議用 NIOSH SLM app（美國國家職業安全衛生研究所的免費分貝計）</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>一、頻率是什麼？每秒轉幾圈</h2>
+  <p class="lead">按「側面看」，粉紅色的點上上下下畫出一條波；按「正面看」，同一個點其實在轉圈圈。把速度調到 1、2、3 圈／秒，各按一次「開始數 10 秒」，結果會自動填進表 2-1。</p>
+  <div class="sim">
+  <div class="stage" id="stage">
+    <div class="hud" id="hud">每秒轉 <b id="hz">1</b> 圈</div>
+    <div class="views" id="views"><button data-v="side" class="on">側面看（波）</button><button data-v="end">正面看（圓）</button><button data-v="tilt">斜斜看</button><button data-v="spin">慢慢轉過去</button></div>
+  </div>
+  <div class="card">
+    <div class="grp"><h3>1　彈簧每秒轉幾圈？</h3>
+      <div class="row"><span class="big" id="fv">1</span><span>圈／秒</span></div>
+      <input type="range" id="f" min="0.25" max="4" step="0.25" value="1" aria-label="每秒轉幾圈">
+      <div class="row"><button data-f="0.5">0.5</button><button data-f="1" class="on">1</button><button data-f="2">2</button><button data-f="3">3</button><button id="pause">暫停</button></div></div>
+    <div class="grp"><h3>2　數數看：10 秒轉幾圈？</h3>
+      <button class="go" id="count">開始數 10 秒</button>
+      <p class="count" id="cnt">看著粉紅色的點，每轉回最上面一次就算一圈。</p></div>
+    <div class="grp"><h3>3　聽聽真正的聲音（頻率高很多！）</h3>
+      <div class="row"><button data-t="220">220 Hz 低</button><button data-t="440">440 Hz 中</button><button data-t="880">880 Hz 高</button><button data-t="0">停</button></div>
+      <p class="note">真正的聲音每秒轉幾百圈，眼睛跟不上，所以畫面的彈簧是放慢的。播放時，彈簧轉的快慢照比例改變。</p></div>
+  </div>
+</div>
+  <div class="steps">
+    <div class="step"><span class="k">① 振動＝轉圈圈</span><p>按「正面看」：點在繞圓圈。按「側面看」：同一個點只是上上下下。上下振動和轉圈圈，是同一件事從不同方向看。</p></div>
+    <div class="step"><span class="k">② 每秒轉幾圈</span><p>1 秒內轉了幾圈，就叫做頻率。英文叫 cycles per second（每秒幾個循環）。</p><div class="formula">頻率＝圈數 ÷ 秒數</div></div>
+    <div class="step"><span class="k">③ 單位：赫茲 Hz</span><p>為了紀念科學家赫茲，「每秒 1 圈」就叫 1 赫茲（1 Hz）。救護車警笛大約 700～1000 Hz，也就是每秒轉 700～1000 圈！</p><div class="formula">每秒 440 圈＝440 Hz</div></div>
+  </div>
+  <div class="two">
+    <div class="tbl"><table id="t21">
+      <thead><tr><th>設定（圈／秒）</th><th>10 秒數到幾圈</th><th>每秒幾圈（÷10）</th><th>＝幾赫茲（Hz）</th></tr></thead><tbody></tbody></table></div>
+    <div class="card"><p>表 2-1　數數看彈簧轉幾圈</p>
+      <p>我學到：頻率＝每秒轉（振動）幾圈，英文 cycles per second，單位叫「赫茲（Hz）」。</p>
+      <p>220 Hz 的聲音是 <select id="q220"><option value="">選一個</option><option>高</option><option>低</option></select> 音，880 Hz 是 <select id="q880"><option value="">選一個</option><option>高</option><option>低</option></select> 音。</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>二、用串珠認識「聲譜」</h2>
+  <p class="lead">一個聲音裡面混了很多種頻率，就像一把混在一起的串珠。先抓一把、拍照，用眼睛猜猜看；再把同顏色排成一排、拍照、數一數。</p>
+  <div class="two">
+    <div class="photo card"><h3>照片 1：抓一把（還沒排）</h3><label class="drop" for="ph1"><img id="im_ph1" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph1" accept="image/*" hidden><button class="xbtn" data-clear="ph1">移除照片</button></div>
+    <div class="photo card"><h3>照片 2：同顏色排成一排</h3><label class="drop" for="ph2"><img id="im_ph2" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph2" accept="image/*" hidden><button class="xbtn" data-clear="ph2">移除照片</button></div>
+  </div>
+  <div class="two">
+    <div class="tbl"><table id="t22">
+      <thead><tr><th>顏色</th><th>我猜幾顆<br>（不要數！）</th><th>實際幾顆</th><th>差幾顆</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:6px">
+      <svg id="beadbar" viewBox="0 0 560 300" role="img" aria-label="串珠聲譜長條圖"></svg>
+      <p class="cap">圖 2-1　我的串珠聲譜：實心長條＝實際顆數，虛線框＝我猜的顆數</p>
+    </div>
+  </div>
+  <div class="card qa"><ol>
+    <li>只用眼睛猜，準嗎？ <input type="text" id="qb1" style="max-width:14em"></li>
+    <li>排好、數好以後，一眼就能看出哪一種最多嗎？ <input type="text" id="qb2" style="max-width:14em"></li></ol>
+    <p><b>這就是「頻譜（聲譜，spectrum）」</b>：把混在一起的東西，依種類排好，數出每一種有多少。聲音也一樣：手機 App 用「傅立葉轉換」把聲音拆開，依頻率排好，算出每個頻率有多大聲。<b>串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。</b></p></div>
+</section>
+
+<section>
+  <h2>三、用 Phyphox 看自己的聲音</h2>
+  <ol class="card" style="padding-left:2.2em">
+    <li>打開 Phyphox 的「音訊示波器」看原始波形，再打開「音訊頻譜」看聲譜。手機放在嘴巴前約 30 公分。</li>
+    <li>依照表 2-3 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？聲譜有沒有尖尖的山峰？</li>
+    <li>最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。</li></ol>
+  <div class="tbl"><table id="t23">
+    <thead><tr><th>我發出的聲音</th><th>波形規律嗎？</th><th>聲譜有尖尖的山峰嗎？</th><th>主要頻率（Hz）</th></tr></thead><tbody></tbody></table></div>
+  <div class="two">
+    <div class="photo card"><h3>截圖：<input type="text" id="cap3" class="name" placeholder="例如：長長的啊～"> 的波形或聲譜</h3><label class="drop" for="ph3"><img id="im_ph3" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph3" accept="image/*" hidden><button class="xbtn" data-clear="ph3">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap4" class="name" placeholder="例如：唱高音"> 的波形或聲譜</h3><label class="drop" for="ph4"><img id="im_ph4" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph4" accept="image/*" hidden><button class="xbtn" data-clear="ph4">移除照片</button></div>
+  </div>
+  <div class="card qa"><ol>
+    <li>怎麼發聲，波形才會很規律、聲譜才會出現尖尖的山峰？<textarea id="qp1" rows="2"></textarea></li>
+    <li>唱高音和唱低音，山峰的位置有什麼不同？<textarea id="qp2" rows="2"></textarea></li></ol></div>
+</section>
+
+<section>
+  <h2>四、警笛聲調查：YouTube＋Phyphox</h2>
+  <div class="card"><label for="sirens">先想一想：生活中有哪些警笛或警報聲？寫下來：</label><textarea id="sirens" rows="2" placeholder="例如：救護車、警車、消防車、火災警報器……"></textarea>
+    <p class="note">在 YouTube 找這些聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，手機放 1 公尺外看 Phyphox 的聲譜。記下主要頻率、頻率範圍（山峰在哪兩個頻率之間移動）和變化形式。請在大人陪同下使用 YouTube。</p></div>
+  <div class="tbl"><table id="t24">
+    <thead><tr><th>警笛／警報聲</th><th>影片網址</th><th>主要頻率（Hz）</th><th>頻率範圍（Hz）</th><th>變化形式</th></tr></thead><tbody></tbody></table></div>
+  <div class="two">
+    <div class="photo card"><h3>截圖：<input type="text" id="cap5" class="name" placeholder="例如：救護車"> 的聲譜</h3><label class="drop" for="ph5"><img id="im_ph5" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph5" accept="image/*" hidden><button class="xbtn" data-clear="ph5">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap6" class="name" placeholder="例如：消防車"> 的聲譜</h3><label class="drop" for="ph6"><img id="im_ph6" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph6" accept="image/*" hidden><button class="xbtn" data-clear="ph6">移除照片</button></div>
+  </div>
+</section>
+
+<section>
+  <h2>五、查一查：臺灣對警笛聲有規定嗎？</h2>
+  <p class="lead">到「全國法規資料庫」或「交通部主管法規查詢系統」（motclaw.motc.gov.tw），用關鍵字「警報訊號之內容及樣式」查查看，把規定寫進表 2-5，再和表 2-4 量到的比一比。</p>
+  <div class="tbl"><table id="t25">
+    <thead><tr><th>車種</th><th>法規：頻率範圍</th><th>法規：節奏</th><th>實測：頻率範圍</th><th>實測：節奏</th><th>符合？</th></tr></thead><tbody></tbody></table></div>
+  <div class="card" style="display:flex;flex-direction:column;gap:8px">
+    <div class="row"><button id="reveal">查完法規了，打開圖 2-2 對照</button></div>
+    <div id="lawfig" hidden><svg id="law" viewBox="0 0 640 420" role="img" aria-label="四種警報聲的頻率隨時間變化"></svg>
+    <p class="cap">圖 2-2　依法規畫出的四種警報聲：頻率隨時間的變化（色帶＝法規的頻率範圍 650–750、900–1000、1450–1550 Hz）</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>六、結果與結論</h2>
+  <div class="card qa"><ol>
+    <li>頻率是什麼？用自己的話說：<textarea id="c1" rows="2"></textarea></li>
+    <li>串珠和聲譜哪裡很像？<textarea id="c2" rows="2"></textarea></li>
+    <li>警笛聲的主要頻率大約在 <input type="number" id="c3a" style="max-width:6em"> ～ <input type="number" id="c3b" style="max-width:6em"> Hz；跟我們說話的聲音比，比較 <select id="c3c"><option value="">選一個</option><option>高</option><option>低</option></select>。</li>
+    <li>我們量到的警笛符合法規嗎？寫下你的結論：<textarea id="c4" rows="3"></textarea></li></ol>
+  <p class="note">本紀錄單的成果＝科展報告「研究二：聲音的頻率與警笛的身分證」。</p></div>
+</section>
+
+<section>
+  <h2>儲存與匯出</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <p>輸入的內容和照片會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見；照片會縮小再存）。做完後，按下面的按鈕存成 Word 檔。</p>
+    <div class="row" style="align-items:center"><label for="date">日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="names">組員：</label><input type="text" id="names" style="max-width:16em"></div>
+    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
+  </div>
+</section>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
+<script>
+/* ===== 彩虹彈簧 ===== */
+(()=>{ if(!window.THREE) return;
+const $=id=>document.getElementById(id);
+const stage=$("stage");
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio||1)); renderer.outputEncoding=THREE.sRGBEncoding;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const scene=new THREE.Scene();
+scene.background=(()=>{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#1a2140");gr.addColorStop(1,"#0b0f1c");g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t})();
+const cam=new THREE.PerspectiveCamera(38,16/10,0.5,800);
+const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=12; ctl.maxDistance=200;
+function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
+new ResizeObserver(size).observe(stage); size();
+scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));
+const key=new THREE.DirectionalLight(0xffffff,0.8); key.position.set(20,40,50); scene.add(key);
+
+/* 彩虹彈簧：沿 x 軸的螺旋，每一圈換一個顏色 */
+const R=6, TURNS=14, LEN=46, X0=-LEN/2;
+class Helix extends THREE.Curve{getPoint(t,v=new THREE.Vector3()){const a=t*TURNS*Math.PI*2;return v.set(X0+t*LEN,R*Math.cos(a),R*Math.sin(a))}}
+const geo=new THREE.TubeGeometry(new Helix(),TURNS*90,0.42,10,false);
+const cols=[];const nV=geo.attributes.position.count, ring=11;
+for(let i=0;i<nV;i++){const seg=Math.floor(i/ring)/(TURNS*90);const h=(seg*TURNS/TURNS)*0.85;const c=new THREE.Color().setHSL(h,0.85,0.56);cols.push(c.r,c.g,c.b)}
+geo.setAttribute("color",new THREE.Float32BufferAttribute(cols,3));
+const spring=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.35,metalness:0.25}));
+const rotor=new THREE.Group(); rotor.add(spring); scene.add(rotor);
+// 追蹤點：在彈簧最右端那一圈上
+const dotM=new THREE.MeshStandardMaterial({color:0xff3d6e,emissive:0x881030,roughness:0.3});
+const dot=new THREE.Mesh(new THREE.SphereGeometry(0.95,20,16),dotM);
+const endA=TURNS*Math.PI*2; dot.position.set(X0+LEN,R*Math.cos(endA),R*Math.sin(endA)); rotor.add(dot);
+// 中心軸（虛線）
+const axisG=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(X0-4,0,0),new THREE.Vector3(X0+LEN+40,0,0)]);
+const axis=new THREE.Line(axisG,new THREE.LineDashedMaterial({color:0x7a86a8,dashSize:1,gapSize:0.8}));axis.computeLineDistances();scene.add(axis);
+// 圓（正面看時點走的路）
+const circPts=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circPts.push(new THREE.Vector3(X0+LEN,R*Math.cos(a),R*Math.sin(a)))}
+scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(circPts),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.35})));
+// 波形軌跡：點的高度往右畫出去（像示波器）
+const TRN=900, trace=new Float32Array(TRN*3), trG=new THREE.BufferGeometry(); trG.setAttribute("position",new THREE.BufferAttribute(trace,3));
+const trLine=new THREE.Line(trG,new THREE.LineBasicMaterial({color:0xff3d6e})); scene.add(trLine);
+const hist=[]; const SPEED=10; // 軌跡往右跑的速度（單位／秒）
+// 刻度：1 秒一格
+const tick=new THREE.Group();scene.add(tick);
+function label(text,x,y,z,s=2.2,col="#c8d0e6"){const c=document.createElement("canvas"),g=c.getContext("2d");c.width=256;c.height=64;g.font="bold 40px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textAlign="center";g.textBaseline="middle";g.fillText(text,128,34);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(s*4,s,1);sp.position.set(x,y,z);return sp}
+for(let k=0;k<=4;k++){const x=X0+LEN+k*SPEED;const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-R-1.2,0),new THREE.Vector3(x,-R-2.2,0)]),new THREE.LineBasicMaterial({color:0x7a86a8}));tick.add(l);if(k)tick.add(label(k+" 秒前",x,-R-3.8,0,1.6))}
+
+/* 狀態 */
+let simT=0, f=1, phase=0, paused=false, last=performance.now(), audioF=0;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function setF(v){f=v;$("f").value=v;$("fv").textContent=v;$("hz").textContent=v;document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("on",+b.dataset.f===v))}
+$("f").addEventListener("input",e=>{setF(+e.target.value);stopTone()});
+document.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>{setF(+b.dataset.f);stopTone()}));
+$("pause").addEventListener("click",()=>{paused=!paused;$("pause").textContent=paused?"繼續":"暫停";$("pause").classList.toggle("on",paused)});
+
+/* 視角 */
+const VIEWS={side:[[8,0,78],[8,0,0]],end:[[X0+LEN+60,0,0.01],[X0+LEN,0,0]],tilt:[[52,26,48],[6,0,0]]};
+let tween=null, spinT=null;
+function goView(k){spinT=null;const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now(),d:reduce?1:1100};
+  document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
+$("views").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.v==="spin"){spinT={s:performance.now()};tween=null;document.querySelectorAll("#views button").forEach(x=>x.classList.toggle("on",x===b))}else goView(b.dataset.v)});
+cam.position.set(...VIEWS.side[0]);ctl.target.set(...VIEWS.side[1]);ctl.update();
+
+/* 數 10 秒 */
+let counting=null;
+$("count").addEventListener("click",()=>{if(counting)return;paused=false;$("pause").textContent="暫停";$("pause").classList.remove("on");
+  counting={s:performance.now(),n:0,lastTop:null};$("count").disabled=true;$("cnt").innerHTML="數數中……看粉紅色的點每回到最上面一次，就數一圈。"});
+
+/* 真正的聲音：放慢 220 倍顯示（220 Hz → 1 圈／秒） */
+let AC=null, osc=null, gain=null;
+function stopTone(){if(osc){try{gain.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.15)}catch(e){}osc=null}audioF=0;document.querySelectorAll("[data-t]").forEach(b=>b.classList.remove("on"))}
+document.querySelectorAll("[data-t]").forEach(b=>b.addEventListener("click",()=>{stopTone();const hz=+b.dataset.t;if(!hz)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  osc=AC.createOscillator();gain=AC.createGain();osc.type="sine";osc.frequency.value=hz;gain.gain.value=0;gain.gain.setTargetAtTime(0.15,AC.currentTime,0.03);osc.connect(gain);gain.connect(AC.destination);osc.start();
+  audioF=hz;b.classList.add("on");setF(hz/220);$("hz").textContent=hz/220+"（真正的聲音：每秒 "+hz+" 圈）"}));
+
+function frame(now){requestAnimationFrame(frame);
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(!paused){phase+=dt*f*Math.PI*2;}
+  rotor.rotation.x=phase;
+  // 點的世界座標
+  const wp=new THREE.Vector3();dot.getWorldPosition(wp);
+  if(!paused){simT+=dt;hist.unshift([simT,wp.y]);while(hist.length>TRN||(hist.length&&simT-hist[hist.length-1][0]>5))hist.pop()}
+  for(let i=0;i<hist.length;i++){trace[i*3]=X0+LEN+(simT-hist[i][0])*SPEED;trace[i*3+1]=hist[i][1];trace[i*3+2]=0}
+  trG.attributes.position.needsUpdate=true;trG.setDrawRange(0,hist.length);
+  tick.visible=Math.abs(cam.position.z)>25;
+  // 數圈：點經過最上面（y 由增轉減）
+  if(counting&&!paused){const el=(now-counting.s)/1000;const top=wp.y>R*0.985;if(top&&!counting.lastTop)counting.n++;counting.lastTop=top;
+    $("cnt").innerHTML=`已經 <b>${el.toFixed(1)}</b> 秒，數到 <b>${counting.n}</b> 圈`;
+    if(el>=10){const n=counting.n;counting=null;$("count").disabled=false;
+      window.dispatchEvent(new CustomEvent("slinkyCount",{detail:{n,f}}));$("cnt").innerHTML=`10 秒轉了 <b>${n}</b> 圈 → 每秒 <b>${n}</b> ÷ 10 ≈ <b>${(n/10).toFixed(1)}</b> 圈＝<b>${(n/10).toFixed(1)} Hz</b>（設定是 ${f} 圈／秒）`}}
+  // 視角動畫
+  if(tween){const k=Math.min(1,(now-tween.s)/tween.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;cam.position.lerpVectors(tween.p0,tween.p1,e);ctl.target.lerpVectors(tween.t0,tween.t1,e);if(k>=1)tween=null}
+  if(spinT){const k=((now-spinT.s)/1000)%12/12,a=Math.sin(k*Math.PI*2)*0.5+0.5; // 側面↔正面來回
+    const ang=a*Math.PI/2, r=78; cam.position.set(8+Math.sin(ang)*(X0+LEN+52-8),0,Math.cos(ang)*r+0.01);ctl.target.set(8+(X0+LEN-8)*a,0,0)}
+  ctl.update();renderer.render(scene,cam)}
+requestAnimationFrame(frame);
+})();
+<\/script>
+<script>
+/* ================= 學習單（二）：資料、表格、照片、圖、匯出 ================= */
+const $=id=>document.getElementById(id);
+const KEY="ws2-fourier-v1";
+const BEADS=[["紫紅","#8e1a5c"],["珊瑚紅","#f2675a"],["橘","#f7a531"],["黃綠","#b5e02c"],["米白","#e3dfbf"],["桃紅","#e0479b"],["橄欖綠","#6d7a2c"],["紅","#cc2230"],["紫","#5a2585"],["黑","#26222a"],["藍","#2ba3d8"]];
+const VOICES=["說話「你好」","長長的「啊～」","唱低音","唱高音","吹口哨（選做）"];
+const CARS=["救護車","消防車","警車","工程救險車"];
+let S={hyp:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads:BEADS.map(([n,c])=>({n,c,g:"",a:""})),qb1:"",qb2:"",
+  t23:VOICES.map(v=>({v,reg:"",peak:"",hz:""})),qp1:"",qp2:"",sirens:"",t24:[...Array(5)].map(()=>({s:"",url:"",hz:"",lo:"",hi:"",form:""})),
+  t25:CARS.map(c=>({c,lr:"",lt:"",mr:"",mt:"",ok:""})),c1:"",c2:"",c3a:"",c3b:"",c3c:"",c4:"",date:"",names:"",cap3:"",cap4:"",cap5:"",cap6:""};
+let IMG={};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function saveImg(){try{localStorage.setItem(KEY+"-img",JSON.stringify(IMG));return true}catch(e){return false}}
+const num=v=>v===""||v==null||isNaN(+v)?null:+v;
+const f1=x=>x===null?"":(Math.round(x*10)/10).toString();
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function bind(id,obj,key,ev="input",after){const e=$(id);if(!e)return;e.value=obj[key]??"";e.addEventListener(ev,()=>{obj[key]=e.value;save();after&&after()})}
+
+/* 表 2-1 */
+function buildT21(){const tb=$("t21").querySelector("tbody");tb.innerHTML="";
+  [1,2,3].forEach(k=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${k}</td><td><input type="number" id="t21_${k}" min="0" step="1" inputmode="numeric" aria-label="設定 ${k} 圈每秒，10 秒數到幾圈"></td><td class="num" id="t21p_${k}"></td><td class="num" id="t21h_${k}"></td>`;tb.appendChild(tr);bind("t21_"+k,S.t21,k,"input",calcT21)});calcT21()}
+function calcT21(){[1,2,3].forEach(k=>{const n=num(S.t21[k]);$("t21p_"+k).textContent=n===null?"":f1(n/10);$("t21h_"+k).textContent=n===null?"":f1(n/10)+" Hz"})}
+addEventListener("slinkyCount",e=>{const {n,f}=e.detail;if([1,2,3].includes(f)){S.t21[f]=String(n);$("t21_"+f).value=n;save();calcT21()}});
+
+/* 表 2-2＋圖 2-1 串珠聲譜 */
+function buildT22(){const tb=$("t22").querySelector("tbody");tb.innerHTML="";
+  S.beads.forEach((b,i)=>{const tr=document.createElement("tr");
+    tr.innerHTML=`<td style="text-align:left"><span class="sw" style="background:${b.c}"></span><input type="text" id="bn${i}" class="name" style="max-width:6em" aria-label="顏色名稱"></td><td><input type="number" id="bg${i}" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 我猜幾顆"></td><td><input type="number" id="ba${i}" min="0" step="1" inputmode="numeric" aria-label="${esc(b.n)} 實際幾顆"></td><td class="num" id="bd${i}"></td>`;
+    tb.appendChild(tr);bind("bn"+i,b,"n","input",calcT22);bind("bg"+i,b,"g","input",calcT22);bind("ba"+i,b,"a","input",calcT22)});calcT22()}
+function calcT22(){let G=0,A=0,hasG=false,hasA=false;S.beads.forEach((b,i)=>{const g=num(b.g),a=num(b.a);if(g!==null){G+=g;hasG=true}if(a!==null){A+=a;hasA=true}$("bd"+i).textContent=g!==null&&a!==null?String(Math.abs(a-g)):""});
+  $("t22").querySelector("tfoot").innerHTML=`<tr class="avg"><td>合計</td><td class="num">${hasG?G:""}</td><td class="num">${hasA?A:""}</td><td></td></tr>`;drawBeads()}
+const SVGNS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
+function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),line:g("--line")}}
+const PRINT={ink:"#18232b",muted:"#5b6872",line:"#d3dbe0"};
+function drawBeads(s=$("beadbar"),P=pal()){s.innerHTML="";const x0=44,y0=250,H=220,W=500,n=S.beads.length,bw=W/n;
+  const mx=Math.max(6,...S.beads.map(b=>Math.max(num(b.a)||0,num(b.g)||0)));const top=Math.ceil(mx/2)*2;
+  for(let v=0;v<=top;v+=top>20?5:top>10?2:1){const y=y0-v/top*H;el("line",{x1:x0,x2:x0+W,y1:y,y2:y,stroke:P.line,"stroke-width":1},s);el("text",{x:x0-6,y:y+4,"text-anchor":"end","font-size":12,fill:P.muted},s,String(v))}
+  S.beads.forEach((b,i)=>{const cx=x0+bw*(i+0.5),a=num(b.a),g=num(b.g);
+    if(a!==null&&a>0)el("rect",{x:cx-bw*0.32,y:y0-a/top*H,width:bw*0.64,height:a/top*H,rx:3,fill:b.c,stroke:P.ink,"stroke-width":0.6},s);
+    if(g!==null&&g>0)el("rect",{x:cx-bw*0.4,y:y0-g/top*H,width:bw*0.8,height:g/top*H,fill:"none",stroke:P.ink,"stroke-width":1.4,"stroke-dasharray":"4 3"},s);
+    el("text",{x:cx,y:y0+16,"text-anchor":"middle","font-size":11,fill:P.ink},s,b.n.slice(0,3))});
+  el("line",{x1:x0,x2:x0+W,y1:y0,y2:y0,stroke:P.ink,"stroke-width":1.5},s);
+  el("text",{x:12,y:y0-H/2,"text-anchor":"middle","font-size":12,fill:P.muted,transform:`rotate(-90 12 ${y0-H/2})`},s,"幾顆");
+  if(!S.beads.some(b=>num(b.a)!==null||num(b.g)!==null))el("text",{x:x0+W/2,y:140,"text-anchor":"middle","font-size":14,fill:P.muted},s,"在表 2-2 填數字，長條會長出來")}
+
+/* 表 2-3、2-4、2-5 */
+function buildT23(){const tb=$("t23").querySelector("tbody");tb.innerHTML="";
+  S.t23.forEach((r,i)=>{const tr=document.createElement("tr");const sel=(id,opts)=>`<select id="${id}"><option value="">選</option>${opts.map(o=>`<option>${o}</option>`).join("")}</select>`;
+    tr.innerHTML=`<td>${esc(r.v)}</td><td>${sel("vr"+i,["規律","不規律"])}</td><td>${sel("vp"+i,["有，很尖","有一點","沒有，一片"])}</td><td><input type="number" id="vh${i}" min="0" step="1" inputmode="numeric" aria-label="${esc(r.v)} 主要頻率"></td>`;
+    tb.appendChild(tr);bind("vr"+i,r,"reg","change");bind("vp"+i,r,"peak","change");bind("vh"+i,r,"hz")})}
+function buildT24(){const tb=$("t24").querySelector("tbody");tb.innerHTML="";
+  S.t24.forEach((r,i)=>{const tr=document.createElement("tr");
+    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name" placeholder="${["救護車","警車","消防車","火災警報器",""][i]||""}"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
+    tb.appendChild(tr);bind("ss"+i,r,"s");bind("su"+i,r,"url");bind("sh"+i,r,"hz");bind("sl"+i,r,"lo");bind("sx"+i,r,"hi");bind("sf"+i,r,"form","change")})}
+function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
+  S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name" placeholder="___～___ Hz"></td><td><input type="text" id="lt${i}" class="name" placeholder="___ 秒"></td><td><input type="text" id="mr${i}" class="name"></td><td><input type="text" id="mt${i}" class="name"></td><td><select id="lok${i}"><option value="">選</option><option>符合</option><option>不符合</option><option>不確定</option></select></td>`;
+    tb.appendChild(tr);bind("lr"+i,r,"lr");bind("lt"+i,r,"lt");bind("mr"+i,r,"mr");bind("mt"+i,r,"mt");bind("lok"+i,r,"ok","change")})}
+
+/* 圖 2-2：法規警報聲的時頻圖（按鈕打開） */
+function sirenF(kind,t){if(kind==="amb")return (t%1)<0.4?700:950;
+  if(kind==="fire"){const c=t%5;return c<1.5?700+800*c/1.5:1500-800*(c-1.5)/3.5}
+  if(kind==="police"){const c=t%(1/3),u=c/(1/3);return u<0.7?700+800*u/0.7:1500-800*(u-0.7)/0.3}
+  return (t%1)<0.8?700:950}
+function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const K=[["救護車","amb"],["消防車","fire"],["警車","police"],["工程救險車","eng"]],x0=64,W=560,h=78,gap=24,T=6,fmin=500,fmax=1650;
+  K.forEach(([name,k],i)=>{const top=14+i*(h+gap),fy=f=>top+h-(f-fmin)/(fmax-fmin)*h;
+    for(const [a,b] of [[650,750],[900,1000],[1450,1550]])el("rect",{x:x0,y:fy(b),width:W,height:fy(a)-fy(b),fill:"#9fb7d9",opacity:0.35},s);
+    el("rect",{x:x0,y:top,width:W,height:h,fill:"none",stroke:P.ink,"stroke-width":1},s);
+    for(const f of [750,1000,1500])el("text",{x:x0-6,y:fy(f)+4,"text-anchor":"end","font-size":11,fill:P.muted},s,String(f));
+    el("text",{x:x0+6,y:top+14,"font-size":13,"font-weight":700,fill:P.ink},s,name);
+    let d="";for(let j=0;j<=1200;j++){const t=j/1200*T,f=sirenF(k,t),x=x0+t/T*W;d+=(j?"L":"M")+x.toFixed(1)+","+fy(f).toFixed(1)}
+    el("path",{d,fill:"none",stroke:"#d9532c","stroke-width":2},s)});
+  const yb=14+4*(h+gap)-gap+16;for(let t=0;t<=T;t++){el("text",{x:x0+t/T*W,y:yb,"text-anchor":"middle","font-size":11,fill:P.muted},s,t+"")}
+  el("text",{x:x0+W/2,y:yb+18,"text-anchor":"middle","font-size":12,fill:P.muted},s,"時間（秒）　縱軸：頻率（Hz）")}
+$("reveal").addEventListener("click",()=>{$("lawfig").hidden=false;S.reveal=true;save();drawLaw()});
+
+/* 照片：縮小後存起來 */
+function shrink(file){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const m=900,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",0.72))};img.onerror=no;img.src=u})}
+function showImg(k){const im=$("im_"+k);if(!im)return;if(IMG[k]){im.src=IMG[k];im.hidden=false;im.nextElementSibling.hidden=true}else{im.hidden=true;im.removeAttribute("src");im.nextElementSibling.hidden=false}}
+["ph1","ph2","ph3","ph4","ph5","ph6"].forEach(k=>{$(k).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[k]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(k)}catch(err){alertMsg("這張照片讀不出來，換一張試試。")}});showImg(k)});
+document.querySelectorAll("[data-clear]").forEach(b=>b.addEventListener("click",()=>{delete IMG[b.dataset.clear];saveImg();showImg(b.dataset.clear)}));
+function alertMsg(t){$("expMsg").textContent=t}
+
+/* 其他欄位 */
+for(const id of ["hyp","qb1","qb2","qp1","qp2","sirens","c1","c2","c3a","c3b","c4","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
+for(const id of ["q220","q880","c3c"])bind(id,S,id,"change");
+buildT21();buildT22();buildT23();buildT24();buildT25();
+if(S.reveal){$("lawfig").hidden=false;drawLaw()}
+const redraw=()=>{drawBeads();if(S.reveal)drawLaw()};
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ================= 匯出 Word ================= */
+(()=>{const btn=$("export"),msg=$("expMsg");
+async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(svg);const img=new Image();img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml.replace("<svg",`<svg width="${w}" height="${h}"`));
+  await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+  return await (await new Promise(r=>c.toBlob(r,"image/png"))).arrayBuffer()}
+function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
+function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
+btn.addEventListener("click",async()=>{
+  if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
+  btn.disabled=true;msg.textContent="正在產生 Word 檔……";
+  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
+    const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
+    const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:21})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
+    const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c,{bold:r.bold}))}))]});
+    const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
+    const pic=async(u,w)=>{const [iw,ih]=await imgSize(u);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(u),transformation:{width:w,height:Math.round(w*ih/iw)}})]})};
+    const B=[];
+    B.push(P("智「where」交通　科展實驗紀錄單（二）傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("聲音裡藏了哪些頻率？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
+    B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
+    B.push(H("研究問題與假設"));B.push(P("問題：警笛聲裡面有哪些頻率？跟我們說話、唱歌的聲音一樣嗎？"));B.push(P("我的假設："+(S.hyp||"＿＿＿＿")));
+    B.push(H("一、頻率是什麼？每秒轉幾圈"));
+    B.push(table(["設定（圈／秒）","10 秒數到幾圈","每秒幾圈","＝幾赫茲"],[1,2,3].map(k=>{const n=num(S.t21[k]);return [k,S.t21[k]||"",n===null?"":f1(n/10),n===null?"":f1(n/10)+" Hz"]})));
+    B.push(cap("表 2-1、數數看彈簧轉幾圈"));
+    B.push(P(`頻率＝每秒轉（振動）幾圈，單位是赫茲（Hz）。220 Hz 是 ${S.q220||"＿"} 音，880 Hz 是 ${S.q880||"＿"} 音。`));
+    B.push(H("二、用串珠認識「聲譜」"));
+    for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
+    const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
+    B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));B.push(cap("表 2-2、我的這一把串珠"));
+    const bs=off("0 0 560 300");drawBeads(bs,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bs,560,300),transformation:{width:450,height:241}})]}));
+    B.push(cap("圖 2-1、我的串珠聲譜（實心＝實際，虛線＝我猜）"));
+    B.push(P("只用眼睛猜，準嗎？"+(S.qb1||"＿＿")));B.push(P("排好、數好以後，一眼就能看出哪一種最多嗎？"+(S.qb2||"＿＿")));
+    B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
+    B.push(H("三、用 Phyphox 看自己的聲音"));
+    B.push(table(["我發出的聲音","波形規律嗎？","聲譜有尖尖的山峰嗎？","主要頻率（Hz）"],S.t23.map(r=>[r.v,r.reg,r.peak,r.hz])));B.push(cap("表 2-3、我的聲音：波形和聲譜"));
+    for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
+    B.push(P("怎麼發聲，波形才會規律、聲譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
+    B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(P("生活中的警笛或警報聲："+(S.sirens||"＿＿")));
+    const sr=S.t24.filter(r=>r.s||r.hz||r.url).map(r=>[r.s,r.url,r.hz,(r.lo||r.hi)?`${r.lo}～${r.hi}`:"",r.form]);
+    B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));B.push(cap("表 2-4、警笛聲的頻率"));
+    for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的聲譜"))}
+    B.push(H("五、臺灣對警笛聲的規定"));
+    B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));B.push(cap("表 2-5、法規規定和實測比較"));
+    const ls=off("0 0 640 420");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,420),transformation:{width:460,height:302}})]}));
+    B.push(cap("圖 2-2、依法規畫出的四種警報聲：頻率隨時間的變化"));
+    B.push(H("六、結果與結論"));
+    B.push(P("1. 頻率是什麼？"+(S.c1||"＿＿")));B.push(P("2. 串珠和聲譜哪裡很像？"+(S.c2||"＿＿")));
+    B.push(P(`3. 警笛聲的主要頻率大約在 ${S.c3a||"＿＿"}～${S.c3b||"＿＿"} Hz；跟說話的聲音比，比較 ${S.c3c||"＿"}。`));
+    B.push(P("4. 結論："+(S.c4||"＿＿＿＿")));
+    B.push(P("➜ 本紀錄單的成果＝科展報告「研究二：聲音的頻率與警笛的身分證」",{color:"5B6872",size:20}));
+    const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
+    const blob=await Packer.toBlob(doc);
+    const fn=`紀錄單二_傅立葉轉換篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
+    let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
+    if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。"}done=true}}
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
+  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
+  btn.disabled=false})})();
+<\/script>
+<style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
+<script>
+(()=>{let loaded=false;const f=document.getElementById("ws2frame");
+function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
+window.__ws2Show=on=>{if(!on||loaded)return;loaded=true;
+  f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
+  f.srcdoc=document.getElementById("ws2src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+addEventListener("resize",fit);})();
+</script>
+<!-- TAB5 END -->
 <script>
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
   const t=b.dataset.tab; document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
   document.getElementById("tab3").hidden=t!=="tab3"; if(window.__modelShow) window.__modelShow(t==="tab3");
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
+  document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
   if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
   if(t!=="tab2"&&window.__cockpitStop) window.__cockpitStop();
   window.dispatchEvent(new Event("resize"));
