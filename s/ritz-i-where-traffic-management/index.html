@@ -2104,9 +2104,13 @@ td.rng input{max-width:5em}
 
 <section>
   <div class="two">
-    <div class="card"><h3>研究問題與假設</h3>
-      <p>警笛聲裡面有哪些頻率？跟我們說話、唱歌的聲音一樣嗎？</p>
-      <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2" placeholder="例如：警笛的頻率比較高，因為……"></textarea></div>
+    <div class="card"><h3>自然課學過的聲音</h3>
+      <p class="note">回想一下，自然課學過哪些跟聲音有關的事？</p>
+      <label for="n1">聲音是怎麼產生的？</label><input type="text" id="n1" style="max-width:none;width:100%;text-align:left" placeholder="例如：拍桌子、撥橡皮筋，東西會……">
+      <label for="n2">聲音靠什麼傳到耳朵？</label><input type="text" id="n2" style="max-width:none;width:100%;text-align:left" placeholder="例如：空氣、水、桌子……">
+      <label for="n3">聲音的高低（高音、低音）跟什麼有關？</label><input type="text" id="n3" style="max-width:none;width:100%;text-align:left" placeholder="例如：振動得快或慢……">
+      <label for="n4">聲音的大小（大聲、小聲）跟什麼有關？</label><input type="text" id="n4" style="max-width:none;width:100%;text-align:left" placeholder="例如：振動得大或小、用力……">
+    </div>
     <div class="card"><h3>器材</h3><ul>
       <li>彩色串珠一大盒（拆散）、手機或相機（拍照）</li>
       <li>手機安裝 Phyphox，用「音訊示波器」和「音訊頻譜」</li>
@@ -2462,7 +2466,7 @@ const KEY="ws2-fourier-v1";
 const BEADS=[["紅","#cc2230"],["珊瑚紅","#f2675a"],["橘","#f7a531"],["黃綠","#b5e02c"],["橄欖綠","#6d7a2c"],["藍","#2ba3d8"],["紫","#5a2585"],["紫紅","#8e1a5c"],["桃紅","#e0479b"],["米白","#e3dfbf"],["黑","#26222a"]];
 const VOICES=["說話「你好」","長長的「啊～」","唱低音","唱高音","吹口哨（選做）"];
 const CARS=["救護車","消防車","警車","工程救險車"];
-let S={hyp:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads:BEADS.map(([n,c])=>({n,c,g:"",a:""})),qb1:"",qb2:"",
+let S={hyp:"",n1:"",n2:"",n3:"",n4:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads:BEADS.map(([n,c])=>({n,c,g:"",a:""})),qb1:"",qb2:"",
   t23:VOICES.map(v=>({v,reg:"",peak:"",hz:""})),qp1:"",qp2:"",sirens:"",t24:[...Array(5)].map(()=>({s:"",url:"",hz:"",lo:"",hi:"",form:""})),
   t25:CARS.map(c=>({c,lr:"",lt:"",mr:"",mt:"",ok:""})),c1:"",c2:"",c3a:"",c3b:"",c3c:"",c4:"",date:"",names:"",cap3:"",cap4:"",cap5:"",cap6:""};
 let IMG={};
@@ -2553,7 +2557,7 @@ document.querySelectorAll("[data-clear]").forEach(b=>b.addEventListener("click",
 function alertMsg(t){$("expMsg").textContent=t}
 
 /* 其他欄位 */
-for(const id of ["hyp","qb1","qb2","qp1","qp2","sirens","c1","c2","c3a","c3b","c4","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
+for(const id of ["n1","n2","n3","n4","qb1","qb2","qp1","qp2","sirens","c1","c2","c3a","c3b","c4","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
 for(const id of ["c3c"])bind(id,S,id,"change");
 buildT22();buildT23();buildT24();buildT25();
 if(S.reveal){$("lawfig").hidden=false;drawLaw()}
@@ -2583,7 +2587,7 @@ btn.addEventListener("click",async()=>{
     B.push(P("智「where」交通　科展實驗紀錄單（二）傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音裡藏了哪些頻率？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    B.push(H("研究問題與假設"));B.push(P("問題：警笛聲裡面有哪些頻率？跟我們說話、唱歌的聲音一樣嗎？"));B.push(P("我的假設："+(S.hyp||"＿＿＿＿")));
+    B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
     B.push(H("二、用串珠認識「聲譜」"));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
