@@ -144,7 +144,7 @@ svg text{font-family:var(--body)}
   <ol class="card" style="padding-left:2.2em">
     <li>把大型量角器放在地上，圓心對準受試者坐的位置，量角器的正前方對準受試者的臉。</li>
     <li>受試者坐在圓心，戴上眼罩，頭不能轉。</li>
-    <li>播音員自己選一個位置，安靜走過去（離受試者約 2 公尺），播 2 秒救護車警笛（每次音量一樣，約 75 dB）。</li>
+    <li>播音員自己選一個位置，安靜走過去（離受試者約 2 公尺），<b>正面面對受試者</b>，喇叭朝向受試者，播 2 秒救護車警笛（每次音量一樣，約 75 dB）。</li>
     <li>受試者用手指出聲音的方向，手先不要放下。</li>
     <li><b>綠繩</b>：從量角器圓心拉到播音員腳下，讀出量角器上的刻度＝<b>真實角度</b>。<b>彩繩</b>：從圓心沿著受試者的手拉直，讀出刻度＝<b>指的角度</b>。</li>
     <li>角度差＝兩條繩子的刻度相減（大減小，都是正的）。</li>
@@ -365,7 +365,7 @@ let fan=null, diffLabel=null;
 function setLine(g,d){g.rotation.y=-d*Math.PI/180}
 
 let angle=40, ear="a", pointing=null, busy=false;
-function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,0,p.z);ann.rotation.y=-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
+function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,0,p.z);ann.rotation.y=Math.PI-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
 function setEar(){plugs.forEach(p=>p.visible=ear==="b")}
 function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}arm.rotation.y=0;armTarget=null;armAngle=0;armUp=0}
 placeAnn();setEar();
@@ -457,7 +457,7 @@ btn.addEventListener("click",async()=>{
     body.push(P("問題：耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？"));
     body.push(P("我的假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
     body.push(H("參、實驗步驟"));
-    ["把大型量角器放在地上，圓心對準受試者坐的位置。","受試者坐在圓心，戴上眼罩，頭不能轉。","播音員自己選一個位置走過去，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向。","綠繩從圓心拉到播音員，讀出真實角度；彩繩沿著受試者的手拉直，讀出指的角度。","角度差＝兩條繩子的刻度相減。","A 未遮蔽做 5 次、B 戴耳塞做 5 次，每次換位置。"].forEach(t=>body.push(P(t,{bullet:true})));
+    ["把大型量角器放在地上，圓心對準受試者坐的位置。","受試者坐在圓心，戴上眼罩，頭不能轉。","播音員自己選一個位置走過去，正面面對受試者、喇叭朝向受試者，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向。","綠繩從圓心拉到播音員，讀出真實角度；彩繩沿著受試者的手拉直，讀出指的角度。","角度差＝兩條繩子的刻度相減。","A 未遮蔽做 5 次、B 戴耳塞做 5 次，每次換位置。"].forEach(t=>body.push(P(t,{bullet:true})));
     body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
