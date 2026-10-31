@@ -1109,8 +1109,8 @@ frame();
 </style>
 <div id="mhost"><div id="mviews"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">ReSpeaker 特寫</button><button data-v="spin">自動旋轉：關</button></div><div class="mtip">拖曳旋轉・滾輪或兩指縮放</div></div>
 <ul class="mlist">
-  <li>透明壓克力柱撐起壓克力板，ReSpeaker 放在板子正中央（高 25 cm）。</li>
-  <li>紅圈＝藍牙喇叭擺放位置：每條路近 50 cm、遠 90 cm。把喇叭綁在玩具救護車上移動。</li>
+  <li>透明壓克力柱撐起壓克力板，ReSpeaker 放在板子正中央（高度到時候自己量）。</li>
+  <li>藍牙喇叭綁在玩具救護車上移動，喇叭的位置到時候自己量。</li>
   <li>道路：黑色珍珠板（寬 20 cm）＋紙膠帶畫中線、白線、斑馬線。房子：紙箱，窗戶和招牌用麥克筆畫。樹：衛生紙捲筒＋絨毛球。車子：家裡的玩具小汽車。</li>
 </ul>
 </div>
@@ -1162,14 +1162,30 @@ function tapeLine(a,b,fixed,along,mat,dash=0){ // a→b 沿著 x 或 z，一段�
   let p=a;while(p<b){const seg=Math.min(b-p,dash||16+rnd()*4);const c=p+seg/2;along==="x"?tape(c,fixed,seg+0.6,"x",mat):tape(fixed,c,seg+0.6,"z",mat);p+=seg+(dash?dash*0.8:0)}}
 const IN=RW+12; // 路口範圍（斑馬線外）
 for(const s of [-1,1]){
-  tapeLine(IN,RL-1,0,"x",tapeY,0); tapeLine(-RL+1,-IN,0,"x",tapeY,0);         // 臺灣大道中線（黃）
+  tapeLine(IN,RL-1,0,"x",tapeY,0); tapeLine(-80,-IN,0,"x",tapeY,0);         // 臺灣大道中線（黃，西邊還在貼）
   tapeLine(IN,RL-1,0,"z",tapeY,0); tapeLine(-RL+1,-IN,0,"z",tapeY,0);         // 惠中路中線
   tapeLine(-RL+1,-IN+2,s*(RW-1.2),"x",tapeW,0); tapeLine(IN-2,RL-1,s*(RW-1.2),"x",tapeW,0);   // 路邊白線
-  tapeLine(-RL+1,-IN+2,s*(RW-1.2),"z",tapeW,0); tapeLine(IN-2,RL-1,s*(RW-1.2),"z",tapeW,0);
+  tapeLine(-RL+1,-IN+2,s*(RW-1.2),"z",tapeW,0); tapeLine(IN-2,s>0?75:RL-1,s*(RW-1.2),"z",tapeW,0);
 }
 // 斑馬線（白膠帶一條一條）＋停止線
 for(let i=-RW+1.6;i<RW-1;i+=2.6){tape(i,RW+5,6,"z",tapeW,1.4);tape(i,-RW-5,6,"z",tapeW,1.4);tape(RW+5,i,6,"x",tapeW,1.4);tape(-RW-5,i,6,"x",tapeW,1.4)}
 tape(-RW/2,-RW-10,RW,"x",tapeW);tape(RW/2,RW+10,RW,"x",tapeW);tape(RW+10,-RW/2,RW,"z",tapeW);tape(-RW-10,RW/2,RW,"z",tapeW);
+// 正在貼膠帶：一卷膠帶立在線的尾巴（拉出一段），旁邊放一把剪刀
+function tapeRoll(x,z,axis,mat){const g=new THREE.Group();
+  const prof=(r0,r1,h)=>[new THREE.Vector2(r0,-h/2),new THREE.Vector2(r1,-h/2),new THREE.Vector2(r1,h/2),new THREE.Vector2(r0,h/2),new THREE.Vector2(r0,-h/2)];
+  const roll=new THREE.Mesh(new THREE.LatheGeometry(prof(2.6,4.2,1.5),48),mat);roll.castShadow=true;g.add(roll);
+  const core=new THREE.Mesh(new THREE.LatheGeometry(prof(2.25,2.6,1.6),48),M(0xb98a55));g.add(core);
+  g.rotation.set(axis==="x"?Math.PI/2:0,0,axis==="x"?0:Math.PI/2); // 輪子立起來，沿著線滾
+  g.position.set(x,4.6,z);scene.add(g);return g}
+function scissors(x,z,rot,hc){const g=new THREE.Group(),steel=M(0xc4c9cf,{metalness:0.75,roughness:0.28}),hm=M(hc,{roughness:0.5});
+  for(const s of [-1,1]){const b=new THREE.Group();b.rotation.z=s*0.2;g.add(b);
+    ext([[0,-0.5*s],[7.5,-0.05*s],[7.4,0.15*s],[0,0.45*s]],0.2,steel,0.04,b);
+    const h=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.42,10,24),hm);h.position.set(-2.3,1.0*s,0);h.castShadow=true;b.add(h);
+    const n=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.5,0.5),hm);n.position.set(-0.7,0.45*s,0);b.add(n)}
+  const pin=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.7,12),steel);pin.rotation.x=Math.PI/2;g.add(pin);
+  g.rotation.set(-Math.PI/2,0,rot);g.position.set(x,0.85,z);scene.add(g);return g}
+tapeRoll(-86,0,"x",tapeY); tape(-83,0,6,"x",tapeY); scissors(-90,9,0.6,0xe8483f);   // 黃色中線貼到一半
+tapeRoll(RW-1.2,81,"z",tapeW); tape(RW-1.2,78,6,"z",tapeW); scissors(17,84,2.2,0x2f6fd6); // 白色邊線貼到一半
 
 /* ---------- 透明壓克力架＋ReSpeaker ---------- */
 const acrylic=new THREE.MeshPhysicalMaterial({color:0xdff3ff,transparent:true,opacity:0.28,roughness:0.05,metalness:0,clearcoat:1,clearcoatRoughness:0.05,depthWrite:false});
@@ -1178,12 +1194,12 @@ function acrylicBox(w,h,d,x,y,z){const g=new THREE.BoxGeometry(w,h,d);const m=ne
   const e=new THREE.LineSegments(new THREE.EdgesGeometry(g),acrylicEdge);e.position.copy(m.position);scene.add(e);return m}
 for(const sx of [-1,1]) for(const sz of [-1,1]) acrylicBox(2,24.4,2,sx*14,0.6,sz*14);
 acrylicBox(32,0.6,32,0,25,0);
-cyl(5,2.6,M(0x2f6fd6,{roughness:0.4}),0,25.6,0,40); cyl(5.15,0.5,M(0x1d2d4a,{roughness:0.5}),0,25.6,0,40);
-const sticker=canvasTex(256,256,(g)=>{g.fillStyle="#f5f7fa";g.beginPath();g.arc(128,128,100,0,7);g.fill();g.strokeStyle="#111";g.lineWidth=3;g.beginPath();g.arc(128,128,96,0,7);g.stroke();
-  for(let d=0;d<360;d+=10){const a=(d-90)*Math.PI/180,r0=d%30?88:80;g.lineWidth=d%30?1:2;g.beginPath();g.moveTo(128+Math.cos(a)*r0,128+Math.sin(a)*r0);g.lineTo(128+Math.cos(a)*96,128+Math.sin(a)*96);g.stroke()}
+cyl(5,2.6,M(0x1c1d20,{roughness:0.45}),0,25.6,0,40); cyl(5.15,0.5,M(0x0e0f11,{roughness:0.5}),0,25.6,0,40);
+const sticker=canvasTex(256,256,(g)=>{g.fillStyle="#1c1d20";g.beginPath();g.arc(128,128,100,0,7);g.fill();g.strokeStyle="#ddd";g.lineWidth=3;g.beginPath();g.arc(128,128,96,0,7);g.stroke();
+  for(let d=0;d<360;d+=10){const a=(d-90)*Math.PI/180,r0=d%30?88:80;g.strokeStyle="#ddd";g.lineWidth=d%30?1:2;g.beginPath();g.moveTo(128+Math.cos(a)*r0,128+Math.sin(a)*r0);g.lineTo(128+Math.cos(a)*96,128+Math.sin(a)*96);g.stroke()}
   g.textAlign="center";g.textBaseline="middle";
   [45,135,225,315].forEach((d,k)=>{const a=(d-90)*Math.PI/180,x=128+Math.cos(a)*48,y=128+Math.sin(a)*48;g.save();g.translate(x,y);g.rotate((d+180)*Math.PI/180);g.beginPath();g.arc(0,0,17,0,7);g.fillStyle="#fff";g.fill();g.lineWidth=2.5;g.strokeStyle="#111";g.stroke();g.fillStyle="#111";g.font="bold 22px sans-serif";g.fillText(String(k+1),0,1);g.restore()});
-  [[0,"0°"],[90,"90°"],[180,"180°"],[270,"270°"]].forEach(([d,t])=>{const a=(d-90)*Math.PI/180;g.save();g.translate(128+Math.cos(a)*68,128+Math.sin(a)*68);g.rotate((d+180)*Math.PI/180);g.font="bold 15px sans-serif";g.fillStyle="#111";g.fillText(t,0,0);g.restore()})});
+  [[0,"0°"],[90,"90°"],[180,"180°"],[270,"270°"]].forEach(([d,t])=>{const a=(d-90)*Math.PI/180;g.save();g.translate(128+Math.cos(a)*68,128+Math.sin(a)*68);g.rotate((d+180)*Math.PI/180);g.font="bold 15px sans-serif";g.fillStyle="#eee";g.fillText(t,0,0);g.restore()})});
 const st=new THREE.Mesh(new THREE.CircleGeometry(5.8,48),new THREE.MeshBasicMaterial({map:sticker,transparent:true})); st.rotation.x=-Math.PI/2; st.position.set(0,28.25,0); scene.add(st);
 // USB 線：從 ReSpeaker 沿著壓克力柱下來，貼著路邊走到地上的 MacBook
 const usbCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,27,4.9),new THREE.Vector3(-4,26.4,11),new THREE.Vector3(-10,26,14),new THREE.Vector3(-14.6,22,14.6),new THREE.Vector3(-14.8,6,14.8),new THREE.Vector3(-15.5,0.4,17),
@@ -1347,8 +1363,6 @@ const lbR=part(amb,0.7,0.45,1.1,lampM(0xff2a2a),1.4,3.95,-0.62), lbB=part(amb,0.
 const spk=part(amb,3.2,2.4,2.4,M(0x2a2e33,{roughness:0.6}),-1.4,4.95,0);
 const grill=new THREE.Mesh(new THREE.CircleGeometry(0.85,24),M(0x111111));grill.position.set(-1.4,4.95,1.21);amb.add(grill);
 
-const ringM=new THREE.MeshBasicMaterial({color:0xff3b3b});
-for(const [x,z] of [[50,-5],[90,-5],[-50,5],[-90,5],[-5,-50],[-5,-90],[5,50],[5,90]]){const r=new THREE.Mesh(new THREE.RingGeometry(2.4,3,36),ringM);r.rotation.x=-Math.PI/2;r.position.set(x,0.48,z);scene.add(r)}
 const waves=[];const circ=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
 for(let i=0;i<5;i++){const w=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:0.8}));w.position.set(70,9,-5);w.userData.ph=i/5;scene.add(w);waves.push(w)}
 
@@ -1359,8 +1373,8 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   g.fillStyle="rgba(255,255,255,.88)";const r=24;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,c.height,r);g.arcTo(w,c.height,0,c.height,r);g.arcTo(0,c.height,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
   g.fillStyle=color;g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,16+i*80));
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
-label("ReSpeaker\n壓克力板上・高 25 cm",0,42,0,9,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
-label("MacBook（頻率雷達）",-58,30,54,5,"#1f4fa8"); label("近 50",50,6,-15,4.5,"#b3122e"); label("遠 90",90,6,-15,4.5,"#b3122e");
+label("ReSpeaker",0,38,0,7,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
+label("電腦",-58,30,54,5,"#1f4fa8");
 
 /* ---------- 視角、動畫 ---------- */
 const views={v1:[[92,76,124],[-8,8,6]],v2:[[0,250,1],[0,0,0]],v3:[[-80,9,12],[40,12,-3]],v4:[[30,42,38],[0,22,0]]};
