@@ -1107,9 +1107,9 @@ frame();
 #mhost .mtip{position:absolute;left:12px;bottom:10px;font-size:12px;color:#3c5262;pointer-events:none}
 .mlist{margin:0;padding-left:1.2em;color:var(--muted);font-size:15px;display:flex;flex-direction:column;gap:2px}
 </style>
-<div id="mhost"><div id="mviews"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">ReSpeaker 特寫</button><button data-v="spin">自動旋轉：關</button></div><div class="mtip">拖曳旋轉・滾輪或兩指縮放</div></div>
+<div id="mhost"><div id="mviews"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">麥克風特寫</button><button data-v="spin">自動旋轉：關</button></div><div class="mtip">拖曳旋轉・滾輪或兩指縮放</div></div>
 <ul class="mlist">
-  <li>透明壓克力柱撐起壓克力板，ReSpeaker 放在板子正中央（高度到時候自己量）。</li>
+  <li>透明壓克力柱撐起壓克力板，陣列式麥克風（ReSpeaker）放在板子正中央（高度到時候自己量）。</li>
   <li>藍牙喇叭綁在玩具救護車上移動，喇叭的位置到時候自己量。</li>
   <li>道路：黑色珍珠板（寬 20 cm）＋紙膠帶畫中線、白線、斑馬線。房子：紙箱，窗戶和招牌用麥克筆畫。樹：衛生紙捲筒＋絨毛球。車子：家裡的玩具小汽車。</li>
 </ul>
@@ -1177,17 +1177,17 @@ function tapeRoll(x,z,axis,mat){const g=new THREE.Group();
   const core=new THREE.Mesh(new THREE.LatheGeometry(prof(2.25,2.6,1.6),48),M(0xb98a55));g.add(core);
   g.rotation.set(axis==="x"?Math.PI/2:0,0,axis==="x"?0:Math.PI/2); // 輪子立起來，沿著線滾
   g.position.set(x,4.6,z);scene.add(g);return g}
-function scissors(x,z,rot,hc){const g=new THREE.Group(),steel=M(0xc4c9cf,{metalness:0.75,roughness:0.28}),hm=M(hc,{roughness:0.5});
-  for(const s of [-1,1]){const b=new THREE.Group();b.rotation.z=s*0.2;g.add(b);
+function scissors(x,z,rot,hc,open=0.2){const g=new THREE.Group(),steel=M(0xc4c9cf,{metalness:0.75,roughness:0.28}),hm=M(hc,{roughness:0.5});
+  for(const s of [-1,1]){const b=new THREE.Group();b.rotation.z=s*open;g.add(b);
     ext([[0,-0.5*s],[7.5,-0.05*s],[7.4,0.15*s],[0,0.45*s]],0.2,steel,0.04,b);
     const h=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.42,10,24),hm);h.position.set(-2.3,1.0*s,0);h.castShadow=true;b.add(h);
     const n=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.5,0.5),hm);n.position.set(-0.7,0.45*s,0);b.add(n)}
   const pin=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.7,12),steel);pin.rotation.x=Math.PI/2;g.add(pin);
-  g.rotation.set(-Math.PI/2,0,rot);g.position.set(x,0.85,z);scene.add(g);return g}
-tapeRoll(-86,0,"x",tapeY); tape(-83,0,6,"x",tapeY); scissors(-90,9,0.6,0xe8483f);   // 黃色中線貼到一半
-tapeRoll(RW-1.2,81,"z",tapeW); tape(RW-1.2,78,6,"z",tapeW); scissors(17,84,2.2,0x2f6fd6); // 白色邊線貼到一半
+  g.rotation.set(-Math.PI/2,0,rot);g.position.set(x,0.62,z);scene.add(g);return g}
+tapeRoll(-86,0,"x",tapeY); tape(-83,0,6,"x",tapeY); scissors(-81.6,4.2,Math.PI/2,0xe8483f,0.24);   // 黃色中線貼到一半：剪刀正在剪
+tapeRoll(RW-1.2,81,"z",tapeW); tape(RW-1.2,78,6,"z",tapeW); scissors(RW-1.2+4.2,76.4,Math.PI,0x2f6fd6,0.24); // 白色邊線貼到一半：剪刀正在剪
 
-/* ---------- 透明壓克力架＋ReSpeaker ---------- */
+/* ---------- 透明壓克力架＋陣列式麥克風（ReSpeaker） ---------- */
 const acrylic=new THREE.MeshPhysicalMaterial({color:0xdff3ff,transparent:true,opacity:0.28,roughness:0.05,metalness:0,clearcoat:1,clearcoatRoughness:0.05,depthWrite:false});
 const acrylicEdge=new THREE.LineBasicMaterial({color:0x7fc4ee,transparent:true,opacity:0.95});
 function acrylicBox(w,h,d,x,y,z){const g=new THREE.BoxGeometry(w,h,d);const m=new THREE.Mesh(g,acrylic);m.position.set(x,y+h/2,z);m.renderOrder=2;scene.add(m);
@@ -1373,7 +1373,7 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   g.fillStyle="rgba(255,255,255,.88)";const r=24;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,c.height,r);g.arcTo(w,c.height,0,c.height,r);g.arcTo(0,c.height,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
   g.fillStyle=color;g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,16+i*80));
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
-label("ReSpeaker",0,40,0,7,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
+label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
 label("電腦",-58,30,54,5,"#1f4fa8");
 
 /* ---------- 視角、動畫 ---------- */
