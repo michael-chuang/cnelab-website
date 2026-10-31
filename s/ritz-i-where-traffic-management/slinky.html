@@ -209,9 +209,9 @@ let tween=null;
 function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
 cam.position.set(...VIEWS.tilt[0]);ctl.target.set(...VIEWS.tilt[1]);ctl.update();
-let f=0.5, t=0, tau=0, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
+let f=0.5, t=0, tau=0, tauStop=null, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
-$("airGo").addEventListener("click",()=>{running=!running;tau=0;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
+$("airGo").addEventListener("click",()=>{if(running){tauStop=tau}else{tau=0;tauStop=null}running=!running;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
 $("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
 // 波形（示波器）：最新在右邊
 const sc=$("airScope"), g=sc.getContext("2d"), SPAN=6;
@@ -227,10 +227,13 @@ function pcol(p){const A=p>=0?[255,90,74]:[61,139,255],B=[233,237,245],k=Math.mi
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(!stage.offsetParent){return}
-  if(!paused){t+=dt;if(running)tau+=dt}
+  const cc=LAMBDA*f, tail=tauStop===null?-1e9:cc*(tau-tauStop);   // 停下後，最後一波的尾巴也往左跑
+  const active=running||(tauStop!==null&&tail<L1+4);
+  if(!active&&tauStop!==null){tauStop=null}
+  if(!paused){t+=dt;if(active)tau+=dt}
   const w=2*Math.PI*f, k=2*Math.PI/LAMBDA, front=LAMBDA*f*tau; // 聲音傳到哪裡（波前）
-  const env=x=>running?Math.max(0,Math.min(1,(front-x)/3)):0;
-  cone.position.x=MX(running?A*Math.sin(w*tau):0);
+  const env=x=>active?Math.max(0,Math.min(1,(front-x)/3))*(tauStop===null?1:Math.max(0,Math.min(1,(x-tail)/3))):0;
+  cone.position.x=MX(active?env(0.01)*A*Math.sin(w*tau):0);
   for(let i=0;i<N;i++){const ph=w*tau-k*X0[i],e=env(X0[i]);M4.makeTranslation(MX(X0[i]+e*A*Math.sin(ph)),YY[i],ZZ[i]);mol.setMatrixAt(i,M4);
     const p=e*Math.cos(ph);if(p>=0)C.copy(wht).lerp(red,p);else C.copy(wht).lerp(blue,-p);mol.setColorAt(i,C)}
   mol.instanceMatrix.needsUpdate=true;if(mol.instanceColor)mol.instanceColor.needsUpdate=true;

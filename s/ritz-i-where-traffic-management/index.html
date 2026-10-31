@@ -2250,12 +2250,9 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
     <div class="row"><button id="reveal">查完法規了，打開圖 2-2 對照</button></div>
     <div id="lawfig" hidden style="display:flex;flex-direction:column;gap:12px">
       <div class="row" id="sirenBtns"><span class="note">按一下，播放依法規合成的警報聲：</span><button data-k="amb">救護車</button><button data-k="fire">消防車</button><button data-k="police">警車</button><button data-k="eng">工程救險車</button><button data-k="">■ 停止</button></div>
-      <div class="sirenGrid">
-        <div class="scopeBox"><div class="scopeHead"><b>Raw data</b>（原始波形）</div><canvas id="sRaw" width="900" height="260" aria-label="原始波形"></canvas></div>
-        <div class="scopeBox"><div class="scopeHead"><b>Spectrum</b>（頻譜）　Peak-Frequency：<span id="sPeak" class="num">－</span> Hz</div><canvas id="sSpec" width="900" height="260" aria-label="頻譜"></canvas></div>
-      </div>
-      <svg id="law" viewBox="0 0 640 420" role="img" aria-label="四種警報聲的頻率隨時間變化"></svg>
-      <p class="cap">圖 2-2　依法規合成的四種警報聲：頻率隨時間的變化（色帶＝法規的頻率範圍 650–750、900–1000、1450–1550 Hz）。播放時，紅線會跑，上面的頻譜山峰也跟著移動。</p></div>
+      <p class="note" id="sNow" aria-live="polite">按一種車，聽聽看、看看圓點怎麼跑。</p>
+      <svg id="law" viewBox="0 0 640 450" role="img" aria-label="四種警報聲的頻率隨時間變化"></svg>
+      <p class="cap">圖 2-2　依法規合成的四種警報聲：頻率隨時間的變化（色帶＝法規的頻率範圍 650–750、900–1000、1450–1550 Hz）。播放時，圓點會沿著那一種車的線跑，旁邊寫出現在的頻率。</p></div>
   </div>
 </section>
 
@@ -2327,9 +2324,9 @@ let tween=null;
 function go(k){const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};document.querySelectorAll("#airViews button").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
 $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.v)});
 cam.position.set(...VIEWS.tilt[0]);ctl.target.set(...VIEWS.tilt[1]);ctl.update();
-let f=0.5, t=0, tau=0, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
+let f=0.5, t=0, tau=0, tauStop=null, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
-$("airGo").addEventListener("click",()=>{running=!running;tau=0;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
+$("airGo").addEventListener("click",()=>{if(running){tauStop=tau}else{tau=0;tauStop=null}running=!running;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
 $("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
 // 波形（示波器）：最新在右邊
 const sc=$("airScope"), g=sc.getContext("2d"), SPAN=6;
@@ -2345,10 +2342,13 @@ function pcol(p){const A=p>=0?[255,90,74]:[61,139,255],B=[233,237,245],k=Math.mi
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(!stage.offsetParent){return}
-  if(!paused){t+=dt;if(running)tau+=dt}
+  const cc=LAMBDA*f, tail=tauStop===null?-1e9:cc*(tau-tauStop);   // 停下後，最後一波的尾巴也往左跑
+  const active=running||(tauStop!==null&&tail<L1+4);
+  if(!active&&tauStop!==null){tauStop=null}
+  if(!paused){t+=dt;if(active)tau+=dt}
   const w=2*Math.PI*f, k=2*Math.PI/LAMBDA, front=LAMBDA*f*tau; // 聲音傳到哪裡（波前）
-  const env=x=>running?Math.max(0,Math.min(1,(front-x)/3)):0;
-  cone.position.x=MX(running?A*Math.sin(w*tau):0);
+  const env=x=>active?Math.max(0,Math.min(1,(front-x)/3))*(tauStop===null?1:Math.max(0,Math.min(1,(x-tail)/3))):0;
+  cone.position.x=MX(active?env(0.01)*A*Math.sin(w*tau):0);
   for(let i=0;i<N;i++){const ph=w*tau-k*X0[i],e=env(X0[i]);M4.makeTranslation(MX(X0[i]+e*A*Math.sin(ph)),YY[i],ZZ[i]);mol.setMatrixAt(i,M4);
     const p=e*Math.cos(ph);if(p>=0)C.copy(wht).lerp(red,p);else C.copy(wht).lerp(blue,-p);mol.setColorAt(i,C)}
   mol.instanceMatrix.needsUpdate=true;if(mol.instanceColor)mol.instanceColor.needsUpdate=true;
@@ -2525,8 +2525,8 @@ function calcT22(){let G=0,A=0,hasG=false,hasA=false;
   $("bcTotal").textContent=hasG||hasA?`合計：我猜 ${hasG?G:"—"} 顆，實際 ${hasA?A:"—"} 顆`:""}
 const SVGNS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
-function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),line:g("--line")}}
-const PRINT={ink:"#18232b",muted:"#5b6872",line:"#d3dbe0"};
+function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),line:g("--line"),bg:g("--bg"),paper:g("--paper")}}
+const PRINT={ink:"#18232b",muted:"#5b6872",line:"#d3dbe0",bg:"#f3f5f8",paper:"#ffffff"};
 function drawBeads(s,P=PRINT){s.innerHTML="";const x0=44,y0=250,H=220,W=500,n=S.beads.length,bw=W/n;
   const mx=Math.max(6,...S.beads.map(b=>Math.max(num(b.a)||0,num(b.g)||0)));const top=Math.ceil(mx/2)*2;
   for(let v=0;v<=top;v+=top>20?5:top>10?2:1){const y=y0-v/top*H;el("line",{x1:x0,x2:x0+W,y1:y,y2:y,stroke:P.line,"stroke-width":1},s);el("text",{x:x0-6,y:y+4,"text-anchor":"end","font-size":12,fill:P.muted},s,String(v))}
@@ -2557,57 +2557,50 @@ function sirenF(kind,t){if(kind==="amb")return (t%1)<0.4?700:950;
   if(kind==="fire"){const c=t%5;return c<1.5?700+800*c/1.5:1500-800*(c-1.5)/3.5}
   if(kind==="police"){const c=t%(1/3),u=c/(1/3);return u<0.7?700+800*u/0.7:1500-800*(u-0.7)/0.3}
   return (t%1)<0.8?700:950}
-function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const K=[["救護車","amb"],["消防車","fire"],["警車","police"],["工程救險車","eng"]],x0=64,W=560,h=78,gap=24,T=6,fmin=500,fmax=1650;
-  K.forEach(([name,k],i)=>{const top=14+i*(h+gap),fy=f=>top+h-(f-fmin)/(fmax-fmin)*h;
-    for(const [a,b] of [[650,750],[900,1000],[1450,1550]])el("rect",{x:x0,y:fy(b),width:W,height:fy(a)-fy(b),fill:"#9fb7d9",opacity:0.35},s);
-    el("rect",{x:x0,y:top,width:W,height:h,fill:"none",stroke:P.ink,"stroke-width":1},s);
-    for(const f of [750,1000,1500])el("text",{x:x0-6,y:fy(f)+4,"text-anchor":"end","font-size":11,fill:P.muted},s,String(f));
-    el("text",{x:x0+6,y:top+14,"font-size":13,"font-weight":700,fill:P.ink},s,name);
-    let d="";for(let j=0;j<=1200;j++){const t=j/1200*T,f=sirenF(k,t),x=x0+t/T*W;d+=(j?"L":"M")+x.toFixed(1)+","+fy(f).toFixed(1)}
-    el("path",{d,fill:"none",stroke:"#d9532c","stroke-width":2},s)});
-  const yb=14+4*(h+gap)-gap+16;for(let t=0;t<=T;t++){el("text",{x:x0+t/T*W,y:yb,"text-anchor":"middle","font-size":11,fill:P.muted},s,t+"")}
-  el("text",{x:x0+W/2,y:yb+18,"text-anchor":"middle","font-size":12,fill:P.muted},s,"時間（秒）　縱軸：頻率（Hz）")}
+/* 圖 2-2：四種警報聲的「頻率—時間」圖（每種車一列，顏色不同） */
+const LAWK=[["救護車","amb","#e8483f"],["消防車","fire","#f08a24"],["警車","police","#2f6fd6"],["工程救險車","eng","#2a9d6e"]];
+const LG={x0:124,W:470,h:74,gap:26,top0:18,T:6,fmin:550,fmax:1650};
+function lawY(i,f){const top=LG.top0+i*(LG.h+LG.gap);return top+LG.h-(f-LG.fmin)/(LG.fmax-LG.fmin)*LG.h}
+function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG;
+  LAWK.forEach(([name,k,col],i)=>{const top=top0+i*(h+gap);
+    el("rect",{x:x0-116,y:top-8,width:W+140,height:h+16,rx:12,fill:P.bg,id:"lawRow"+i},s);
+    for(const [a,b,lab] of [[650,750,"低"],[900,1000,"中"],[1450,1550,"高"]]){el("rect",{x:x0,y:lawY(i,b),width:W,height:lawY(i,a)-lawY(i,b),rx:3,fill:col,opacity:0.13},s);
+      el("text",{x:x0+W+6,y:(lawY(i,a)+lawY(i,b))/2+4,"font-size":10,fill:P.muted},s,lab)}
+    for(let t=1;t<T;t++)el("line",{x1:x0+t/T*W,x2:x0+t/T*W,y1:top,y2:top+h,stroke:P.line,"stroke-width":1},s);
+    el("circle",{cx:x0-102,cy:top+h/2,r:7,fill:col},s);
+    el("text",{x:x0-90,y:top+h/2+5,"font-size":14,"font-weight":700,fill:P.ink},s,name.length>3?name.slice(0,2):name);
+    if(name.length>3)el("text",{x:x0-90,y:top+h/2+22,"font-size":14,"font-weight":700,fill:P.ink},s,name.slice(2));
+    let d="";for(let j=0;j<=1500;j++){const t=j/1500*T,x=x0+t/T*W;d+=(j?"L":"M")+x.toFixed(1)+","+lawY(i,sirenF(k,t)).toFixed(1)}
+    el("path",{d,fill:"none",stroke:col,"stroke-width":3,"stroke-linejoin":"round","stroke-linecap":"round"},s);
+    for(const f of [700,1000,1500])el("text",{x:x0-6,y:lawY(i,f)+4,"text-anchor":"end","font-size":10,fill:P.muted},s,String(f))});
+  const yb=top0+4*(h+gap)-gap+18;for(let t=0;t<=T;t++)el("text",{x:x0+t/T*W,y:yb,"text-anchor":"middle","font-size":12,fill:P.muted},s,t+" 秒");
+  el("text",{x:x0+W/2,y:yb+20,"text-anchor":"middle","font-size":12,fill:P.muted},s,"橫軸：時間（秒）　縱軸：頻率（Hz）")}
 $("reveal").addEventListener("click",()=>{$("lawfig").hidden=false;S.reveal=true;save();drawLaw()});
-/* 互動：真的播出警報聲，畫 Raw data 和 Spectrum */
-(()=>{let AC=null,osc=null,lp=null,gn=null,an=null,kind="",t0=0,raf=0;
+/* 互動：播放警報聲，圖上有點沿著曲線跑，顯示現在的頻率 */
+(()=>{let AC=null,osc=null,lp=null,gn=null,kind="",t0=0,raf=0;
   const KI={amb:0,fire:1,police:2,eng:3};
-  const raw=$("sRaw"),spec=$("sSpec"),gr=raw.getContext("2d"),gs=spec.getContext("2d");
-  function col(n){const c=getComputedStyle(document.documentElement);return c.getPropertyValue(n).trim()}
+  function clearCur(){["lawCur","lawDot","lawTxt"].forEach(id=>{const e=document.getElementById(id);if(e)e.remove()});LAWK.forEach((_,i)=>{const r=document.getElementById("lawRow"+i);if(r){r.removeAttribute("stroke");r.removeAttribute("stroke-width")}})}
   function stop(){if(osc){try{gn.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.2)}catch(e){}osc=null}kind="";cancelAnimationFrame(raf);
-    document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.remove("on"));$("sPeak").textContent="－";idle();const c=document.getElementById("lawCursor");if(c)c.remove()}
+    document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.remove("on"));clearCur();$("sNow").textContent="按一種車，聽聽看、看看圓點怎麼跑。"}
   function start(k){stop();if(!k)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
     if(AC.state==="suspended")AC.resume();
-    osc=AC.createOscillator();osc.type="sawtooth";lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=5000;gn=AC.createGain();gn.gain.value=0;
-    an=an||AC.createAnalyser();an.fftSize=8192;an.smoothingTimeConstant=0.55;
-    osc.connect(lp);lp.connect(gn);gn.connect(an);an.connect(AC.destination);
-    kind=k;t0=AC.currentTime;osc.frequency.value=sirenF(k,0);osc.start();gn.gain.setTargetAtTime(0.09,AC.currentTime,0.03);
-    document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));loop()}
-  function grid(g,W,H){g.fillStyle="#0f1424";g.fillRect(0,0,W,H)}
-  function idle(){grid(gr,raw.width,raw.height);grid(gs,spec.width,spec.height);gr.fillStyle=gs.fillStyle="#9ba5b7";gr.font=gs.font="24px 'Noto Sans TC',sans-serif";gr.textAlign=gs.textAlign="center";
-    gr.fillText("按上面的按鈕播放警報聲",raw.width/2,raw.height/2);gs.fillText("頻譜會在這裡出現",spec.width/2,spec.height/2)}
-  const td=new Float32Array(8192), fd=new Float32Array(4096);
-  function loop(){raf=requestAnimationFrame(loop);if(!osc)return;const t=AC.currentTime-t0;
+    osc=AC.createOscillator();osc.type="sawtooth";lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=3500;gn=AC.createGain();gn.gain.value=0;
+    osc.connect(lp);lp.connect(gn);gn.connect(AC.destination);
+    kind=k;t0=AC.currentTime;osc.frequency.value=sirenF(k,0);osc.start();gn.gain.setTargetAtTime(0.08,AC.currentTime,0.03);
+    document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+    const r=document.getElementById("lawRow"+KI[k]);if(r){r.setAttribute("stroke",LAWK[KI[k]][2]);r.setAttribute("stroke-width","3")}
+    loop()}
+  function loop(){raf=requestAnimationFrame(loop);if(!osc)return;const t=AC.currentTime-t0,f=sirenF(kind,t);
     osc.frequency.linearRampToValueAtTime(sirenF(kind,t+0.04),AC.currentTime+0.04);
-    // Raw data：最近約 12 毫秒
-    an.getFloatTimeDomainData(td);const W=raw.width,H=raw.height;grid(gr,W,H);
-    gr.strokeStyle="rgba(200,208,230,.35)";gr.setLineDash([6,5]);gr.beginPath();gr.moveTo(0,H/2);gr.lineTo(W,H/2);gr.stroke();gr.setLineDash([]);
-    const N=Math.round(AC.sampleRate*0.012),off=td.length-N;let mx=0.001;for(let i=off;i<td.length;i++)mx=Math.max(mx,Math.abs(td[i]));
-    gr.lineWidth=3;for(let i=1;i<N;i++){const v=td[off+i]/mx;const x0=(i-1)/N*W,x1=i/N*W,y0=H/2-td[off+i-1]/mx*H*0.4,y1=H/2-v*H*0.4;
-      gr.strokeStyle=v>=0?`rgb(${233+22*v|0},${237-147*v|0},${245-171*v|0})`:`rgb(${233-172*-v|0},${237-98*-v|0},${245+10*-v|0})`;gr.beginPath();gr.moveTo(x0,y0);gr.lineTo(x1,y1);gr.stroke()}
-    gr.fillStyle="#9ba5b7";gr.font="20px 'Noto Sans TC',sans-serif";gr.textAlign="right";gr.fillText("0.012 秒",W-10,H-10);
-    // Spectrum：0～5000 Hz
-    an.getFloatFrequencyData(fd);const W2=spec.width,H2=spec.height,FMAX=5000,bins=Math.floor(FMAX/(AC.sampleRate/an.fftSize));grid(gs,W2,H2);
-    gs.strokeStyle="rgba(200,208,230,.18)";gs.lineWidth=1;gs.fillStyle="#9ba5b7";gs.font="18px 'JetBrains Mono',monospace";gs.textAlign="center";
-    for(let f=0;f<=FMAX;f+=1000){const x=f/FMAX*W2;gs.beginPath();gs.moveTo(x,0);gs.lineTo(x,H2-24);gs.stroke();gs.fillText(f+"",Math.min(W2-24,Math.max(18,x)),H2-4)}
-    let pk=0,pv=-999;gs.beginPath();for(let i=0;i<bins;i++){const v=Math.max(-110,fd[i]);if(v>pv){pv=v;pk=i}const x=i/bins*W2,y=(H2-28)-(v+110)/90*(H2-40);i?gs.lineTo(x,y):gs.moveTo(x,y)}
-    gs.lineTo(W2,H2-28);gs.lineTo(0,H2-28);gs.closePath();const gg=gs.createLinearGradient(0,0,0,H2);gg.addColorStop(0,"rgba(255,90,74,.85)");gg.addColorStop(0.6,"rgba(233,237,245,.5)");gg.addColorStop(1,"rgba(61,139,255,.35)");gs.fillStyle=gg;gs.fill();
-    const pf=pk*AC.sampleRate/an.fftSize;$("sPeak").textContent=Math.round(pf);const px=pk/bins*W2;gs.strokeStyle="#ffd166";gs.lineWidth=2;gs.beginPath();gs.moveTo(px,8);gs.lineTo(px,H2-28);gs.stroke();
-    gs.fillStyle="#ffd166";gs.textAlign=px>W2-120?"right":"left";gs.font="bold 20px 'JetBrains Mono',monospace";gs.fillText(Math.round(pf)+" Hz",px+(px>W2-120?-8:8),26);
-    // 圖 2-2 上的游標
-    const svg=$("law");let c=document.getElementById("lawCursor");if(!c){c=document.createElementNS(SVGNS,"line");c.id="lawCursor";c.setAttribute("stroke","#e8483f");c.setAttribute("stroke-width","3");svg.appendChild(c)}
-    const i=KI[kind],top=14+i*(78+24),x=64+(t%6)/6*560;c.setAttribute("x1",x);c.setAttribute("x2",x);c.setAttribute("y1",top);c.setAttribute("y2",top+78)}
+    const svg=$("law"),i=KI[kind],col=LAWK[i][2],top=LG.top0+i*(LG.h+LG.gap),x=LG.x0+(t%LG.T)/LG.T*LG.W,y=lawY(i,f);
+    let c=document.getElementById("lawCur"),d=document.getElementById("lawDot"),tx=document.getElementById("lawTxt");
+    if(!c){c=document.createElementNS(SVGNS,"line");c.id="lawCur";c.setAttribute("stroke",col);c.setAttribute("stroke-width","1.5");c.setAttribute("stroke-dasharray","4 3");svg.appendChild(c);
+      d=document.createElementNS(SVGNS,"circle");d.id="lawDot";d.setAttribute("r","7");d.setAttribute("fill",col);d.setAttribute("stroke","#fff");d.setAttribute("stroke-width","2.5");svg.appendChild(d);
+      tx=document.createElementNS(SVGNS,"text");tx.id="lawTxt";tx.setAttribute("font-size","13");tx.setAttribute("font-weight","700");tx.setAttribute("fill",col);svg.appendChild(tx)}
+    c.setAttribute("x1",x);c.setAttribute("x2",x);c.setAttribute("y1",top);c.setAttribute("y2",top+LG.h);d.setAttribute("cx",x);d.setAttribute("cy",y);
+    const fr=Math.round(f/10)*10;tx.textContent=fr+" Hz";tx.setAttribute("x",x>LG.x0+LG.W-70?x-10:x+10);tx.setAttribute("text-anchor",x>LG.x0+LG.W-70?"end":"start");tx.setAttribute("y",Math.max(top+12,y-10));
+    $("sNow").innerHTML=`正在播放：<b style="color:${col}">${LAWK[i][0]}</b>　現在的頻率約 <b>${fr}</b> Hz`}
   document.querySelectorAll("#sirenBtns button").forEach(b=>b.addEventListener("click",()=>start(b.dataset.k)));
-  idle();
 })();
 
 /* 照片：縮小後存起來 */
@@ -2668,7 +2661,7 @@ btn.addEventListener("click",async()=>{
     for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的頻譜"))}
     B.push(H("五、臺灣對警笛聲的規定"));
     B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));B.push(cap("表 2-4、法規規定和實測比較"));
-    const ls=off("0 0 640 420");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,420),transformation:{width:460,height:302}})]}));
+    const ls=off("0 0 640 450");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,450),transformation:{width:480,height:338}})]}));
     B.push(cap("圖 2-2、依法規畫出的四種警報聲：頻率隨時間的變化"));
     B.push(H("六、結果與結論"));
     B.push(P("1. 頻率是什麼？"+(S.c1||"＿＿")));B.push(P("2. 串珠和頻譜哪裡很像？"+(S.c2||"＿＿")));
