@@ -849,7 +849,9 @@ function dashboard(){
 function draw(){
   const items=scene();
   const vs=[...objs,...oncoming,...(run?[run.v]:[])].map(o=>({...o,_veh:true,_o:o}));
-  [...items,...vs].filter(o=>o.z>ZN).sort((a,b)=>b.z-a.z).forEach(o=>o._veh?drawVeh(o._o):drawItem(o));
+  // 建築物永遠在車子後面：先畫房子（遠到近），再畫路燈、路樹和車
+  items.filter(o=>o.kind==="bld"&&o.z1>ZN).sort((a,b)=>b.z-a.z).forEach(drawItem);
+  [...items.filter(o=>o.kind!=="bld"),...vs].filter(o=>o.z>ZN).sort((a,b)=>b.z-a.z).forEach(o=>o._veh?drawVeh(o._o):drawItem(o));
   if(winClosed){g.fillStyle="rgba(120,150,170,.10)";g.fillRect(0,0,W,DASH)}
   // 右邊旁邊的機車（在窗邊）
   const m=objs.find(o=>o.id==="moto"); if(m&&m.z<ZN+0.5&&m.z>-1.5){const xx=W-70+(m.x-m.x0)*30;g.fillStyle="#1d2124";g.fillRect(xx-6,HOR+120,14,80);g.fillStyle=m.color;rr(xx-20,HOR+90,44,40,8);g.fill();g.fillStyle="#f2f2ec";g.beginPath();g.arc(xx+2,HOR+72,16,0,7);g.fill()}
