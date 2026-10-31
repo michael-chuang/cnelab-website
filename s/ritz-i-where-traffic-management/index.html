@@ -1178,15 +1178,33 @@ function acrylicBox(w,h,d,x,y,z){const g=new THREE.BoxGeometry(w,h,d);const m=ne
   const e=new THREE.LineSegments(new THREE.EdgesGeometry(g),acrylicEdge);e.position.copy(m.position);scene.add(e);return m}
 for(const sx of [-1,1]) for(const sz of [-1,1]) acrylicBox(2,24.4,2,sx*14,0.6,sz*14);
 acrylicBox(32,0.6,32,0,25,0);
-cyl(5,0.8,M(0x2f6fd6,{roughness:0.4}),0,25.6,0,40);
+cyl(5,2.6,M(0x2f6fd6,{roughness:0.4}),0,25.6,0,40); cyl(5.15,0.5,M(0x1d2d4a,{roughness:0.5}),0,25.6,0,40);
 const sticker=canvasTex(256,256,(g)=>{g.fillStyle="#f5f7fa";g.beginPath();g.arc(128,128,100,0,7);g.fill();g.strokeStyle="#111";g.lineWidth=3;g.beginPath();g.arc(128,128,96,0,7);g.stroke();
   for(let d=0;d<360;d+=10){const a=(d-90)*Math.PI/180,r0=d%30?88:80;g.lineWidth=d%30?1:2;g.beginPath();g.moveTo(128+Math.cos(a)*r0,128+Math.sin(a)*r0);g.lineTo(128+Math.cos(a)*96,128+Math.sin(a)*96);g.stroke()}
   g.textAlign="center";g.textBaseline="middle";
   [45,135,225,315].forEach((d,k)=>{const a=(d-90)*Math.PI/180,x=128+Math.cos(a)*48,y=128+Math.sin(a)*48;g.save();g.translate(x,y);g.rotate((d+180)*Math.PI/180);g.beginPath();g.arc(0,0,17,0,7);g.fillStyle="#fff";g.fill();g.lineWidth=2.5;g.strokeStyle="#111";g.stroke();g.fillStyle="#111";g.font="bold 22px sans-serif";g.fillText(String(k+1),0,1);g.restore()});
   [[0,"0°"],[90,"90°"],[180,"180°"],[270,"270°"]].forEach(([d,t])=>{const a=(d-90)*Math.PI/180;g.save();g.translate(128+Math.cos(a)*68,128+Math.sin(a)*68);g.rotate((d+180)*Math.PI/180);g.font="bold 15px sans-serif";g.fillStyle="#111";g.fillText(t,0,0);g.restore()})});
-const st=new THREE.Mesh(new THREE.CircleGeometry(5.8,48),new THREE.MeshBasicMaterial({map:sticker,transparent:true})); st.rotation.x=-Math.PI/2; st.position.set(0,26.45,0); scene.add(st);
-const usbCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,26,4.8),new THREE.Vector3(0,26.4,12),new THREE.Vector3(8,26,15),new THREE.Vector3(14,12,16),new THREE.Vector3(18,0.8,19),new THREE.Vector3(19,0.8,40)]);
-scene.add(new THREE.Mesh(new THREE.TubeGeometry(usbCurve,60,0.25,8),M(0x222222)));
+const st=new THREE.Mesh(new THREE.CircleGeometry(5.8,48),new THREE.MeshBasicMaterial({map:sticker,transparent:true})); st.rotation.x=-Math.PI/2; st.position.set(0,28.25,0); scene.add(st);
+// USB 線：從 ReSpeaker 沿著壓克力柱下來，貼著路邊走到地上的 MacBook
+const usbCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,27,4.9),new THREE.Vector3(-4,26.4,11),new THREE.Vector3(-10,26,14),new THREE.Vector3(-14.6,22,14.6),new THREE.Vector3(-14.8,6,14.8),new THREE.Vector3(-15.5,0.4,17),
+  new THREE.Vector3(-16.5,0.4,32),new THREE.Vector3(-17,0.4,44),new THREE.Vector3(-24,0.4,50),new THREE.Vector3(-36,0.4,47),new THREE.Vector3(-44,0.6,46)]);
+scene.add(new THREE.Mesh(new THREE.TubeGeometry(usbCurve,120,0.3,8),M(0x222222)));
+/* ---------- 筆電（放在地上，螢幕朝孩子這邊，畫面是頻率雷達） ---------- */
+{const lap=new THREE.Group();lap.position.set(-58,0,54);lap.rotation.y=Math.PI/4;scene.add(lap);
+ const alu=new THREE.MeshStandardMaterial({color:0xc9ccd1,metalness:0.6,roughness:0.35});
+ const base=new THREE.Mesh(new THREE.BoxGeometry(30,1.2,21),alu);base.position.y=0.6;base.castShadow=base.receiveShadow=true;lap.add(base);
+ const kb=new THREE.Mesh(new THREE.PlaneGeometry(26,9),M(0x1e2126,{roughness:0.6}));kb.rotation.x=-Math.PI/2;kb.position.set(0,1.22,-1.5);lap.add(kb);
+ const pad=new THREE.Mesh(new THREE.PlaneGeometry(11,6.5),M(0xb9bdc3,{roughness:0.4}));pad.rotation.x=-Math.PI/2;pad.position.set(0,1.22,6.2);lap.add(pad);
+ const lid=new THREE.Group();lid.position.set(0,1.2,-10.4);lid.rotation.x=-0.32;lap.add(lid);  // 螢幕往後仰
+ const back=new THREE.Mesh(new THREE.BoxGeometry(30,20,0.6),alu);back.position.set(0,10,0);back.castShadow=true;lid.add(back);
+ const scr=canvasTex(512,340,(g,W,H)=>{g.fillStyle="#0f1424";g.fillRect(0,0,W,H);g.fillStyle="#e8ebf2";g.font="bold 26px 'Noto Sans TC',sans-serif";g.fillText("頻率雷達",20,38);
+   const cx=W/2,cy=H/2+20,R=120;for(let r=40;r<=R;r+=40){g.strokeStyle="rgba(150,180,255,.45)";g.lineWidth=2;g.beginPath();g.arc(cx,cy,r,0,7);g.stroke()}
+   g.fillStyle="rgba(255,80,70,.55)";g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,R,-0.35-Math.PI/2+0.9,0.35-Math.PI/2+0.9);g.closePath();g.fill();
+   g.strokeStyle="#ff5a4a";g.lineWidth=5;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(-Math.PI/2+0.9)*R,cy+Math.sin(-Math.PI/2+0.9)*R);g.stroke();
+   g.fillStyle="#9ba5b7";g.font="18px sans-serif";g.textAlign="center";g.fillText("0°",cx,cy-R-8);g.fillText("90°",cx+R+22,cy+6)});
+ const sm=new THREE.Mesh(new THREE.PlaneGeometry(27.5,17.5),new THREE.MeshBasicMaterial({map:scr}));sm.position.set(0,10.3,0.31);lid.add(sm);
+ // 斜放在西南角，螢幕朝向路口和觀看的人
+}
 
 /* ---------- 紅綠燈（玩具紅綠燈：站在路口轉角，燈頭伸到車道上方） ---------- */
 const SIGS=[];
@@ -1254,7 +1272,7 @@ carton({x:-56,z:-24,w:16,d:14,h:18,front:"+x",face:{win:[2,2],door:true,sign:"�
  [[26,27],[30,48],[48,28],[38,36]].forEach(([a,b])=>pomTree(a,b,0.9));
  carton({x:60,z:26,w:14,d:16,h:14,front:"-x",face:{win:[2,1],door:true,sign:"便利商店",signBg:"#2f6fd6",doorH:0.4,top:0.15}});}
 // 路邊幾棵樹
-[[-46,-16],[-70,16],[16,-48],[-16,62],[70,-16],[16,72]].forEach(([a,b])=>pomTree(a,b,0.8));
+[[-46,-16],[-70,16],[16,-48],[-16,62],[70,-16]].forEach(([a,b])=>pomTree(a,b,0.8));
 
 /* ================= 玩具小汽車（合金壓鑄風格：亮面烤漆、圓潤車身、銀色輪框） ================= */
 const paint=c=>new THREE.MeshPhysicalMaterial({color:c,metalness:0.35,roughness:0.26,clearcoat:1,clearcoatRoughness:0.06});
@@ -1304,19 +1322,20 @@ function truck(cabC,boxC){const g=new THREE.Group(), W=3.2;
   ext([[-3.7,0.95],[1.6,0.95],[1.6,3.9],[-3.7,3.9]],W+0.2,paint(boxC),0.18,g);
   lights(g,3.74,-3.9,1.3,1.0); wheels(g,[2.6,-2.4],1.45,0.76);
   return g}
-function place(g,x,z,dir){g.rotation.y={E:0,W:Math.PI,N:Math.PI/2,S:-Math.PI/2}[dir];g.position.set(x,0.4,z);scene.add(g);return g}
+const CS=1.6; // 玩具車放大一點（約 11 cm 長）
+function place(g,x,z,dir){g.scale.setScalar(CS);g.rotation.y={E:0,W:Math.PI,N:Math.PI/2,S:-Math.PI/2}[dir];g.position.set(x,0.4,z);scene.add(g);return g}
 // 等紅燈的車：東向（z=5）、西向（z=-5）、南向（x=-5）、北向（x=5）
-place(sedan(0xd8342b),-24,5,"E"); place(sedan(0xf6c400,true),-33,5,"E"); place(sedan(0x7d4fc4),-42,5,"E");
-place(sedan(0x2f6fd6),24,-5,"W"); place(sedan(0x2fa35a),33,-5,"W");
-place(sedan(0xf2f2ee),-5,-24,"S"); place(truck(0x2f6fd6,0xf2f2ee),-5,-33.5,"S"); place(bus(),-5,-47,"S");
-place(sedan(0xff8a3d),5,24,"N"); place(sedan(0x3fb7c9),5,33,"N"); place(van(0x9aa3a8),5,42,"N");
+place(sedan(0xd8342b),-31,5,"E"); place(sedan(0xf6c400,true),-44,5,"E"); place(sedan(0x7d4fc4),-57,5,"E");
+place(sedan(0x2f6fd6),27,-5,"W"); place(sedan(0x2fa35a),40,-5,"W");
+place(sedan(0xf2f2ee),-5,-31,"S"); place(truck(0x2f6fd6,0xf2f2ee),-5,-44.5,"S"); place(bus(),-5,-64,"S");
+place(sedan(0xff8a3d),5,27,"N"); place(sedan(0x3fb7c9),5,40,"N"); place(van(0x9aa3a8),5,53,"N");
 function moto(x,z,rotY,color=0xffd23b){const g=new THREE.Group();
   ext([[-1.2,0.55],[1.2,0.55],[1.2,1.3],[-0.4,1.3],[-1.2,1.0]],0.9,paint(color),0.15,g);
   for(const x2 of [-0.95,0.95]){const t=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.35,14),rubber);t.rotation.x=Math.PI/2;t.position.set(x2,0.45,0);g.add(t)}
   const h=new THREE.Mesh(new THREE.SphereGeometry(0.5,14,12),paint(0xffffff));h.position.set(-0.2,2.35,0);g.add(h);
   part(g,0.6,1.1,0.7,paint(0x34495e),-0.2,1.75,0);
-  g.rotation.y=rotY;g.position.set(x,0.4,z);g.traverse(o=>o.castShadow=true);scene.add(g)}
-moto(-19.5,8.3,0);moto(-19.5,2.2,0,0x6cbf6a);moto(-8.3,-19.5,-Math.PI/2,0xe8483f);moto(-2.2,-19.5,-Math.PI/2);
+  g.scale.setScalar(CS);g.rotation.y=rotY;g.position.set(x,0.4,z);g.traverse(o=>o.castShadow=true);scene.add(g)}
+moto(-22.5,7.6,0);moto(-22.5,2.6,0,0x6cbf6a);moto(-7.6,-22.5,-Math.PI/2,0xe8483f);moto(-2.6,-22.5,-Math.PI/2);
 
 // 救護車（白色廂型車＋紅色線條＋警示燈＋車頂的藍牙喇叭）
 const amb=place(van(0xf7f7f5,true),70,-5,"W");
@@ -1331,7 +1350,7 @@ const grill=new THREE.Mesh(new THREE.CircleGeometry(0.85,24),M(0x111111));grill.
 const ringM=new THREE.MeshBasicMaterial({color:0xff3b3b});
 for(const [x,z] of [[50,-5],[90,-5],[-50,5],[-90,5],[-5,-50],[-5,-90],[5,50],[5,90]]){const r=new THREE.Mesh(new THREE.RingGeometry(2.4,3,36),ringM);r.rotation.x=-Math.PI/2;r.position.set(x,0.48,z);scene.add(r)}
 const waves=[];const circ=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
-for(let i=0;i<5;i++){const w=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:0.8}));w.position.set(70,6,-5);w.userData.ph=i/5;scene.add(w);waves.push(w)}
+for(let i=0;i<5;i++){const w=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:0.8}));w.position.set(70,9,-5);w.userData.ph=i/5;scene.add(w);waves.push(w)}
 
 /* ---------- 文字標籤 ---------- */
 const LABELS=[];
@@ -1340,13 +1359,11 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   g.fillStyle="rgba(255,255,255,.88)";const r=24;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,c.height,r);g.arcTo(w,c.height,0,c.height,r);g.arcTo(0,c.height,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
   g.fillStyle=color;g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,16+i*80));
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
-label("惠中路（北）",0,8,-L-14,8); label("惠中路（南）",0,8,L+14,8);
-label("臺灣大道 往台中車站",L-10,9,0,6); label("臺灣大道 往東海、沙鹿",-L+10,9,0,6);
-label("ReSpeaker\n壓克力板上・高 25 cm",0,42,0,9,"#1f4fa8"); label("救護車＋藍牙喇叭",70,17,-5,6,"#b3122e");
-label("近 50",50,6,-15,4.5,"#b3122e"); label("遠 90",90,6,-15,4.5,"#b3122e");
+label("ReSpeaker\n壓克力板上・高 25 cm",0,42,0,9,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
+label("MacBook（頻率雷達）",-58,30,54,5,"#1f4fa8"); label("近 50",50,6,-15,4.5,"#b3122e"); label("遠 90",90,6,-15,4.5,"#b3122e");
 
 /* ---------- 視角、動畫 ---------- */
-const views={v1:[[100,72,118],[4,10,0]],v2:[[0,250,1],[0,0,0]],v3:[[-80,9,12],[40,12,-3]],v4:[[30,42,38],[0,22,0]]};
+const views={v1:[[92,76,124],[-8,8,6]],v2:[[0,250,1],[0,0,0]],v3:[[-80,9,12],[40,12,-3]],v4:[[30,42,38],[0,22,0]]};
 function go(k){const [p,t]=views[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();LABELS.forEach(l=>l.visible=(k==="v1"||k==="v2"))}
 go("v1");
 let active=true; const clock=new THREE.Clock();
