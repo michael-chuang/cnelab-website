@@ -2819,15 +2819,15 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>一、兩隻耳朵的時間差</h2>
-  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小女孩發出溫柔的聲音；再點一下就停。聲音像水波一樣一圈一圈傳出去（草地上的黃色越亮＝空氣擠得越緊），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
+  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小女孩發出溫柔的聲音；再點一下就停。聲音像水波一樣一圈一圈傳出去（紅＝空氣擠在一起、藍＝空氣稀稀疏疏，和學習單二一樣），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
   <div class="stage wide" id="h3d"><canvas id="hc" aria-label="3D：小女孩站在草地上，喇叭發出的聲波傳到兩隻耳朵"></canvas>
     <div class="views"><button data-hv="tilt" class="on">從後面看</button><button data-hv="front">從前面看</button><button data-hv="top">從上面看</button></div>
     <div class="hud2"><button id="hStop" class="stopbtn" hidden>■ 停止聲音</button></div>
   </div>
   <div class="card scope-card">
     <div class="result" id="hRes" aria-live="polite">在草地上點一下，放好喇叭。</div>
-    <canvas id="hScope" aria-label="左耳和右耳收到的波形（黃色越亮＝壓力越大）"></canvas>
-    <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；黃色越亮＝空氣擠得越緊）：亮暗一樣，只是一隻耳朵比較晚收到</p>
+    <canvas id="hScope" aria-label="左耳和右耳收到的波形（紅＝壓縮、藍＝稀疏）"></canvas>
+    <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：紅藍的順序一樣，只是一隻耳朵比較晚收到</p>
   </div>
   <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">表 3-1　喇叭在不同位置，兩隻耳朵的時間差</p>
@@ -2945,7 +2945,7 @@ const $=id=>document.getElementById(id);
    單位：公分。耳朵高度 y=0；正前方＝-z，右邊＝+x。角度 0° 正前方，順時針（90° 正右方）。 */
 (()=>{
 const host=$("h3d"),cv=$("hc");
-const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,stencil:true});
 renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.outputEncoding=THREE.sRGBEncoding;
 const scene=new THREE.Scene();
 function tex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
@@ -2957,7 +2957,7 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x6c8f4a,0.8));
 const sun=new THREE.DirectionalLight(0xfff6e0,0.65);sun.position.set(-120,300,160);scene.add(sun);
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.7},o));
 const FLOOR=-118,R_VIS=72,EAR=10;           // 地面高度、喇叭離頭多遠（畫面）、耳朵在 x=±10（兩耳相距 20 公分）
-const CV=26,LAM=14;                          // 動畫裡的聲速（公分/秒）、波長（公分）：放得很慢
+const CV=30,LAM=22;                          // 動畫裡的聲速（公分/秒）、波長（公分）：放得很慢
 /* 草地＋樹＋小花 */
 const grass=tex(512,512,(g,w)=>{g.fillStyle="#7cbf55";g.fillRect(0,0,w,w);for(let i=0;i<9000;i++){const x=Math.random()*w,y=Math.random()*w,l=40+Math.random()*25;g.strokeStyle=`hsl(${95+Math.random()*25},55%,${l}%)`;g.lineWidth=1.2;g.beginPath();g.moveTo(x,y);g.lineTo(x+(Math.random()-.5)*3,y-4-Math.random()*5);g.stroke()}});
 grass.wrapS=grass.wrapT=THREE.RepeatWrapping;grass.repeat.set(30,30);
@@ -2978,7 +2978,7 @@ disk.rotation.x=-Math.PI/2;disk.position.y=FLOOR+0.4;disk.renderOrder=1;scene.ad
 /* 可愛的小女孩（面向 -z） */
 const girl=new THREE.Group();scene.add(girl);
 const skin=M(0xf8d5bb,{roughness:0.6}),hairM=M(0x5b3a26,{roughness:0.55}),dressM=M(0xff8fb1,{roughness:0.6}),white=M(0xffffff,{roughness:0.5});
-function add(geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);girl.add(m);return m}
+function add(geo,mat,x,y,z,sx=1,sy=1,sz=1){mat.stencilWrite=true;mat.stencilRef=1;mat.stencilZPass=THREE.ReplaceStencilOp;const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);girl.add(m);return m}
 add(new THREE.SphereGeometry(10,40,30),skin,0,0,0,0.96,1,0.96);                                          // 頭
 add(new THREE.SphereGeometry(10.6,40,30,0,Math.PI*2,0,Math.PI*0.47),hairM,0,0.6,0.5);                       // 頭髮（上半）
 add(new THREE.SphereGeometry(10.4,40,30,Math.PI*0.08,Math.PI*0.84,Math.PI*0.4,Math.PI*0.38),hairM,0,0,0.6).rotation.y=0; // 後腦勺
@@ -2991,12 +2991,12 @@ for(const s of [-1,1]){add(new THREE.SphereGeometry(1.5,16,12),M(0x2b1d17,{rough
 const smile=add(new THREE.TorusGeometry(1.7,0.35,8,20,Math.PI),M(0xc0495c),0,-3.4,-9.35);smile.rotation.z=Math.PI;
 const ears=[-1,1].map(s=>add(new THREE.SphereGeometry(2.3,20,16),M(0xf0bf9e,{emissive:0x000000}),s*EAR,0,0.6,0.5,1.2,0.85));
 add(new THREE.CylinderGeometry(3,3.4,6,16),skin,0,-12,0);
-add(new THREE.CylinderGeometry(7.5,17,42,28),dressM,0,-36,0);                                               // 洋裝
+add(new THREE.CylinderGeometry(7.5,18,54,28),dressM,0,-42,0);                                               // 洋裝
 add(new THREE.TorusGeometry(6.3,1.3,10,24),white,0,-15.4,0).rotation.x=Math.PI/2;                           // 白領子
 for(const s of [-1,1]){const arm=add(new THREE.CylinderGeometry(2.1,2.1,26,12),skin,s*10.5,-28,0);arm.rotation.z=s*0.2;
   add(new THREE.SphereGeometry(3,14,10),dressM,s*8.5,-16.5,0,1,0.8,1);                                    // 泡泡袖
   add(new THREE.SphereGeometry(2.6,14,10),skin,s*13.2,-41,0);                                              // 手
-  add(new THREE.CylinderGeometry(2.6,2.4,52,12),skin,s*4.6,FLOOR+31,0);                                    // 腿
+  add(new THREE.CylinderGeometry(2.6,2.4,62,12),skin,s*4.6,FLOOR+36,0);                                    // 腿
   add(new THREE.CylinderGeometry(2.8,2.7,12,12),white,s*4.6,FLOOR+10,0);                                   // 白襪
   add(new THREE.SphereGeometry(4.2,16,12),M(0xd8343f,{roughness:0.4}),s*4.6,FLOOR+2.4,-2,0.85,0.55,1.4)}   // 紅鞋
 /* 喇叭（正面朝 +z，用 lookAt 對著小女孩） */
@@ -3012,22 +3012,22 @@ function label(t,col,size=5.5){const c=document.createElement("canvas"),g=c.getC
   g.fillStyle="rgba(255,255,255,.92)";g.beginPath();g.roundRect?g.roundRect(0,0,w,80,22):g.rect(0,0,w,80);g.fill();g.font="bold 56px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textBaseline="middle";g.fillText(t,18,42);
   const tt=new THREE.CanvasTexture(c);tt.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tt,depthTest:false}));s.scale.set(size*w/80,size,1);s.renderOrder=9;scene.add(s);return s}
 label("左耳","#2a6fb8").position.set(-EAR-9,9,0);label("右耳","#d9532c").position.set(EAR+9,9,0);
-/* 聲波：黃色漸層、連續的水波，畫在草地上（像水面的漣漪；shader：波前到哪、尾巴到哪） */
-const waveU={uFront:{value:-1},uTail:{value:-1},uLam:{value:LAM},uMax:{value:300},uOff:{value:new THREE.Vector2()}};
-const wave=new THREE.Mesh(new THREE.PlaneGeometry(640,640),new THREE.ShaderMaterial({uniforms:waveU,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+/* 聲波：和喇叭、耳朵一樣高；紅＝空氣擠在一起（壓縮）、藍＝稀稀疏疏（稀疏），連續漸層（shader：波前到哪、尾巴到哪） */
+const waveU={uFront:{value:-1},uTail:{value:-1},uLam:{value:LAM},uMax:{value:190},uOff:{value:new THREE.Vector2()}};
+const wave=new THREE.Mesh(new THREE.PlaneGeometry(640,640),new THREE.ShaderMaterial({uniforms:waveU,transparent:true,depthWrite:false,side:THREE.DoubleSide,stencilWrite:true,stencilRef:1,stencilFunc:THREE.NotEqualStencilFunc,
   vertexShader:"varying vec2 vP;void main(){vP=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
   fragmentShader:`varying vec2 vP;uniform float uFront,uTail,uLam,uMax;uniform vec2 uOff;
   void main(){float r=length(vP);if(r>uFront||r<uTail||r>uMax)discard;
-    float v=0.5+0.5*cos(6.28318*(uFront-r)/uLam);
+    float w=cos(6.28318*(uFront-r)/uLam);float v=abs(w);
     float fade=(1.0-smoothstep(uMax*0.45,uMax,r))*smoothstep(0.0,4.0,uFront-r)*smoothstep(0.0,4.0,r-uTail);
-    vec3 c=mix(vec3(1.0,0.97,0.78),vec3(1.0,0.74,0.05),v);
+    vec3 c=w>0.0?mix(vec3(0.95,0.95,0.97),vec3(1.0,0.33,0.27),v):mix(vec3(0.95,0.95,0.97),vec3(0.2,0.52,1.0),v);
     float body=1.0;
-    gl_FragColor=vec4(c,(0.1+0.6*v)*fade*body);}`}));
+    gl_FragColor=vec4(c,(0.12+0.5*v)*fade*body);}`}));
 wave.rotation.x=-Math.PI/2;wave.renderOrder=3;scene.add(wave);
 /* 狀態 */
 let ang=60,SP=new THREE.Vector3(),running=false,t0=0,tStop=null,clock=new THREE.Clock(),vis=true;
 const dist=(p,x)=>Math.hypot(p.x-x,p.z);
-function place(){const a=ang*Math.PI/180;SP.set(Math.sin(a)*R_VIS,0,-Math.cos(a)*R_VIS);spk.position.copy(SP);spk.lookAt(0,0,0);wave.position.set(SP.x,FLOOR+0.8,SP.z);waveU.uOff.value.set(SP.x,SP.z)}
+function place(){const a=ang*Math.PI/180;SP.set(Math.sin(a)*R_VIS,0,-Math.cos(a)*R_VIS);spk.position.copy(SP);spk.lookAt(0,0,0);wave.position.set(SP.x,0,SP.z);waveU.uOff.value.set(SP.x,SP.z)}
 function itdMs(){const a=ang*Math.PI/180,sx=Math.sin(a)*100,sz=-Math.cos(a)*100;return (Math.hypot(sx+EAR,sz)-Math.hypot(sx-EAR,sz))/34.3}  // 喇叭在 1 公尺外的真實時間差（左耳減右耳）
 const playing=()=>running&&tStop===null;
 function updRes(){const d=itdMs(),ad=Math.abs(d);let t;
@@ -3037,10 +3037,15 @@ function updRes(){const d=itdMs(),ad=Math.abs(d);let t;
   $("hStop").hidden=!playing()}
 /* 溫柔的聲音：柔和的長音（像哼歌），左右耳各有自己的延遲和音量（真的時間差） */
 let AC=null,bus,gL,gR,dL,dR,voices=[];
+let AN=null;
 function audioInit(){if(AC)return true;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return false}
-  bus=AC.createGain();bus.gain.value=0;const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=1800;const mg=AC.createChannelMerger(2);
-  gL=AC.createGain();gR=AC.createGain();dL=AC.createDelay(0.01);dR=AC.createDelay(0.01);
-  bus.connect(lp);lp.connect(gL);gL.connect(dL);dL.connect(mg,0,0);lp.connect(gR);gR.connect(dR);dR.connect(mg,0,1);mg.connect(AC.destination);return true}
+  bus=AC.createGain();bus.gain.value=0;const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2200;bus.connect(lp);
+  gL=AC.createGain();gR=AC.createGain();dL=AC.createDelay(0.01);dR=AC.createDelay(0.01);AN=AC.createAnalyser();AN.fftSize=512;
+  lp.connect(gL);gL.connect(dL);lp.connect(gR);gR.connect(dR);
+  if(AC.createStereoPanner){const pL=AC.createStereoPanner(),pR=AC.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;dL.connect(pL);dR.connect(pR);pL.connect(AC.destination);pR.connect(AC.destination);pL.connect(AN);pR.connect(AN)}
+  else{const mg=AC.createChannelMerger(2);dL.connect(mg,0,0);dR.connect(mg,0,1);mg.connect(AC.destination);mg.connect(AN)}
+  return true}
+function unlock(){if(!audioInit())return;if(AC.state!=="running")AC.resume();}
 function audioPos(){if(!AC)return;const d=itdMs(),s=Math.sin(ang*Math.PI/180),t=AC.currentTime;
   dL.delayTime.setTargetAtTime(Math.max(0,d)/1000,t,0.01);dR.delayTime.setTargetAtTime(Math.max(0,-d)/1000,t,0.01);
   gL.gain.setTargetAtTime(0.6-0.3*s,t,0.03);gR.gain.setTargetAtTime(0.6+0.3*s,t,0.03)}
@@ -3048,18 +3053,18 @@ function soundOn(){if(!audioInit())return;if(AC.state==="suspended")AC.resume();
   if(!voices.length){const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=0.35;lg.gain.value=0.12;lfo.connect(lg);
     for(const [f,v,det] of [[262,0.5,0],[262,0.35,4],[392,0.22,-3],[524,0.1,2],[659,0.05,0]]){const o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=f;o.detune.value=det;g.gain.value=v;lg.connect(g.gain);o.connect(g);g.connect(bus);o.start();voices.push(o)}
     lfo.start();voices.push(lfo)}
-  bus.gain.cancelScheduledValues(t);bus.gain.setTargetAtTime(0.32,t,0.25)}
+  bus.gain.cancelScheduledValues(t);bus.gain.setTargetAtTime(0.5,t,0.2)}
 function soundOff(){if(!AC)return;bus.gain.cancelScheduledValues(AC.currentTime);bus.gain.setTargetAtTime(0,AC.currentTime,0.25)}
 function play(){running=true;t0=clock.getElapsedTime();tStop=null;soundOn();updRes()}
 function stop(){if(playing())tStop=clock.getElapsedTime();soundOff();updRes()}
 function setAng(v){ang=((Math.round(v)%360)+360)%360;place();audioPos();updRes()}
-$("hStop").addEventListener("click",stop);
+$("hStop").addEventListener("click",stop);cv.addEventListener("click",unlock);cv.addEventListener("touchend",unlock,{passive:true});
 /* 滑鼠：點草地＝喇叭走過去並開始播放；播放中再點一下＝停止；也可以拖著喇叭走 */
 const ray=new THREE.Raycaster(),gp=new THREE.Plane(new THREE.Vector3(0,1,0),-FLOOR),hit=new THREE.Vector3();
 let down=null,dragSpk=false;
 function ndc(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1}}
 function groundAng(e){ray.setFromCamera(ndc(e),cam);if(!ray.ray.intersectPlane(gp,hit))return null;if(Math.hypot(hit.x,hit.z)<18)return null;return Math.atan2(hit.x,-hit.z)*180/Math.PI}
-cv.addEventListener("pointerdown",e=>{down={x:e.clientX,y:e.clientY,moved:false};ray.setFromCamera(ndc(e),cam);dragSpk=ray.intersectObject(spk,true).length>0;if(dragSpk){ctl.enabled=false;cv.setPointerCapture(e.pointerId)}});
+cv.addEventListener("pointerdown",e=>{unlock();down={x:e.clientX,y:e.clientY,moved:false};ray.setFromCamera(ndc(e),cam);dragSpk=ray.intersectObject(spk,true).length>0;if(dragSpk){ctl.enabled=false;cv.setPointerCapture(e.pointerId)}});
 cv.addEventListener("pointermove",e=>{if(!down){ray.setFromCamera(ndc(e),cam);cv.style.cursor=ray.intersectObject(spk,true).length?"grab":"pointer";return}
   if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;if(dragSpk&&down.moved){const a=groundAng(e);if(a!==null)setAng(a)}});
 cv.addEventListener("pointerup",e=>{if(!down)return;const wasDrag=dragSpk,moved=down.moved;down=null;dragSpk=false;ctl.enabled=true;
@@ -3071,7 +3076,7 @@ cv.addEventListener("pointerup",e=>{if(!down)return;const wasDrag=dragSpk,moved=
 const VIEWS={tilt:[[70,85,250],[0,-48,-8]],front:[[-60,40,-250],[0,-48,0]],top:[[0,360,1],[0,-60,0]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();document.querySelectorAll("[data-hv]").forEach(b=>b.classList.toggle("on",b.dataset.hv===k))}
 document.querySelectorAll("[data-hv]").forEach(b=>b.addEventListener("click",()=>view(b.dataset.hv)));
-/* 兩耳收到的聲音：黃色漸層帶（越亮＝空氣擠得越緊），疊一條細細的波形 */
+/* 兩耳收到的聲音：紅白藍漸層帶（紅＝壓縮、藍＝稀疏），疊一條細細的波形 */
 const sc=$("hScope"),sg=sc.getContext("2d");let WIN=5;
 function earVal(t,dE){if(!running||t<t0)return null;const front=CV*(t-t0);if(front<dE)return null;if(tStop!==null&&t>=tStop&&CV*(t-tStop)>dE)return null;return Math.cos(2*Math.PI*(front-dE)/LAM)}
 function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);if(sc.width!==Math.round(r.width*dpr)||sc.height!==Math.round(r.height*dpr)){sc.width=Math.round(r.width*dpr);sc.height=Math.round(r.height*dpr)}
@@ -3081,9 +3086,9 @@ function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.d
   sg.font="700 14px 'Noto Sans TC',sans-serif";sg.textBaseline="middle";
   for(const [y,n,c,ex] of lanes){sg.fillStyle=c;sg.fillText(n,4,y+bh/2);sg.fillStyle="rgba(150,160,170,.12)";sg.fillRect(x0,y,x1-x0,bh);
     const dE=dist(SP,ex),pts=[];
-    for(let x=x0;x<x1;x+=2){const tt=t-(x1-x)/(x1-x0)*WIN,v=earVal(tt,dE);if(v===null){pts.push(null);continue}const k=(v+1)/2;
-      sg.fillStyle=`rgb(${255},${Math.round(247-58*k)},${Math.round(200-187*k)})`;sg.globalAlpha=0.25+0.75*k;sg.fillRect(x,y,2.2,bh);sg.globalAlpha=1;pts.push([x,y+bh/2-v*bh*0.36])}
-    sg.strokeStyle="rgba(150,95,0,.75)";sg.lineWidth=1.6;sg.beginPath();let st=false;for(const p of pts){if(!p){st=false;continue}st?sg.lineTo(p[0],p[1]):sg.moveTo(p[0],p[1]);st=true}sg.stroke();
+    for(let x=x0;x<x1;x+=2){const tt=t-(x1-x)/(x1-x0)*WIN,v=earVal(tt,dE);if(v===null){pts.push(null);continue}const A=v>=0?[255,96,84]:[70,145,255],B=[245,245,248],m=Math.abs(v)*0.85;
+      sg.fillStyle=`rgb(${Math.round(B[0]+(A[0]-B[0])*m)},${Math.round(B[1]+(A[1]-B[1])*m)},${Math.round(B[2]+(A[2]-B[2])*m)})`;sg.fillRect(x,y,2.2,bh);pts.push([x,y+bh/2-v*bh*0.36])}
+    sg.strokeStyle="rgba(40,40,60,.55)";sg.lineWidth=1.6;sg.beginPath();let st=false;for(const p of pts){if(!p){st=false;continue}st?sg.lineTo(p[0],p[1]):sg.moveTo(p[0],p[1]);st=true}sg.stroke();
     sg.strokeStyle=line;sg.lineWidth=1;sg.strokeRect(x0,y,x1-x0,bh)}
   sg.fillStyle=mut;sg.font="12px 'Noto Sans TC',sans-serif";sg.textAlign="right";sg.fillText("現在 →",x1,H-8);sg.textAlign="left";sg.fillText("← 比較早",x0,H-8)}
 /* 每一幀 */
@@ -3093,10 +3098,10 @@ addEventListener("resize",resize);try{new ResizeObserver(resize).observe(host)}c
 function tick(){requestAnimationFrame(tick);const t=clock.getElapsedTime();if(!vis)return;ctl.update();
   if(running){waveU.uFront.value=CV*(t-t0);waveU.uTail.value=tStop===null?-1:CV*(t-tStop);if(tStop!==null&&CV*(t-tStop)>320){running=false;tStop=null;updRes()}}
   else{waveU.uFront.value=-1;waveU.uTail.value=-1}
-  for(const [i,ex] of [[0,-EAR],[1,EAR]]){const v=earVal(t,dist(SP,ex)),k=v===null?0:Math.max(0,v)**2;ears[i].material.emissive.setRGB(k*0.9,k*0.65,0)}
+  for(const [i,ex] of [[0,-EAR],[1,EAR]]){const v=earVal(t,dist(SP,ex)),k=v===null?0:Math.max(0,v)**2;ears[i].material.emissive.setRGB(k*0.9,k*0.15,k*0.1)}
   drawScope(t);renderer.render(scene,cam)}
 place();view("tilt");resize();updRes();tick();
-window.__h3d={setAng,play,stop,cam,ctl};
+window.__h3d={setAng,play,stop,cam,ctl,level:()=>{if(!AN)return -1;const d=new Float32Array(AN.fftSize);AN.getFloatTimeDomainData(d);return Math.sqrt(d.reduce((a,x)=>a+x*x,0)/d.length)},state:()=>AC&&AC.state};
 })();
 
 /* ================= 二、不用三角函數：多走的路 → 半圓 → 角度 ================= */
@@ -3121,14 +3126,14 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   const cp=E("clipPath",{id:"topclip"},E("defs",{}));E("rect",{x:0,y:0,width:640,height:262},cp);
   const top=E("g",{"clip-path":"url(#topclip)"});
   E("rect",{x:0,y:0,width:640,height:262,fill:col("--bg"),rx:10},top);
-  // 浪：黃色漸層、一排一排平平地走過來（只畫在浪已經到的那一側）
+  // 浪：紅（壓縮）藍（稀疏）漸層、一排一排平平地走過來（只畫在浪已經到的那一側）
   const cNear=near.x*s.x+near.y*s.y,off=step===0?(1-p(0))*170:0,cF=cNear+off,defs=svg.querySelector("defs");
   const fx=HC.x+s.x*(cF-(HC.x*s.x+HC.y*s.y)),fy=HC.y+s.y*(cF-(HC.x*s.x+HC.y*s.y)),tx=-s.y,ty=s.x;
   const wg=E("linearGradient",{id:"wg",gradientUnits:"userSpaceOnUse",spreadMethod:"repeat",x1:fx,y1:fy,x2:fx+s.x*42,y2:fy+s.y*42},defs);
-  [[0,0.85],[0.5,0.05],[1,0.85]].forEach(([o,a])=>E("stop",{offset:o,"stop-color":"#ffb703","stop-opacity":a},wg));
+  [[0,"#ff5a4a",0.75],[0.25,"#ffffff",0.1],[0.5,"#3d8bff",0.6],[0.75,"#ffffff",0.1],[1,"#ff5a4a",0.75]].forEach(([o,c,a])=>E("stop",{offset:o,"stop-color":c,"stop-opacity":a},wg));
   E("polygon",{points:[[fx-tx*900,fy-ty*900],[fx+tx*900,fy+ty*900],[fx+tx*900+s.x*900,fy+ty*900+s.y*900],[fx-tx*900+s.x*900,fy-ty*900+s.y*900]].map(q=>q.join(",")).join(" "),fill:"url(#wg)"},top);
   // 箭頭：聲音前進方向
-  const ax=HC.x+s.x*150,ay=HC.y+s.y*150,AMB="#d98e00";E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:AMB,"stroke-width":3,"marker-end":"url(#arw)"},top);
+  const ax=HC.x+s.x*150,ay=HC.y+s.y*150,AMB="#c0392b";E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:AMB,"stroke-width":3,"marker-end":"url(#arw)"},top);
   const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:AMB},mk);
   E("text",{x:ax+s.x*14,y:ay+s.y*14+5,"text-anchor":"middle","font-size":14,fill:AMB,"font-weight":700},top,"聲音");
   // 可愛的頭（從頭頂往下看）：臉在前面，頭髮、馬尾、蝴蝶結在後面
