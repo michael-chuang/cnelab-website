@@ -2783,6 +2783,9 @@ td.no{color:var(--b);font-weight:700}
 #t34 label.nodir{display:inline-flex;gap:4px;align-items:center;font-size:13px;color:var(--muted);margin:0;white-space:nowrap}
 #t32 input{max-width:6em}
 #cAcc,#cErr{width:100%;height:auto;display:block}
+.hpad{display:grid;grid-template-columns:repeat(3,minmax(0,84px));grid-template-areas:". u ." "l d r";gap:6px}
+.hpad button{border-radius:10px;padding:8px 0;font-size:16px}
+.hpad button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 
 <div class="wrap">
@@ -2811,7 +2814,7 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>一、兩隻耳朵的時間差</h2>
-  <p class="lead">移動喇叭，按「發出聲音」。聲音一圈一圈傳出去，看看它先碰到哪一隻耳朵，下面的波形就會差一點點。</p>
+  <p class="lead">按方向鍵，喇叭就會移過去發出聲音。聲音一圈一圈傳出去，看看它先碰到哪一隻耳朵，下面的波形就會差一點點。</p>
   <div class="sim">
     <div class="stage" id="h3d"><canvas id="hc" aria-label="3D 頭和喇叭：聲波一圈一圈傳到兩隻耳朵"></canvas>
       <div class="views"><button data-hv="tilt" class="on">斜斜看</button><button data-hv="top">從上面看</button></div>
@@ -2820,10 +2823,10 @@ td.no{color:var(--b);font-weight:700}
     <div class="ctrl">
       <div class="grp"><h3>喇叭在哪個角度？（0° 是正前方）</h3>
         <input type="range" id="hAng" min="0" max="359" step="1" value="60" aria-label="喇叭角度">
-        <div class="row"><button data-ha="0">正前方</button><button data-ha="45">右前方</button><button data-ha="90">正右方</button><button data-ha="180">正後方</button><button data-ha="270">正左方</button></div>
-        <p class="note">也可以直接點地上的量角器，把喇叭放到那裡。</p></div>
-      <div class="grp"><button class="go" id="hPlay">▶ 發出聲音</button></div>
-      <div class="result" id="hRes" aria-live="polite">按「發出聲音」看看哪隻耳朵先聽到。</div>
+        <div class="hpad" role="group" aria-label="喇叭放哪裡：按一下播放，再按一下停止">
+          <button data-ha="0" style="grid-area:u">↑ 前</button><button data-ha="270" style="grid-area:l">← 左</button><button data-ha="180" style="grid-area:d">↓ 後</button><button data-ha="90" style="grid-area:r">右 →</button></div>
+        <p class="note">按一下：喇叭移過去，開始播放聲音；再按一次就停。也可以用鍵盤的方向鍵，或直接點地上的量角器。戴耳機聽，左右會更清楚。</p></div>
+      <div class="result" id="hRes" aria-live="polite">按方向鍵，聽聽看、看看哪隻耳朵先聽到。</div>
     </div>
   </div>
   <div class="card scope-card">
@@ -2997,7 +3000,7 @@ const rg=new THREE.BufferGeometry();rg.setAttribute("position",new THREE.BufferA
 const ringMesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity:0.92,depthWrite:false}));ringMesh.renderOrder=3;scene.add(ringMesh);
 const CREST=new THREE.Color(0xf06292),TROUGH=new THREE.Color(0x4a90d9),BG=new THREE.Color(0xfbfaf6);
 /* 狀態 */
-let ang=+$("hAng").value,SP=new THREE.Vector3(),running=false,t0=0,tStop=null,hist=[],clock=new THREE.Clock();
+let ang=+$("hAng").value,vis=true,SP=new THREE.Vector3(),running=false,t0=0,tStop=null,hist=[],clock=new THREE.Clock();
 const dist=(p,x)=>Math.hypot(p.x-x,p.z);
 function place(){const a=ang*Math.PI/180;SP.set(Math.sin(a)*R_VIS,0,-Math.cos(a)*R_VIS);spk.position.copy(SP);spk.lookAt(0,0,0);}
 function itdMs(){const a=ang*Math.PI/180,sx=Math.sin(a)*100,sz=-Math.cos(a)*100;return (Math.hypot(sx+EAR,sz)-Math.hypot(sx-EAR,sz))/34.3}  // 喇叭在 1 公尺外的真實時間差（左耳減右耳）
@@ -3005,21 +3008,38 @@ function resText(){const d=itdMs(),ad=Math.abs(d);
   if(ad<0.015)return "兩隻耳朵<b>同時</b>聽到，時間差是 0。聲音在正前方或正後方。";
   const first=d>0?"右耳":"左耳",late=d>0?"左耳":"右耳";
   return `<b>${first}</b>先聽到，${late}晚了 <b>${ad.toFixed(2)}</b> 毫秒（${(ad/1000).toFixed(5)} 秒）。`}
-function updRes(){$("hRes").innerHTML=resText()+(running?"":"<br><span class='note'>按「發出聲音」看聲波。</span>")}
-function setAng(v){ang=((Math.round(v)%360)+360)%360;$("hAng").value=ang;place();hist=[];if(running){t0=clock.getElapsedTime();tStop=null}updRes()}
+function updRes(){$("hRes").innerHTML=resText()+(running&&tStop===null?"":"<br><span class='note'>按方向鍵播放聲音、看聲波。</span>")}
+/* 好聽的聲音：音樂盒小旋律。左右耳各有自己的延遲和音量（真的時間差），戴耳機聽得出方向 */
+let AC=null,bus,gL,gR,dL,dR,timer=null,nextT=0,ni=0;
+const MEL=[72,76,79,84,79,76,74,79,72,76,79,83,84,79,76,72];
+function audioInit(){if(AC)return true;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return false}
+  bus=AC.createGain();bus.gain.value=0;const mg=AC.createChannelMerger(2);
+  gL=AC.createGain();gR=AC.createGain();dL=AC.createDelay(0.01);dR=AC.createDelay(0.01);
+  bus.connect(gL);gL.connect(dL);dL.connect(mg,0,0);bus.connect(gR);gR.connect(dR);dR.connect(mg,0,1);mg.connect(AC.destination);return true}
+function audioPos(){if(!AC)return;const d=itdMs(),s=Math.sin(ang*Math.PI/180),t=AC.currentTime;
+  dL.delayTime.setTargetAtTime(Math.max(0,d)/1000,t,0.01);dR.delayTime.setTargetAtTime(Math.max(0,-d)/1000,t,0.01);
+  gL.gain.setTargetAtTime(0.62-0.3*s,t,0.02);gR.gain.setTargetAtTime(0.62+0.3*s,t,0.02)}
+function note(m,t){const f=440*Math.pow(2,(m-69)/12),e=AC.createGain();e.gain.setValueAtTime(0.0001,t);e.gain.exponentialRampToValueAtTime(0.32,t+0.008);e.gain.exponentialRampToValueAtTime(0.0001,t+1.1);e.connect(bus);
+  for(const [k,v] of [[1,1],[2,0.18],[3,0.06]]){const o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=f*k;g.gain.value=v;o.connect(g);g.connect(e);o.start(t);o.stop(t+1.2)}}
+function sched(){while(nextT<AC.currentTime+0.35){note(MEL[ni%MEL.length],nextT);ni++;nextT+=0.28}}
+function soundOn(){if(!audioInit())return;if(AC.state==="suspended")AC.resume();audioPos();bus.gain.cancelScheduledValues(AC.currentTime);bus.gain.setTargetAtTime(0.5,AC.currentTime,0.05);
+  if(!timer){nextT=AC.currentTime+0.05;ni=0;sched();timer=setInterval(sched,90)}}
+function soundOff(){if(!AC)return;bus.gain.setTargetAtTime(0,AC.currentTime,0.12);clearInterval(timer);timer=null}
+function btnState(){document.querySelectorAll("[data-ha]").forEach(b=>b.classList.toggle("on",running&&tStop===null&&+b.dataset.ha===ang))}
+function play(){const t=clock.getElapsedTime();running=true;t0=t;tStop=null;hist=[];soundOn();btnState();updRes()}
+function stop(){if(running&&tStop===null){tStop=clock.getElapsedTime()}soundOff();btnState();updRes()}
+function setAng(v){ang=((Math.round(v)%360)+360)%360;$("hAng").value=ang;place();hist=[];if(running&&tStop===null){t0=clock.getElapsedTime()}audioPos();btnState();updRes()}
 $("hAng").addEventListener("input",e=>setAng(+e.target.value));
-document.querySelectorAll("[data-ha]").forEach(b=>b.addEventListener("click",()=>setAng(+b.dataset.ha)));
-$("hPlay").addEventListener("click",()=>{const t=clock.getElapsedTime();
-  if(!running){running=true;t0=t;tStop=null;hist=[];$("hPlay").textContent="■ 停止"}
-  else if(tStop===null){tStop=t;$("hPlay").textContent="▶ 發出聲音"}
-  else{t0=t;tStop=null;hist=[];$("hPlay").textContent="■ 停止"}
-  updRes()});
+function go(a){if(running&&tStop===null&&ang===a){stop();return}setAng(a);if(!(running&&tStop===null))play()}
+document.querySelectorAll("[data-ha]").forEach(b=>b.addEventListener("click",()=>go(+b.dataset.ha)));
+addEventListener("keydown",e=>{const a={ArrowUp:0,ArrowRight:90,ArrowDown:180,ArrowLeft:270}[e.key];if(a===undefined||!vis)return;
+  const tg=e.target&&e.target.tagName;if(tg==="INPUT"||tg==="TEXTAREA"||tg==="SELECT")return;e.preventDefault();go(a)});
 /* 點地板放喇叭 */
 const ray=new THREE.Raycaster(),down={x:0,y:0};
 cv.addEventListener("pointerdown",e=>{down.x=e.clientX;down.y=e.clientY});
 cv.addEventListener("pointerup",e=>{if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)return;const r=cv.getBoundingClientRect();
   ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},cam);const h=ray.intersectObject(disk)[0];
-  if(h&&Math.hypot(h.point.x,h.point.z)>16)setAng(Math.atan2(h.point.x,-h.point.z)*180/Math.PI)});
+  if(h&&Math.hypot(h.point.x,h.point.z)>16){setAng(Math.atan2(h.point.x,-h.point.z)*180/Math.PI);if(!(running&&tStop===null))play()}});
 /* 視角 */
 const VIEWS={tilt:[[42,92,128],[0,-8,-6]],top:[[0,215,1],[0,0,0]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();document.querySelectorAll("[data-hv]").forEach(b=>b.classList.toggle("on",b.dataset.hv===k))}
@@ -3050,7 +3070,7 @@ function rings(t){let n=0;if(running){const front=CV*(t-t0),tail=tStop===null?-1
       ringPos[j]=SP.x+ca*(r-w);ringPos[j+1]=0;ringPos[j+2]=SP.z+sa*(r-w);ringPos[j+3]=SP.x+ca*(r+w);ringPos[j+4]=0;ringPos[j+5]=SP.z+sa*(r+w);
       ringCol.set([c.r,c.g,c.b,c.r,c.g,c.b],j)}n++}}}
   rg.setDrawRange(0,n*SEG*6);rg.attributes.position.needsUpdate=true;rg.attributes.color.needsUpdate=true}
-let vis=true;try{new IntersectionObserver(es=>{vis=es[0].isIntersecting}).observe(host)}catch(e){}
+try{new IntersectionObserver(es=>{vis=es[0].isIntersecting}).observe(host)}catch(e){}
 function resize(){const r=host.getBoundingClientRect();if(!r.width)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 addEventListener("resize",resize);
 function tick(){requestAnimationFrame(tick);const t=clock.getElapsedTime();if(!vis)return;ctl.update();rings(t);
@@ -3249,7 +3269,7 @@ window.__map={get mics(){return mics},set mics(v){mics=v;changed()},get amb(){re
 
 /* ================= 學習單（三）：資料、表格、圖、匯出 ================= */
 const KEY="ws3-doa-v1";
-const POS=[["正前方（0°）"],["右前方（45°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
+const POS=[["正前方（0°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
 const PRACT=[0.10,0.29,0.50];
 const ROADN=["北","東","南","西"],ROADA={北:0,東:90,南:180,西:270};
 const NTR=8;
@@ -3258,6 +3278,7 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
   exp:{1:[],2:[],3:[],4:[]},c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const num=v=>v===""||v==null||isNaN(+v)?null:+v;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
