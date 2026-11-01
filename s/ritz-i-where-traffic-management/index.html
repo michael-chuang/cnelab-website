@@ -2819,7 +2819,7 @@ label{display:block;margin-top:6px}
 .hud2 b{font-family:var(--num)}
 .scope-card{padding:10px 12px}
 #hScope{display:block;width:100%;height:190px}
-#tri{width:100%;height:auto;display:block}
+#tri{width:100%;height:auto;display:block;touch-action:none}
 #ruler{width:100%;height:auto;display:block;touch-action:none}
 .tsteps{display:flex;flex-direction:column;gap:6px;padding-left:1.4em}
 .tsteps li{color:var(--muted);transition:color .2s}
@@ -2892,9 +2892,9 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>二、不用三角函數，也能從時間差找出角度</h2>
-  <p class="lead">聲音從很遠的地方來，會像一排一排的直線浪。浪碰到近的耳朵時，遠的耳朵還差一小段路，這段路就是「多走的路」。只要會乘法和量角器，就能把它變成角度。拉圖下方的拉桿，看看聲音換方向時，上下兩個三角形怎麼一起變。</p>
-  <div class="card tri-card"><div class="tri-wrap"><svg id="tri" viewBox="0 0 640 600" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg>
-    <div class="tri-ctl"><label for="tAng">聲音從哪裡來：<b id="tAngTxt"></b></label><input type="range" id="tAng" min="-90" max="90" step="1" value="40"></div></div></div>
+  <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；再用兩耳的寬度和量角器，就能找出角度，不用三角函數。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變。</p>
+  <div class="card tri-card"><div class="tri-wrap"><svg id="tri" viewBox="0 0 640 642" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg>
+</div></div>
   <div class="card"><h3>換我試試：從時間差找角度</h3>
     <p class="note">兩隻耳朵相距 20 公分，所以半圓的半徑就畫 20 公分（直尺從 0 到 20）。先算多走的路，再拖曳下面半圓尺上的點，讀出角度。</p>
     <div class="two" style="margin-top:8px">
@@ -3162,11 +3162,11 @@ const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim
 const OG="#e07a10",PX=10;                        // 1 公分＝10 px
 const L={x:220,y:142},Rr={x:420,y:142},HC={x:320,y:142};   // 上面：兩隻耳朵相距 20 公分
 const O={x:320,y:492},RAD=200;                    // 下面：半圓（半徑 20 公分）
-let th=+$("tAng").value,anim=null;
+let th=40,anim=null;const HR=122;   // 拖曳喇叭的軌道半徑
 const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
 // 每一步的時間（秒）
 const SEQ=[2.2,1.4,1.6,1.8,1.4,1.8];const T0=SEQ.reduce((a,b,i)=>(a.push((a[i-1]||0)+b),a),[]);
-function txtAng(){const a=Math.abs(th);$("tAngTxt").textContent=th===0?"正前方 0°":`${th>0?"右":"左"}邊 ${a}°`}
+const angTxt=()=>th===0?"正前方 0°":`${th>0?"右":"左"}邊 ${Math.abs(th)}°`;
 function draw(t){ // t：動畫時間；null＝全部畫完
   svg.innerHTML="";const ink=col("--ink"),mut=col("--muted"),line=col("--line"),acc=col("--accent"),ca=col("--a"),cb=col("--b"),paper=col("--paper");
   const step=t===null?9:T0.findIndex(x=>t<x),p=k=>t===null?1:ease((t-(T0[k-1]||0))/SEQ[k]);
@@ -3176,15 +3176,11 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   const cp=E("clipPath",{id:"topclip"},E("defs",{}));E("rect",{x:0,y:0,width:640,height:262},cp);
   const top=E("g",{"clip-path":"url(#topclip)"});
   E("rect",{x:0,y:0,width:640,height:262,fill:col("--bg"),rx:10},top);
-  // 浪：紅線（壓縮）、藍線（稀疏）一排一排，和學習單二一樣、一排一排平平地走過來（只畫在浪已經到的那一側）
-  const cNear=near.x*s.x+near.y*s.y,off=step===0?(1-p(0))*170:0,cF=cNear+off,defs=svg.querySelector("defs");
-  const fx=HC.x+s.x*(cF-(HC.x*s.x+HC.y*s.y)),fy=HC.y+s.y*(cF-(HC.x*s.x+HC.y*s.y)),tx=-s.y,ty=s.x;
-  for(let k=0;k<16;k++){const c=cF+k*21,d=c-(HC.x*s.x+HC.y*s.y),bx=HC.x+s.x*d,by=HC.y+s.y*d;      // 紅線＝壓縮、藍線＝稀疏（一排一排）
-    E("line",{x1:bx-tx*600,y1:by-ty*600,x2:bx+tx*600,y2:by+ty*600,stroke:k%2?"#5c9eff":"#f2675c","stroke-width":2.6,opacity:0.85},top)}
-  // 箭頭：聲音前進方向
-  const ax=HC.x+s.x*150,ay=HC.y+s.y*150,AMB="#e05a48";E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:AMB,"stroke-width":3,"marker-end":"url(#arw)"},top);
-  const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:AMB},mk);
-  E("text",{x:ax+s.x*14,y:ay+s.y*14+5,"text-anchor":"middle","font-size":14,fill:AMB,"font-weight":700},top,"聲音");
+  const defs=svg.querySelector("defs"),tx=-s.y,ty=s.x,cNear=near.x*s.x+near.y*s.y,dN=cNear-(HC.x*s.x+HC.y*s.y);
+  // 聲音同時到達的線（穿過近的耳朵，淡灰色）
+  E("line",{x1:HC.x+s.x*dN-tx*600,y1:HC.y+s.y*dN-ty*600,x2:HC.x+s.x*dN+tx*600,y2:HC.y+s.y*dN+ty*600,stroke:mut,"stroke-width":1.2,"stroke-dasharray":"3 5",opacity:0.6},top);
+  // 喇叭的軌道（可以拖曳）
+  E("path",{d:`M${HC.x-HR},${HC.y} A${HR},${HR} 0 0 1 ${HC.x+HR},${HC.y}`,fill:"none",stroke:mut,"stroke-width":1.5,"stroke-dasharray":"2 6",opacity:0.7},top);
   // 可愛的頭（從頭頂往下看）：臉在前面，頭髮、馬尾、蝴蝶結在後面
   const hcp=E("clipPath",{id:"headclip"},defs);E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:94},hcp);
   E("ellipse",{cx:HC.x,cy:HC.y+104,rx:20,ry:22,fill:"#8a5a3c"},top);                                          // 馬尾
@@ -3206,6 +3202,13 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   for(const [e,n,c] of [[L,"左耳",ca],[Rr,"右耳",cb]]){const lit=(step>=1&&e===near)||(step>=3&&e===far);
     E("circle",{cx:e.x,cy:e.y,r:lit?12:9,fill:c,stroke:paper,"stroke-width":3},top);E("text",{x:e.x+(e===L?-26:26),y:e.y+38,"text-anchor":"middle","font-size":15,"font-weight":700,fill:c},top,n)}
   if(step>=1&&th!==0){E("text",{x:near.x+(near===Rr?18:-18),y:near.y+58,"text-anchor":"middle","font-size":13,"font-weight":700,fill:acc},top,"（先聽到）")}
+  // 可以拖曳的喇叭＋往頭的箭頭
+  {const hx=HC.x+s.x*HR,hy=HC.y+s.y*HR,g=E("g",{transform:`translate(${hx},${hy}) rotate(${th})`,style:"cursor:grab"},top);
+   E("line",{x1:hx-s.x*20,y1:hy-s.y*20,x2:hx-s.x*48,y2:hy-s.y*48,stroke:ink,"stroke-width":2.5,"marker-end":"url(#arw)"},top);
+   E("rect",{x:-15,y:-13,width:30,height:24,rx:5,fill:"#3a4148",stroke:paper,"stroke-width":2},g);E("circle",{cx:0,cy:2,r:7,fill:"#15181b",stroke:"#9aa3aa","stroke-width":2},g);
+   E("text",{x:hx+(th>=0?20:-20),y:hy-14,"text-anchor":th>=0?"start":"end","font-size":14,"font-weight":700,fill:ink},top,`聲音：${angTxt()}`)}
+  {const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:ink},mk)}
+  E("text",{x:626,y:250,"text-anchor":"end","font-size":12.5,fill:mut},top,"拖曳喇叭，換聲音的方向");
   // 多走的路（從遠的耳朵沿 s 方向到浪線）＋三角形（跟下面量角器的三角形一模一樣）
   const seg=k=>({x1:far.x,y1:far.y,x2:far.x+s.x*dpx*k,y2:far.y+s.y*dpx*k});
   const Q={x:far.x+s.x*dpx,y:far.y+s.y*dpx};
@@ -3216,7 +3219,7 @@ function draw(t){ // t：動畫時間；null＝全部畫完
       E("path",{d:`M${near.x+Math.cos(u1)*ar},${near.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${near.x+Math.cos(u2)*ar},${near.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},top);
       const um=u1+sw/2;E("text",{x:near.x+Math.cos(um)*(ar+16),y:near.y+Math.sin(um)*(ar+16)+5,"text-anchor":"middle","font-size":14,"font-weight":700,fill:OG},top,`${Math.abs(th)}°`)}
     E("line",Object.assign(g,{stroke:OG,"stroke-width":7,"stroke-linecap":"round"}),top);
-    if(q>0.9)E("text",{x:far.x+s.x*dpx/2+(th>=0?-14:14),y:far.y+s.y*dpx/2-10,"text-anchor":th>=0?"end":"start","font-size":14,"font-weight":700,fill:OG},top,`多走的路 ${dcm.toFixed(1)} 公分`)}
+    if(q>0.9)E("text",{x:far.x+s.x*dpx/2+(th>=0?-14:14),y:far.y+s.y*dpx/2-10,"text-anchor":th>=0?"end":"start","font-size":14,"font-weight":700,fill:OG},top,`多走的路 ${(Math.round(dcm/34.3*100)/100*34).toFixed(1)} 公分`)}
   // 下半部：半圓＋直尺＋量角器
   const g2=E("g",{});
   E("path",{d:`M${O.x-RAD},${O.y} A${RAD},${RAD} 0 0 1 ${O.x+RAD},${O.y} Z`,fill:paper,stroke:ink,"stroke-width":2},g2);
@@ -3241,16 +3244,23 @@ function draw(t){ // t：動畫時間；null＝全部畫完
       if(th!==0)E("path",{d:`M${O.x},${O.y-ar} A${ar},${ar} 0 0 ${th>0?1:0} ${O.x+Math.sin(r)*ar},${O.y-Math.cos(r)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg);
       E("text",{x:O.x+Math.sin(r/2)*(ar+30),y:O.y-Math.cos(r/2)*(ar+30)+5,"text-anchor":"middle","font-size":18,"font-weight":700,fill:OG},svg,`${Math.abs(th)}°`)}}
   // 說明文字
-  const ms=dcm/34.3;E("text",{x:12,y:288,"font-size":14,fill:ink},svg,`多走的路 ${dcm.toFixed(1)} 公分`);
-  E("text",{x:12,y:308,"font-size":14,fill:mut},svg,`時間差 ＝ ${dcm.toFixed(1)} ÷ 34 ≈ ${ms.toFixed(2)} 毫秒`);
+  const ms=Math.round(dcm/34.3*100)/100;
+  [[`① 量到時間差：${ms.toFixed(2)} 毫秒`,700],[`② 多走的路 ＝ ${ms.toFixed(2)} × 34 ≈ ${(ms*34).toFixed(1)} 公分`,400],["③ 兩耳寬 20 公分 ＝ 半圓的半徑",400],[`④ 用量角器讀出角度：${Math.abs(th)}°`,700]]
+    .forEach(([t,w],i)=>E("text",{x:12,y:552+i*22,"font-size":14.5,"font-weight":w,fill:i===3?OG:ink},svg,t));
   // 公式（放在圖裡）
-  E("rect",{x:330,y:528,width:302,height:62,rx:10,fill:paper,stroke:line},svg);
-  E("text",{x:342,y:553,"font-size":14.5,"font-weight":700,fill:ink},svg,"多走的路（公分）＝ 時間差（毫秒）× 34");
-  E("text",{x:342,y:576,"font-size":12.5,fill:mut},svg,"聲音每 1 毫秒（0.001 秒）大約走 34 公分");}
+  E("rect",{x:330,y:540,width:302,height:62,rx:10,fill:paper,stroke:line},svg);
+  E("text",{x:342,y:565,"font-size":14.5,"font-weight":700,fill:ink},svg,"多走的路（公分）＝ 時間差（毫秒）× 34");
+  E("text",{x:342,y:588,"font-size":12.5,fill:mut},svg,"聲音每 1 毫秒（0.001 秒）大約走 34 公分");}
 function play(){const st=performance.now();cancelAnimationFrame(anim);$("tPlay").disabled=true;
   (function f(){const t=(performance.now()-st)/1000;if(t>=T0[T0.length-1]){draw(null);$("tPlay").disabled=false;anim=null;return}draw(t);anim=requestAnimationFrame(f)})()}
-$("tAng").addEventListener("input",e=>{th=+e.target.value;txtAng();if(!anim)draw(null)});
-txtAng();draw(null);
+/* 拖曳：在上面的圖裡按住、拖動，喇叭就跟著換方向（只在前半圈：左 90°～右 90°） */
+let dragT=false;
+function setFrom(e){const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*640,y=(e.clientY-r.top)/r.height*642;
+  let a=Math.atan2(x-HC.x,HC.y-y)*180/Math.PI;a=Math.max(-90,Math.min(90,a));th=Math.round(a);draw(null)}
+svg.addEventListener("pointerdown",e=>{const r=svg.getBoundingClientRect(),y=(e.clientY-r.top)/r.height*642;if(y>262)return;dragT=true;svg.setPointerCapture(e.pointerId);setFrom(e);e.preventDefault()});
+svg.addEventListener("pointermove",e=>{if(dragT)setFrom(e)});
+const endT=()=>{dragT=false};svg.addEventListener("pointerup",endT);svg.addEventListener("pointercancel",endT);
+draw(null);
 const redraw=()=>{if(!anim)draw(null)};matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
