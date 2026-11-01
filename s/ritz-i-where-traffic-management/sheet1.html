@@ -376,8 +376,8 @@ const band=part(new THREE.CylinderGeometry(HR+0.6,HR+0.6,6,40,1,true),M(0x15181b
 const plugM=M(0xff8a2a,{roughness:0.5,emissive:0x5a2200});
 const plugs=[-1,1].map(s=>{const p=part(new THREE.CylinderGeometry(2.4,2.4,4,12),plugM,s*(HR+3),HY,1,kid);p.rotation.z=Math.PI/2;return p});
 // 右手（從右肩伸出，可旋轉指方向）
-const arm=new THREE.Group();arm.position.set(13.6,92,0);kid.add(arm);
-limb([0,0,0],[0,0,-8],4.3,redM,arm);limb([0,0,-8],[0,0,-29],2.9,skin,arm);part(new THREE.SphereGeometry(3.6,14,10),skin,0,0,-32,arm);
+const arm=new THREE.Group();arm.rotation.order="YXZ";arm.position.set(13.6,92,0);kid.add(arm);
+limb([0,0,0],[0,0,-8],4.3,redM,arm);limb([0,0,-8],[0,0,-29],2.9,skin,arm);part(new THREE.SphereGeometry(3.6,14,10),skin,0,0,-32,arm);limb([0,0.6,-34],[0,0.6,-40],1.1,skin,arm);   // 伸出食指
 
 /* ---------- 播音員：女生（白襯衫、條紋領帶、格子裙、黑長髮）拿著喇叭 ---------- */
 const ann=new THREE.Group();scene.add(ann);
@@ -413,7 +413,7 @@ function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,
 function setEar(){plugs.forEach(p=>p.visible=ear==="b")}
 function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}arm.rotation.y=0;armTarget=null;armAngle=0;armUp=0}
 placeAnn();setEar();
-let armTarget=null, armAngle=0, armUp=0;
+let armTarget=null, armAngle=0, armUp=0, armX=-1.5;
 
 // 警笛聲（救護車：700／950 Hz 交替）＋左右聲道；戴耳塞＝變小聲、變悶、左右差變小
 let AC=null;
@@ -457,8 +457,9 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tick(now){requestAnimationFrame(tick);
   const el=(now-playT)/1000, on=el>=0&&el<2;
   waves.forEach(w=>{if(!on){w.material.opacity=0;return}const p=(el*0.9+w.userData.ph)%1,r=10+p*230;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
-  if(armTarget!==null){armAngle+=(armTarget-armAngle)*(reduce?1:0.12);arm.rotation.y=-armAngle*Math.PI/180;arm.rotation.x=0}
-  else{arm.rotation.x=-1.5;arm.rotation.y=0}
+  const k=reduce?1:0.12;   // 舉起右手：先從垂下抬到斜上方，再轉向他覺得的方向
+  if(armTarget!==null){armAngle+=(armTarget-armAngle)*k;armX+=(0.3-armX)*k;arm.rotation.y=-armAngle*Math.PI/180;arm.rotation.x=armX}
+  else{armX+=(-1.5-armX)*k;arm.rotation.x=armX;arm.rotation.y=0}
   ctl.update();renderer.render(scene,cam)}
 requestAnimationFrame(tick);
 })();
