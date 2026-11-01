@@ -3099,6 +3099,7 @@ add(new THREE.SphereGeometry(10,40,30),skin,0,0,0,0.96,1,0.96);                 
 add(new THREE.SphereGeometry(10.6,40,30,0,Math.PI*2,0,Math.PI*0.46),hairM,0,0.7,0.4);                      // 頭頂的頭髮（中分）
 add(new THREE.BoxGeometry(0.35,0.2,9),M(0xf0c9ad),0,11.25,-1.5).rotation.x=0.18;                           // 中分的髮線
 add(new THREE.SphereGeometry(10.5,40,30,0,Math.PI),hairM,0,-13,1.2,1.13,2.45,0.82);                       // 背後的長髮（圓圓的一片，從頭頂垂到背）
+add(new THREE.SphereGeometry(10.75,40,30,Math.PI*0.16,Math.PI*0.68,0,Math.PI*0.66),hairM,0,0.4,0.5);     // 後腦勺的頭髮（不露頭皮，避開耳朵）
          // 垂在肩膀前的頭髮（在耳朵下面）
 for(const s of [-1,1]){add(new THREE.SphereGeometry(1.5,16,12),M(0x1b1515,{roughness:0.3}),s*3.6,0.4,-8.9,1,1.15,0.6);
   add(new THREE.SphereGeometry(0.5,8,6),white,s*3.6+0.5,1.1,-9.6);
