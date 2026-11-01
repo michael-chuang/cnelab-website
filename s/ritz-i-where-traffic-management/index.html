@@ -2876,7 +2876,7 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>一、兩隻耳朵的時間差</h2>
-  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小女孩發出溫柔的聲音；再點一下就停。聲音像水波一樣一圈一圈傳出去（紅＝空氣擠在一起、藍＝空氣稀稀疏疏，和學習單二的空氣分子一樣），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
+  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小女孩播放古典樂（巴哈〈G 大調小步舞曲〉）；再點一下就停。聲音像水波一樣一圈一圈傳出去（紅圈＝空氣擠在一起、藍圈＝空氣稀稀疏疏，和學習單二一樣），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
   <div class="stage wide" id="h3d"><canvas id="hc" aria-label="3D：小女孩站在草地上，喇叭發出的聲波傳到兩隻耳朵"></canvas>
     <div class="views"><button data-hv="tilt" class="on">從後面看</button><button data-hv="front">從前面看</button><button data-hv="top">從上面看</button></div>
     <div class="hud2"><button id="hStop" class="stopbtn" hidden>■ 停止聲音</button></div>
@@ -2884,7 +2884,7 @@ td.no{color:var(--b);font-weight:700}
   <div class="card scope-card">
     <div class="result" id="hRes" aria-live="polite">在草地上點一下，放好喇叭。</div>
     <canvas id="hScope" aria-label="左耳和右耳收到的波形（紅＝壓縮、藍＝稀疏）"></canvas>
-    <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：紅藍的順序一樣，只是一隻耳朵比較晚收到</p>
+    <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；曲線紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到</p>
   </div>
   <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">表 3-1　喇叭在不同位置，兩隻耳朵的時間差</p>
@@ -3061,11 +3061,11 @@ const wave=new THREE.Mesh(new THREE.PlaneGeometry(640,640),new THREE.ShaderMater
   vertexShader:"varying vec2 vP;void main(){vP=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
   fragmentShader:`varying vec2 vP;uniform float uFront,uTail,uLam,uMax;uniform vec2 uOff;
   void main(){float r=length(vP);if(r>uFront||r<uTail||r>uMax)discard;
-    float w=cos(6.28318*(uFront-r)/uLam);float v=abs(w);
+    float ph=fract((uFront-r)/uLam);float dC=min(ph,1.0-ph)*uLam,dT=abs(ph-0.5)*uLam;float hw=1.1;
     float fade=(1.0-smoothstep(uMax*0.45,uMax,r))*smoothstep(0.0,4.0,uFront-r)*smoothstep(0.0,4.0,r-uTail);
-    vec3 c=w>0.0?mix(vec3(0.97,0.97,0.99),vec3(0.96,0.55,0.48),v):mix(vec3(0.97,0.97,0.99),vec3(0.45,0.72,1.0),v);
+    vec3 c;float a;if(dC<hw){c=vec3(0.96,0.45,0.40);a=1.0-smoothstep(hw*0.6,hw,dC);}else if(dT<hw){c=vec3(0.36,0.62,1.0);a=1.0-smoothstep(hw*0.6,hw,dT);}else discard;
     float body=1.0;
-    gl_FragColor=vec4(c,(0.35+0.4*v)*fade*body);}`}));
+    gl_FragColor=vec4(c,0.9*a*fade*body);}`}));
 wave.rotation.x=-Math.PI/2;wave.renderOrder=3;scene.add(wave);
 /* 狀態 */
 let ang=60,SP=new THREE.Vector3(),running=false,t0=0,tStop=null,clock=new THREE.Clock(),vis=true;
@@ -3078,8 +3078,8 @@ function updRes(){const d=itdMs(),ad=Math.abs(d);let t;
   else{const first=d>0?"右耳":"左耳",late=d>0?"左耳":"右耳";t=`<b>${first}</b>先聽到，${late}晚了 <b>${ad.toFixed(2)}</b> 毫秒（${(ad/1000).toFixed(5)} 秒）。`}
   $("hRes").innerHTML=(playing()?"":"<span class='note'>在草地上點一下放喇叭，放好就開始播放；再點一下就停。</span><br>")+`喇叭在 <b>${ang}°</b>：`+t;
   $("hStop").hidden=!playing()}
-/* 溫柔的聲音：柔和的長音（像哼歌），左右耳各有自己的延遲和音量（真的時間差） */
-let AC=null,bus,gL,gR,dL,dR,voices=[];
+/* 好聽的古典樂（巴哈 G 大調小步舞曲），左右耳各有自己的延遲和音量（真的時間差） */
+let AC=null,bus,gL,gR,dL,dR;
 let AN=null;
 function audioInit(){if(AC)return true;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return false}
   bus=AC.createGain();bus.gain.value=0;const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2200;bus.connect(lp);
@@ -3092,12 +3092,20 @@ function unlock(){if(!audioInit())return;if(AC.state!=="running")AC.resume();}
 function audioPos(){if(!AC)return;const d=itdMs(),s=Math.sin(ang*Math.PI/180),t=AC.currentTime;
   dL.delayTime.setTargetAtTime(Math.max(0,d)/1000,t,0.01);dR.delayTime.setTargetAtTime(Math.max(0,-d)/1000,t,0.01);
   gL.gain.setTargetAtTime(0.6-0.3*s,t,0.03);gR.gain.setTargetAtTime(0.6+0.3*s,t,0.03)}
+const NT=n=>{const m={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]],sh=n[1]==="#"?1:0,o=+n.slice(sh?2:1);return 440*Math.pow(2,(m+sh+12*(o+1)-69)/12)};
+// [音, 拍數]；q＝1 拍、e＝半拍。小步舞曲 3/4 拍
+const MEL=("D5 1,G4 .5,A4 .5,B4 .5,C5 .5,D5 1,G4 1,G4 1,E5 1,C5 .5,D5 .5,E5 .5,F#5 .5,G5 1,G4 1,G4 1,C5 1,D5 .5,C5 .5,B4 .5,A4 .5,B4 1,C5 .5,B4 .5,A4 .5,G4 .5,F#4 1,G4 .5,A4 .5,B4 .5,G4 .5,A4 3,"+
+  "D5 1,G4 .5,A4 .5,B4 .5,C5 .5,D5 1,G4 1,G4 1,E5 1,C5 .5,D5 .5,E5 .5,F#5 .5,G5 1,G4 1,G4 1,C5 1,D5 .5,C5 .5,B4 .5,A4 .5,B4 1,C5 .5,B4 .5,A4 .5,G4 .5,A4 1,B4 .5,A4 .5,G4 .5,F#4 .5,G4 3").split(",").map(x=>{const [n,d]=x.split(" ");return [NT(n),+d]});
+const BASS=["G3","B3","C4","B3","A3","G3","D3","D3","G3","B3","C4","B3","A3","G3","D3","G2"].map(NT);
+const BEAT=0.42;let mTimer=null,mi=0,mT=0,bi=0,bT=0;
+function pluck(f,t,dur,vol){const e=AC.createGain();e.gain.setValueAtTime(0.0001,t);e.gain.exponentialRampToValueAtTime(vol,t+0.006);e.gain.exponentialRampToValueAtTime(vol*0.35,t+0.18);e.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(0.5,dur*1.6));e.connect(bus);
+  for(const [k,v] of [[1,1],[2,0.32],[3,0.14],[4,0.06]]){const o=AC.createOscillator(),g=AC.createGain();o.type=k===1?"triangle":"sine";o.frequency.value=f*k;g.gain.value=v;o.connect(g);g.connect(e);o.start(t);o.stop(t+Math.max(0.6,dur*1.7))}}
+function music(){while(mT<AC.currentTime+0.4){const [f,d]=MEL[mi%MEL.length];pluck(f,mT,d*BEAT,0.32);mT+=d*BEAT;mi++}
+  while(bT<AC.currentTime+0.4){pluck(BASS[bi%BASS.length],bT,3*BEAT,0.16);bT+=3*BEAT;bi++}}
 function soundOn(){if(!audioInit())return;if(AC.state==="suspended")AC.resume();audioPos();const t=AC.currentTime;
-  if(!voices.length){const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=0.35;lg.gain.value=0.12;lfo.connect(lg);
-    for(const [f,v,det] of [[262,0.5,0],[262,0.35,4],[392,0.22,-3],[524,0.1,2],[659,0.05,0]]){const o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=f;o.detune.value=det;g.gain.value=v;lg.connect(g.gain);o.connect(g);g.connect(bus);o.start();voices.push(o)}
-    lfo.start();voices.push(lfo)}
-  bus.gain.cancelScheduledValues(t);bus.gain.setTargetAtTime(0.5,t,0.2)}
-function soundOff(){if(!AC)return;bus.gain.cancelScheduledValues(AC.currentTime);bus.gain.setTargetAtTime(0,AC.currentTime,0.25)}
+  bus.gain.cancelScheduledValues(t);bus.gain.setValueAtTime(bus.gain.value,t);bus.gain.linearRampToValueAtTime(0.7,t+0.05);
+  if(!mTimer){mi=0;bi=0;mT=bT=t+0.08;music();mTimer=setInterval(music,100)}}
+function soundOff(){if(!AC)return;bus.gain.cancelScheduledValues(AC.currentTime);bus.gain.setTargetAtTime(0,AC.currentTime,0.15);clearInterval(mTimer);mTimer=null}
 function play(){running=true;t0=clock.getElapsedTime();tStop=null;soundOn();updRes()}
 function stop(){if(playing())tStop=clock.getElapsedTime();soundOff();updRes()}
 function setAng(v){ang=((Math.round(v)%360)+360)%360;place();audioPos();updRes()}
@@ -3119,7 +3127,7 @@ cv.addEventListener("pointerup",e=>{if(!down)return;const wasDrag=dragSpk,moved=
 const VIEWS={tilt:[[70,85,250],[0,-48,-8]],front:[[-60,40,-250],[0,-48,0]],top:[[0,360,1],[0,-60,0]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();document.querySelectorAll("[data-hv]").forEach(b=>b.classList.toggle("on",b.dataset.hv===k))}
 document.querySelectorAll("[data-hv]").forEach(b=>b.addEventListener("click",()=>view(b.dataset.hv)));
-/* 兩耳收到的聲音：紅→白→藍漸層帶（紅＝壓縮、藍＝稀疏），疊一條細細的波形 */
+/* 兩耳收到的聲音：波形曲線依數值上色（紅＝壓縮、藍＝稀疏），和學習單二一樣 */
 const sc=$("hScope"),sg=sc.getContext("2d");let WIN=5;
 function earVal(t,dE){if(!running||t<t0)return null;const front=CV*(t-t0);if(front<dE)return null;if(tStop!==null&&t>=tStop&&CV*(t-tStop)>dE)return null;return Math.cos(2*Math.PI*(front-dE)/LAM)}
 function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);if(sc.width!==Math.round(r.width*dpr)||sc.height!==Math.round(r.height*dpr)){sc.width=Math.round(r.width*dpr);sc.height=Math.round(r.height*dpr)}
@@ -3127,12 +3135,11 @@ function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.d
   const cs=getComputedStyle(document.documentElement),mut=cs.getPropertyValue("--muted").trim(),line=cs.getPropertyValue("--line").trim(),ca=cs.getPropertyValue("--a").trim(),cb=cs.getPropertyValue("--b").trim();
   const x0=52,x1=W-8,bh=(H-30)/2-6,lanes=[[4,"左耳",ca,-EAR],[4+bh+12,"右耳",cb,EAR]];
   sg.font="700 14px 'Noto Sans TC',sans-serif";sg.textBaseline="middle";
-  for(const [y,n,c,ex] of lanes){sg.fillStyle=c;sg.fillText(n,4,y+bh/2);sg.fillStyle="rgba(150,160,170,.12)";sg.fillRect(x0,y,x1-x0,bh);
+  for(const [y,n,c,ex] of lanes){sg.fillStyle=c;sg.fillText(n,4,y+bh/2);sg.strokeStyle=line;sg.setLineDash([4,4]);sg.beginPath();sg.moveTo(x0,y+bh/2);sg.lineTo(x1,y+bh/2);sg.stroke();sg.setLineDash([]);
     const dE=dist(SP,ex),pts=[];
-    for(let x=x0;x<x1;x+=2){const tt=t-(x1-x)/(x1-x0)*WIN,v=earVal(tt,dE);if(v===null){pts.push(null);continue}const A=v>=0?[244,140,122]:[115,184,255],B=[246,247,251],m=Math.abs(v);
-      sg.fillStyle=`rgb(${Math.round(B[0]+(A[0]-B[0])*m)},${Math.round(B[1]+(A[1]-B[1])*m)},${Math.round(B[2]+(A[2]-B[2])*m)})`;sg.fillRect(x,y,2.2,bh);pts.push([x,y+bh/2-v*bh*0.36])}
-    sg.lineWidth=2.6;sg.lineCap="round";let pr=null;for(const p of pts){if(!p){pr=null;continue}if(pr){const v=(y+bh/2-p[1])/(bh*0.36),A=v>=0?[255,107,91]:[94,168,255],B=[200,205,220],m=Math.min(1,Math.abs(v));sg.strokeStyle=`rgb(${Math.round(B[0]+(A[0]-B[0])*m)},${Math.round(B[1]+(A[1]-B[1])*m)},${Math.round(B[2]+(A[2]-B[2])*m)})`;sg.beginPath();sg.moveTo(pr[0],pr[1]);sg.lineTo(p[0],p[1]);sg.stroke()}pr=p}
-    sg.strokeStyle=line;sg.lineWidth=1;sg.strokeRect(x0,y,x1-x0,bh)}
+    for(let x=x0;x<x1;x+=2){const tt=t-(x1-x)/(x1-x0)*WIN,v=earVal(tt,dE);if(v===null){pts.push(null);continue}pts.push([x,y+bh/2-v*bh*0.36])}
+    sg.lineWidth=3;sg.lineCap="round";let pr=null;for(const p of pts){if(!p){pr=null;continue}if(pr){const v=(y+bh/2-p[1])/(bh*0.36),A=v>=0?[255,107,91]:[94,168,255],B=[200,205,220],m=Math.min(1,Math.abs(v));sg.strokeStyle=`rgb(${Math.round(B[0]+(A[0]-B[0])*m)},${Math.round(B[1]+(A[1]-B[1])*m)},${Math.round(B[2]+(A[2]-B[2])*m)})`;sg.beginPath();sg.moveTo(pr[0],pr[1]);sg.lineTo(p[0],p[1]);sg.stroke()}pr=p}
+    }
   sg.fillStyle=mut;sg.font="12px 'Noto Sans TC',sans-serif";sg.textAlign="right";sg.fillText("現在 →",x1,H-8);sg.textAlign="left";sg.fillText("← 比較早",x0,H-8)}
 /* 每一幀 */
 try{new IntersectionObserver(es=>{vis=es[0].isIntersecting}).observe(host)}catch(e){}
@@ -3169,12 +3176,11 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   const cp=E("clipPath",{id:"topclip"},E("defs",{}));E("rect",{x:0,y:0,width:640,height:262},cp);
   const top=E("g",{"clip-path":"url(#topclip)"});
   E("rect",{x:0,y:0,width:640,height:262,fill:col("--bg"),rx:10},top);
-  // 浪：紅（壓縮）白（平常）藍（稀疏）漸層，和學習單二一樣、一排一排平平地走過來（只畫在浪已經到的那一側）
+  // 浪：紅線（壓縮）、藍線（稀疏）一排一排，和學習單二一樣、一排一排平平地走過來（只畫在浪已經到的那一側）
   const cNear=near.x*s.x+near.y*s.y,off=step===0?(1-p(0))*170:0,cF=cNear+off,defs=svg.querySelector("defs");
   const fx=HC.x+s.x*(cF-(HC.x*s.x+HC.y*s.y)),fy=HC.y+s.y*(cF-(HC.x*s.x+HC.y*s.y)),tx=-s.y,ty=s.x;
-  const wg=E("linearGradient",{id:"wg",gradientUnits:"userSpaceOnUse",spreadMethod:"repeat",x1:fx,y1:fy,x2:fx+s.x*42,y2:fy+s.y*42},defs);
-  [[0,"#f48c7a",0.8],[0.25,"#f6f7fb",0.5],[0.5,"#73b8ff",0.75],[0.75,"#f6f7fb",0.5],[1,"#f48c7a",0.8]].forEach(([o,c,a])=>E("stop",{offset:o,"stop-color":c,"stop-opacity":a},wg));
-  E("polygon",{points:[[fx-tx*900,fy-ty*900],[fx+tx*900,fy+ty*900],[fx+tx*900+s.x*900,fy+ty*900+s.y*900],[fx-tx*900+s.x*900,fy-ty*900+s.y*900]].map(q=>q.join(",")).join(" "),fill:"url(#wg)"},top);
+  for(let k=0;k<16;k++){const c=cF+k*21,d=c-(HC.x*s.x+HC.y*s.y),bx=HC.x+s.x*d,by=HC.y+s.y*d;      // 紅線＝壓縮、藍線＝稀疏（一排一排）
+    E("line",{x1:bx-tx*600,y1:by-ty*600,x2:bx+tx*600,y2:by+ty*600,stroke:k%2?"#5c9eff":"#f2675c","stroke-width":2.6,opacity:0.85},top)}
   // 箭頭：聲音前進方向
   const ax=HC.x+s.x*150,ay=HC.y+s.y*150,AMB="#e05a48";E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:AMB,"stroke-width":3,"marker-end":"url(#arw)"},top);
   const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:AMB},mk);
