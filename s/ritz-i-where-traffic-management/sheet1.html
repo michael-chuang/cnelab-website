@@ -129,7 +129,6 @@ svg text{font-family:var(--body)}
         <div class="row" id="ears"><button data-e="a" class="seg-a on">未遮蔽</button><button data-e="b" class="seg-b">戴耳塞</button></div></div>
       <div class="grp"><button class="go" id="play">▶ 播放警笛（2 秒）</button>
         <p class="note">受試者聽完會用手指方向。綠色繩子＝拉到播音員（真實角度），彩色繩子＝沿著手指拉（指的角度）。這裡的手指方向是電腦模擬的，真正的數據要在實驗中量。</p></div>
-      <div class="grp"><h3>模擬紀錄</h3><div class="log" id="log"><span class="note">還沒有紀錄</span></div></div>
     </div>
   </div>
   <div class="card">
@@ -206,7 +205,7 @@ svg text{font-family:var(--body)}
 <section>
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <p>你輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完實驗後，按下面的按鈕存成 Word 檔，裡面有基本資料、假設、每位受試者的表 1-1、表 1-2、圖 1-1、圖 1-2、結論和 3D 模擬紀錄。</p>
+    <p>你輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完實驗後，按下面的按鈕存成 Word 檔，裡面有基本資料、假設、每位受試者的表 1-1、表 1-2、圖 1-1、圖 1-2和結論。</p>
     <div class="row" style="align-items:center"><label for="date">實驗日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="rec">記錄員：</label><input type="text" id="rec" class="name"><label for="ann2">播音員：</label><input type="text" id="ann2" class="name"></div>
     <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
   </div>
@@ -428,16 +427,12 @@ function siren(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)
   o.start(t0);o.stop(t0+2.05)}
 // 模擬受試者指的方向：未遮蔽誤差小，戴耳塞誤差大（只是示範用的亂數）
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-const LOG=S.log||(S.log=[]);
-function renderLog(){if(LOG.length)$("log").innerHTML=LOG.slice(0,8).map(s=>`<span style="color:${s.startsWith("未")?"var(--a)":"var(--b)"}">${s}</span>`).join("")}
-renderLog();
+S.log=[];save();   // 不記錄模擬結果
 $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disabled=true;clearPoint();siren();playT=performance.now();
   $("result").textContent="警笛播放中……受試者在聽";
   setTimeout(()=>{const sd=ear==="a"?7:24;let p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5; /* 前後搞混 */
     p=((Math.round(p)%360)+360)%360;
     showPoint(p);const d=Math.abs(((p-angle+540)%360)-180);
-    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>40)LOG.pop();save();
-    renderLog();
     busy=false;$("play").disabled=false},2200)});
 let playT=-1e9;
 function showPoint(p){const sgn=((p-angle+540)%360)-180,d=Math.abs(sgn);
@@ -539,7 +534,6 @@ btn.addEventListener("click",async()=>{
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
     body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
-    if(LOGX().length){body.push(H("附錄：3D 模擬紀錄（電腦模擬，不是真實數據）"));LOGX().slice().reverse().forEach(t=>body.push(P(t.replace(/\s+/g," "),{size:20})))}
     const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -552,7 +546,6 @@ btn.addEventListener("click",async()=>{
     if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
   }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
   btn.disabled=false});
-function LOGX(){return S.log||[]}
 })();
 </script>
 
