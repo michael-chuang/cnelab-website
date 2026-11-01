@@ -2614,19 +2614,37 @@ function sirenF(kind,t){if(kind==="amb")return (t%1)<0.4?700:950;
 /* 圖 2-2：三種警報聲的「頻率—時間」圖（每種車一列，顏色不同） */
 const LAWK=[["救護車","amb","#e8483f"],["消防車","fire","#f08a24"],["警車","police","#2f6fd6"]];
 const LG={x0:132,W:470,h:74,gap:26,top0:18,T:6,fmin:550,fmax:1650};
-function vehIcon(s,k,cx,cy){const g=el("g",{transform:`translate(${cx-26},${cy-14})`},s),R=(a)=>el("rect",a,g),C=(a)=>el("circle",a,g),ln="#2b2f33";
-  const body={amb:"#ffffff",fire:"#e53935",police:"#ffffff"}[k];
-  R({x:2,y:6,width:40,height:16,rx:4,fill:body,stroke:ln,"stroke-width":1.6});           // 車身
-  R({x:36,y:10,width:14,height:12,rx:3,fill:k==="police"?"#20262b":body,stroke:ln,"stroke-width":1.6}); // 車頭
-  R({x:40,y:12,width:7,height:5,rx:1.5,fill:"#9fd3f2"});                                  // 擋風玻璃
-  if(k==="amb"){R({x:2,y:15,width:40,height:3,fill:"#e53935"});R({x:16,y:8,width:4,height:11,fill:"#e53935"});R({x:12.5,y:11.5,width:11,height:4,fill:"#e53935"});
-    R({x:26,y:2,width:6,height:4,rx:1.5,fill:"#e53935"});R({x:32,y:2,width:6,height:4,rx:1.5,fill:"#2f6fd6"})}
-  if(k==="fire"){R({x:4,y:2,width:30,height:3,rx:1,fill:"#c9ced3",stroke:ln,"stroke-width":1});for(let x=8;x<34;x+=5)R({x,y:2,width:1.2,height:3,fill:ln});
-    R({x:6,y:11,width:8,height:5,rx:1,fill:"#ffd54f"});R({x:20,y:11,width:8,height:5,rx:1,fill:"#ffd54f"});R({x:40,y:6,width:6,height:3.5,rx:1.5,fill:"#ff7043"})}
-  if(k==="police"){R({x:2,y:6,width:12,height:16,rx:4,fill:"#20262b"});R({x:14,y:11,width:22,height:5,fill:"#2f6fd6"});
-    R({x:20,y:2,width:6,height:4,rx:1.5,fill:"#e53935"});R({x:26,y:2,width:6,height:4,rx:1.5,fill:"#2f6fd6"})}
-  for(const x of [12,40]){C({cx:x,cy:23,r:4.2,fill:"#2b2f33"});C({cx:x,cy:23,r:1.6,fill:"#c9ced3"})}
-  const eye=k==="police"?"#fff":ln;C({cx:46,cy:19,r:1.1,fill:"#ffd54f"})}
+function vehIcon(s,k,cx,cy){   // 卡通風格的側面小車（車頭朝右），64×40
+  const g=el("g",{transform:`translate(${cx-32},${cy-22})`},s),P=(d,a)=>el("path",Object.assign({d},a),g),R=a=>el("rect",a,g),C=a=>el("circle",a,g),ln="#3a3f45",glass="#8fd3f4",glassHi="#d6f1fc";
+  el("ellipse",{cx:32,cy:41,rx:30,ry:3,fill:"#000",opacity:0.12},g);                                   // 影子
+  if(k==="amb"){
+    R({x:2,y:6,width:42,height:30,rx:6,fill:"#fff",stroke:"#c9ced3","stroke-width":1.2});               // 後面的車廂
+    P("M42,13 L53,13 Q60,14 62,22 L62.5,33 Q62.5,36 60,36 L42,36 Z",{fill:"#fff",stroke:"#c9ced3","stroke-width":1.2}); // 車頭
+    P("M45,15.5 L52.5,15.5 Q57.5,16.5 59.3,22 L45,22 Z",{fill:glass});P("M47,16.5 L50,16.5 L47.5,21 L45.5,21 Z",{fill:glassHi});
+    R({x:30,y:10,width:9,height:7,rx:1.5,fill:glass});
+    R({x:2,y:25,width:60.5,height:3.4,fill:"#e0393e"});
+    C({cx:17,cy:16,r:6.2,fill:"#e0393e"});R({x:15.6,y:12,width:2.8,height:8,fill:"#fff"});R({x:13,y:14.6,width:8,height:2.8,fill:"#fff"});
+    R({x:44,y:9.5,width:13,height:3.5,rx:1.6,fill:"#ff5a5f"});R({x:48,y:9.5,width:2.6,height:3.5,fill:"#ffb02e"});R({x:51.6,y:9.5,width:2.6,height:3.5,fill:"#fff"});
+    R({x:3,y:3.5,width:4,height:3,rx:1,fill:"#ff5a5f"});R({x:38,y:3.5,width:4,height:3,rx:1,fill:"#ff5a5f"});
+    R({x:58.5,y:28.5,width:4,height:3,rx:1,fill:"#ffd54f"});R({x:56,y:33,width:7.5,height:3.4,rx:1.5,fill:ln})}
+  if(k==="fire"){
+    R({x:1,y:9,width:45,height:27,rx:4,fill:"#e53935",stroke:"#b71c1c","stroke-width":1.2});           // 車身
+    P("M44,11 L53,11 Q60,12 62,20 L62.5,33 Q62.5,36 60,36 L44,36 Z",{fill:"#e53935",stroke:"#b71c1c","stroke-width":1.2});
+    P("M46.5,13.5 L52.5,13.5 Q57.5,14.5 59.3,20.5 L46.5,20.5 Z",{fill:glass});P("M48.5,14.5 L51,14.5 L49,19.5 L47,19.5 Z",{fill:glassHi});
+    for(const x of [5,17,29])R({x,y:13,width:10,height:11,rx:1.5,fill:"#ef6a66",stroke:"#c62828","stroke-width":0.8});  // 器材箱的門
+    R({x:1,y:26,width:61.5,height:3,fill:"#fff"});
+    R({x:3,y:4,width:38,height:2.2,rx:1,fill:"#cfd4d8"});R({x:3,y:7.2,width:38,height:2.2,rx:1,fill:"#cfd4d8"});for(let x=5;x<40;x+=4.5)R({x,y:4,width:1.3,height:5.4,fill:"#9aa1a8"}); // 梯子
+    R({x:46,y:7,width:11,height:3.6,rx:1.6,fill:"#ff5a5f"});R({x:50,y:7,width:3,height:3.6,fill:"#ffb02e"});
+    R({x:58.5,y:28.5,width:4,height:3,rx:1,fill:"#ffd54f"});R({x:56,y:33,width:7.5,height:3.4,rx:1.5,fill:ln})}
+  if(k==="police"){
+    P("M3,24 Q3,19 8,18.5 L18,17 L25,9.5 Q27,8 30,8 L45,8 Q48,8 50,10 L56,17 L60,18 Q63,19 63,24 L63,32 Q63,35 60,35 L6,35 Q3,35 3,32 Z",{fill:"#fff",stroke:"#c9ced3","stroke-width":1.2}); // 轎車
+    P("M21,17 L27,10.5 L35,10.5 L35,17 Z",{fill:glass});P("M37.5,10.5 L45,10.5 Q46.5,10.5 47.5,11.5 L53,17 L37.5,17 Z",{fill:glass});P("M39.5,11.5 L42,11.5 L40,16 L38.5,16 Z",{fill:glassHi});
+    R({x:3,y:22,width:60,height:4.5,fill:"#1f5fbf"});R({x:3,y:27,width:60,height:1.4,fill:"#7fb0f0"});
+    el("text",{x:30,y:33.6,"text-anchor":"middle","font-size":5.4,"font-weight":700,fill:"#1f5fbf"},g,"警察");
+    R({x:30,y:4.5,width:12,height:3.5,rx:1.6,fill:"#e53935"});R({x:36,y:4.5,width:6,height:3.5,rx:1.6,fill:"#2f6fd6"});
+    R({x:59,y:19.5,width:4,height:3,rx:1,fill:"#ffd54f"});R({x:1,y:20,width:3,height:3,rx:1,fill:"#ff5a5f"})}
+  const wx=k==="police"?[15,50]:k==="fire"?[12,26,51]:[13,51];
+  for(const x of wx){C({cx:x,cy:35.5,r:5.6,fill:"#2b2f33"});C({cx:x,cy:35.5,r:2.6,fill:"#c9ced3"});C({cx:x,cy:35.5,r:0.9,fill:"#7d858b"})}}
 function lawY(i,f){const top=LG.top0+i*(LG.h+LG.gap);return top+LG.h-(f-LG.fmin)/(LG.fmax-LG.fmin)*LG.h}
 function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG;
   LAWK.forEach(([name,k,col],i)=>{const top=top0+i*(h+gap);
@@ -2634,8 +2652,8 @@ function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG
     for(const [a,b,lab] of [[650,750,"低"],[900,1000,"中"],[1450,1550,"高"]]){el("rect",{x:x0,y:lawY(i,b),width:W,height:lawY(i,a)-lawY(i,b),rx:3,fill:col,opacity:0.13},s);
       el("text",{x:x0+W+6,y:(lawY(i,a)+lawY(i,b))/2+4,"font-size":10,fill:P.muted},s,lab)}
     for(let t=1;t<T;t++)el("line",{x1:x0+t/T*W,x2:x0+t/T*W,y1:top,y2:top+h,stroke:P.line,"stroke-width":1},s);
-    vehIcon(s,k,x0-90,top+h/2-10);
-    el("text",{x:x0-90,y:top+h/2+30,"text-anchor":"middle","font-size":14,"font-weight":700,fill:P.ink},s,name);
+    vehIcon(s,k,x0-84,top+h/2-9);
+    el("text",{x:x0-84,y:top+h/2+30,"text-anchor":"middle","font-size":14,"font-weight":700,fill:P.ink},s,name);
     let d="";for(let j=0;j<=1500;j++){const t=j/1500*T,x=x0+t/T*W;d+=(j?"L":"M")+x.toFixed(1)+","+lawY(i,sirenF(k,t)).toFixed(1)}
     el("path",{d,fill:"none",stroke:col,"stroke-width":3,"stroke-linejoin":"round","stroke-linecap":"round"},s);
     for(const f of [700,1000,1500])el("text",{x:x0-6,y:lawY(i,f)+4,"text-anchor":"end","font-size":10,fill:P.muted},s,String(f))});
