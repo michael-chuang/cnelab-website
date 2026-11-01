@@ -2257,7 +2257,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
   <div class="card bcard">
     <div class="bc-scroll"><div class="bc" id="bc" role="group" aria-label="串珠頻譜：每種顏色輸入我猜幾顆和實際幾顆"></div></div>
     <p class="cap">圖 2-1　我的串珠頻譜：在每種顏色下面填「我猜」和「實際」，上面的長條會自己長出來（實心＝實際顆數，虛線框＝我猜的顆數）</p>
-    <p class="note" id="bcTotal" style="text-align:center"></p>
+    <div class="row" style="justify-content:center;align-items:center;gap:12px"><p class="note" id="bcTotal" style="text-align:center"></p><button class="xbtn" id="bcClear">清除我猜和實際</button></div>
   </div>
   <div class="card qa"><ol>
     <li>只用眼睛猜，準嗎？ <input type="text" id="qb1" style="max-width:14em"></li>
@@ -2669,6 +2669,8 @@ $("reveal").addEventListener("click",()=>{$("lawfig").hidden=false;S.reveal=true
   document.querySelectorAll("#sirenBtns button").forEach(b=>b.addEventListener("click",()=>start(b.dataset.k)));
 })();
 
+$("bcClear").addEventListener("click",()=>{if(!confirmClear())return;S.beads.forEach(b=>{b.g="";b.a=""});save();buildT22()});
+function confirmClear(){const b=$("bcClear");if(b.dataset.arm){delete b.dataset.arm;b.textContent="清除我猜和實際";return true}b.dataset.arm=1;b.textContent="再按一次確定清除";setTimeout(()=>{if(b.dataset.arm){delete b.dataset.arm;b.textContent="清除我猜和實際"}},3000);return false}
 /* 照片：縮小後存起來 */
 function shrink(file){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const m=900,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
   c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",0.72))};img.onerror=no;img.src=u})}
