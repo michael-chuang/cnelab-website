@@ -106,6 +106,7 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
     <button class="tab" data-tab="tab3" role="tab">③ 實驗模型</button>
     <button class="tab" data-tab="tab4" role="tab">𖥕 學習單(一) 人因工程篇</button>
     <button class="tab" data-tab="tab5" role="tab">𖥕 學習單(二) 傅立葉轉換篇</button>
+    <button class="tab" data-tab="tab6" role="tab">𖥕 學習單(三) 聲源定位篇</button>
   </div>
 </header>
 
@@ -2652,6 +2653,724 @@ window.__ws2Show=on=>{if(!on||loaded)return;loaded=true;
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB5 END -->
+<!-- TAB6 START -->
+<div class="wrap" id="tab6" hidden style="margin-top:20px">
+<iframe id="ws3frame" title="學習單(三) 聲源定位篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+</div>
+<script type="text/plain" id="ws3src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>紀錄單三：聲源定位</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout：一欄式學習單（三）。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+:root{
+  --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
+  --a:#2a6fb8;        /* 未遮蔽 */
+  --b:#d9532c;        /* 有遮蔽（戴耳塞） */
+  --accent:#1f7a5a;   /* 真實方向、按鈕 */
+  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:14px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3vw,26px);margin:0;text-wrap:balance}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.lead{color:var(--muted);max-width:66ch}
+section{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
+.tag.a{background:var(--a)} .tag.b{background:var(--b)}
+/* 3D */
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.stage{aspect-ratio:1/1}}
+.stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
+.stage canvas{display:block;width:100%;height:100%}
+.views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
+.views button.on{background:#18232b;color:#fff}
+.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp h3{font-size:14px;color:var(--muted);font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 14px}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+button.seg-a.on{background:var(--a);border-color:var(--a);color:#fff}
+button.seg-b.on{background:var(--b);border-color:var(--b);color:#fff}
+button.go{font-family:var(--display);font-size:18px;border-radius:12px;padding:10px 18px;background:var(--accent);border-color:var(--accent);color:#fff}
+button.go:disabled{opacity:.5;cursor:wait}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3a008;outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}
+.log{display:flex;flex-direction:column;gap:2px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* 表格 */
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:14px;line-height:1.35;white-space:nowrap}
+th.a{color:var(--a)} th.b{color:var(--b)}
+td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+tr.avg td{font-weight:700;border-bottom:0}
+input[type=number],input[type=text]{font:inherit;font-size:15px;width:100%;max-width:7em;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center}
+input[type=text].name{max-width:9em}
+textarea{font:inherit;width:100%;min-height:5em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+.fill{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:2px solid var(--ink);text-align:center;font-family:var(--num);font-weight:700}
+.cap{font-size:14px;color:var(--muted);text-align:center}
+svg text{font-family:var(--body)}
+.xbtn{padding:2px 9px;font-size:13px;white-space:nowrap}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa li{line-height:2}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 學習單三專用 */
+input.wide{max-width:none!important;width:100%;text-align:left!important}
+label{display:block;margin-top:6px}
+.card.qa label{margin-top:0}
+.qa ol{gap:12px}
+.qa li label{display:inline}
+.stage{background:#dde6ec}
+.stage.map{aspect-ratio:1/1;background:#e9dcc6;touch-action:none}
+.hud2{position:absolute;left:10px;bottom:8px;right:10px;color:#fff;font-size:14px;line-height:1.45;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none}
+.hud2.light{color:#18232b;text-shadow:none;top:8px;bottom:auto;right:auto;max-width:40%;font-size:13px}
+.hud2.light:not(:empty){background:rgba(255,255,255,.9);border-radius:10px;padding:4px 10px}
+.hud2 b{font-family:var(--num)}
+.scope-card{padding:10px 12px}
+#hScope{display:block;width:100%;height:190px}
+#tri{width:100%;height:auto;display:block}
+#ruler{width:100%;height:auto;display:block;touch-action:none}
+.tsteps{display:flex;flex-direction:column;gap:6px;padding-left:1.4em}
+.tsteps li{color:var(--muted);transition:color .2s}
+.tsteps li.on{color:var(--ink);font-weight:500}
+.og{color:#e07a10}
+.formula{font-family:var(--body);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px}
+select{font:inherit;font-size:15px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+table.mini{min-width:0}
+#nTabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+td.ok{color:var(--accent);font-weight:700}
+td.no{color:var(--b);font-weight:700}
+#t34 input[type=number]{max-width:5.5em}
+#t34 label.nodir{display:inline-flex;gap:4px;align-items:center;font-size:13px;color:var(--muted);margin:0;white-space:nowrap}
+#t32 input{max-width:6em}
+#cAcc,#cErr{width:100%;height:auto;display:block}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">智「where」交通　科展實驗紀錄單（三）聲源定位篇</div>
+  <h1>聲音從哪裡來？路口要幾支麥克風？</h1>
+  <p class="lead">機器聽方向的本事叫做「聲源定位」（英文 DOA，到達方向）。這張學習單先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
+</header>
+
+<section>
+  <div class="two">
+    <div class="card"><h3>先想一想</h3>
+      <label for="p1">學習單（一）發現：戴上耳塞後，指方向變得怎樣？</label><input type="text" id="p1" class="wide" placeholder="例如：比較不準、會前後搞錯……">
+      <label for="p2">你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？</label><input type="text" id="p2" class="wide" placeholder="例如：哪一邊比較大聲、哪一邊先聽到……">
+      <label for="p3">我猜：路口至少要裝幾支麥克風，才分得出救護車從哪一條路來？</label>
+      <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em" placeholder="因為……"></div>
+    </div>
+    <div class="card"><h3>器材</h3><ul>
+      <li>電腦或平板（用這個網頁做動畫和模擬）</li>
+      <li>小模型路口（見 ③ 實驗模型）、玩具救護車＋藍牙喇叭</li>
+      <li>陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」</li>
+      <li>量角器或角度墊、捲尺</li>
+      <li>要量音量（分貝）時：建議用 NIOSH SLM app（美國國家職業安全衛生研究所的免費分貝計）</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>一、兩隻耳朵的時間差</h2>
+  <p class="lead">移動喇叭，按「發出聲音」。聲音一圈一圈傳出去，看看它先碰到哪一隻耳朵，下面的波形就會差一點點。</p>
+  <div class="sim">
+    <div class="stage" id="h3d"><canvas id="hc" aria-label="3D 頭和喇叭：聲波一圈一圈傳到兩隻耳朵"></canvas>
+      <div class="views"><button data-hv="tilt" class="on">斜斜看</button><button data-hv="top">從上面看</button></div>
+      <div class="hud2" id="hHud"></div>
+    </div>
+    <div class="ctrl">
+      <div class="grp"><h3>喇叭在哪個角度？（0° 是正前方）</h3>
+        <input type="range" id="hAng" min="0" max="359" step="1" value="60" aria-label="喇叭角度">
+        <div class="row"><button data-ha="0">正前方</button><button data-ha="45">右前方</button><button data-ha="90">正右方</button><button data-ha="180">正後方</button><button data-ha="270">正左方</button></div>
+        <p class="note">也可以直接點地上的量角器，把喇叭放到那裡。</p></div>
+      <div class="grp"><button class="go" id="hPlay">▶ 發出聲音</button></div>
+      <div class="result" id="hRes" aria-live="polite">按「發出聲音」看看哪隻耳朵先聽到。</div>
+    </div>
+  </div>
+  <div class="card scope-card">
+    <canvas id="hScope" aria-label="左耳和右耳收到的波形"></canvas>
+    <p class="cap">圖 3-1　兩隻耳朵收到的波形（最新的在右邊）：形狀一樣，只是一隻耳朵比較晚收到，波峰錯開了</p>
+  </div>
+  <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">表 3-1　喇叭在不同位置，兩隻耳朵的時間差</p>
+</section>
+
+<section>
+  <h2>二、不用三角函數，也能從時間差找出角度</h2>
+  <p class="lead">聲音從很遠的地方來，會像一排一排的直線浪。浪碰到近的耳朵時，遠的耳朵還差一小段路，這段路就是「多走的路」。只要會乘法和量角器，就能把它變成角度。</p>
+  <div class="sim">
+    <div class="card" style="padding:10px"><svg id="tri" viewBox="0 0 640 520" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg></div>
+    <div class="ctrl">
+      <div class="grp"><h3>聲音從哪個角度來？</h3>
+        <input type="range" id="tAng" min="-90" max="90" step="1" value="40" aria-label="聲音角度"><div class="note" id="tAngTxt"></div></div>
+      <div class="grp"><button class="go" id="tPlay">▶ 一步一步看</button></div>
+      <ol class="tsteps" id="tSteps">
+        <li data-s="1">浪先碰到<b>近的耳朵</b>。</li>
+        <li data-s="2">遠的耳朵還差一段<b class="og">多走的路</b>，所以比較晚聽到。</li>
+        <li data-s="3">把這段路搬到半圓的<b>直尺</b>上（從圓心量起）。</li>
+        <li data-s="4">從尺上的點往上畫直線，碰到半圓。</li>
+        <li data-s="5">把這個點連到圓心，用量角器量它跟「正前方」的角度。</li>
+      </ol>
+      <div class="formula">多走的路（公分）＝ 時間差（毫秒）× 34<br><span class="note">聲音每 1 毫秒（0.001 秒）大約走 34 公分</span></div>
+    </div>
+  </div>
+  <div class="card"><h3>換我試試：從時間差找角度</h3>
+    <p class="note">兩隻耳朵相距 20 公分，所以半圓的半徑就畫 20 公分（直尺從 0 到 20）。先算多走的路，再拖曳下面半圓尺上的點，讀出角度。</p>
+    <div class="two" style="margin-top:8px">
+      <div><svg id="ruler" viewBox="0 0 440 270" role="img" aria-label="可以拖曳的半圓量角尺"></svg><div class="note" id="rulerTxt" style="text-align:center"></div></div>
+      <div class="tbl"><table id="t32"><thead><tr><th>時間差（毫秒）</th><th>多走的路（公分）</th><th>角度（度）</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <p class="cap">表 3-2　從時間差找出角度（按「對答案」看看）</p>
+  </div>
+</section>
+
+<section>
+  <h2>三、路口要幾支麥克風？</h2>
+  <p class="lead">如果路口也要像耳朵一樣聽出救護車在哪裡，要裝幾支麥克風？先給你 2 支。拖曳麥克風和救護車，按「鳴笛」看聲音先到哪一支，系統會畫出它猜的方向。</p>
+  <div class="sim">
+    <div class="stage map" id="mapStage"><canvas id="map" aria-label="路口俯視圖：可以拖曳麥克風和救護車"></canvas><div class="hud2 light" id="mapHud"></div></div>
+    <div class="ctrl">
+      <div class="grp"><h3>麥克風：<span id="micN">2</span> 支</h3>
+        <div class="row"><button id="micAdd">＋加一支</button><button id="micDel">－拿掉一支</button></div>
+        <label for="spread" class="note">把麥克風拉近 ↔ 拉遠</label><input type="range" id="spread" min="0" max="100" value="50"></div>
+      <div class="grp"><h3>救護車在哪條路？</h3>
+        <div class="row"><button data-road="N">北</button><button data-road="E">東</button><button data-road="S">南</button><button data-road="W">西</button></div>
+        <p class="note">也可以直接拖曳救護車。</p></div>
+      <div class="grp"><button class="go" id="mPlay">▶ 鳴笛</button></div>
+      <div class="result" id="mRes" aria-live="polite">按「鳴笛」。</div>
+    </div>
+  </div>
+  <div class="card"><h3>試試看，記下來</h3>
+    <ul class="note"><li>把兩支麥克風拉得很近、再拉得很遠，時間差有什麼變化？</li><li>救護車換到別條路，2 支麥克風還分得出來嗎？</li><li>加到 3 支、4 支，怎麼擺才分得出四條路？3 支排成一直線可以嗎？</li></ul>
+  </div>
+  <div class="tbl"><table id="t33"><thead><tr><th>麥克風幾支</th><th>怎麼擺</th><th>救護車在哪條路</th><th>系統找到幾個可能的方向</th><th>分得出是哪條路嗎？</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">表 3-3　麥克風的數量和擺法</p>
+  <div class="card qa"><label for="q31">兩支麥克風要怎麼擺，時間差才會比較大？</label><input type="text" id="q31" class="wide">
+    <label for="q32">為什麼 2 支麥克風有時候分不出救護車在哪條路？</label><input type="text" id="q32" class="wide"></div>
+</section>
+
+<section>
+  <h2>四、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
+  <p class="lead">用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。</p>
+  <div class="two">
+    <div class="card"><h3>步驟</h3><ol>
+      <li>搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。</li>
+      <li>電腦打開「頻率雷達」，先照說明校正（喇叭放 0°、再放 90°）。</li>
+      <li>點雷達中間的 1～4 號，選這一輪要用的麥克風（看右邊）。</li>
+      <li>把綁著藍牙喇叭的救護車放在某一條路上，用量角器量「真實角度」（北路 0°、東路 90°、南路 180°、西路 270° 附近）。</li>
+      <li>播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。</li>
+    </ol></div>
+    <div class="card"><h3>每一輪用哪幾支？</h3>
+      <div class="tbl" style="border:0"><table class="mini"><thead><tr><th>這一輪</th><th>在雷達上點選</th></tr></thead><tbody>
+        <tr><td>1 支</td><td>只留 1 號</td></tr><tr><td>2 支</td><td>1、3 號（對角）</td></tr><tr><td>3 支</td><td>1、2、3 號</td></tr><tr><td>4 支</td><td>1、2、3、4 號</td></tr></tbody></table></div>
+      <p class="note">只用 1 支時，雷達沒有時間差可以算，可能沒有方向，就在表上勾「雷達沒有方向」。</p></div>
+  </div>
+  <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
+  <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap" id="t34cap">表 3-4　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
+  <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">表 3-5　四種麥克風數量的比較（自動算）</p>
+  <div class="two">
+    <div class="card"><svg id="cAcc" viewBox="0 0 420 300" role="img" aria-label="正確率長條圖"></svg><p class="cap">圖 3-2　選對路的正確率</p></div>
+    <div class="card"><svg id="cErr" viewBox="0 0 420 300" role="img" aria-label="平均角度差長條圖"></svg><p class="cap">圖 3-3　平均角度差（越小越準）</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>五、結果與結論</h2>
+  <div class="card qa"><ol>
+    <li><label for="c1">兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？</label><input type="text" id="c1" class="wide"></li>
+    <li><label for="c2">不用三角函數，怎麼從時間差找出角度？</label><input type="text" id="c2" class="wide"></li>
+    <li>實驗結果：麥克風越多，正確率越 <select id="c3a"><option></option><option>高</option><option>低</option><option>差不多</option></select>，角度差越 <select id="c3b"><option></option><option>小</option><option>大</option><option>差不多</option></select>。</li>
+    <li><label for="c4">我的假設（路口至少要幾支）對嗎？至少要幾支、怎麼擺？</label><input type="text" id="c4" class="wide"></li>
+    <li><label for="c5">結論：給智慧路口的建議</label><textarea id="c5"></textarea></li>
+  </ol></div>
+</section>
+
+<section>
+  <h2>儲存與匯出</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <p>輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完後，按下面的按鈕存成 Word 檔。</p>
+    <div class="row" style="align-items:center"><label for="date">日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="names">組員：</label><input type="text" id="names" style="max-width:16em"></div>
+    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
+  </div>
+</section>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
+<script>
+const $=id=>document.getElementById(id);
+/* ================= 一、兩隻耳朵的時間差（3D） =================
+   單位：公分。正前方＝-z，右邊＝+x。角度 0° 正前方，順時針（90° 正右方）。 */
+(()=>{
+const host=$("h3d"),cv=$("hc");
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.outputEncoding=THREE.sRGBEncoding;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xdde6ec);
+const cam=new THREE.PerspectiveCamera(40,4/3,1,2000);
+const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxDistance=420;ctl.minDistance=60;ctl.maxPolarAngle=Math.PI*0.49;
+scene.add(new THREE.HemisphereLight(0xffffff,0x9aa7b0,0.85));
+const sun=new THREE.DirectionalLight(0xffffff,0.55);sun.position.set(-60,160,80);scene.add(sun);
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.7},o));
+const FLOOR=-34, R_VIS=58;                 // 地板高度、喇叭離頭多遠（畫面）
+const EAR=10;                              // 耳朵在 x=±10（兩耳相距 20 公分）
+const CV=26, LAM=13;                       // 動畫裡的聲速（公分/秒）、波長（公分）：放得很慢
+/* 地上的量角器 */
+function tex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
+const PR=88;
+const disk=new THREE.Mesh(new THREE.CircleGeometry(PR,96),new THREE.MeshStandardMaterial({roughness:0.9,map:tex(1024,1024,(g,W)=>{
+  const c=W/2,r=W/2-6;g.fillStyle="#fbfaf6";g.beginPath();g.arc(c,c,r,0,7);g.fill();g.strokeStyle="#1d2a33";g.lineWidth=4;g.stroke();
+  for(let d=0;d<360;d+=5){const a=d*Math.PI/180,l=d%30===0?44:d%10===0?28:16;g.lineWidth=d%30===0?4:2;g.beginPath();g.moveTo(c+Math.sin(a)*r,c-Math.cos(a)*r);g.lineTo(c+Math.sin(a)*(r-l),c-Math.cos(a)*(r-l));g.stroke()}
+  g.fillStyle="#1d2a33";g.textAlign="center";g.textBaseline="middle";g.font="bold 34px 'Noto Sans TC',sans-serif";
+  for(let d=0;d<360;d+=30){const a=d*Math.PI/180;g.fillText(d+"°",c+Math.sin(a)*(r-74),c-Math.cos(a)*(r-74))}
+  g.font="bold 46px 'Noto Sans TC',sans-serif";g.fillStyle="#1f7a5a";[["前",0],["右",90],["後",180],["左",270]].forEach(([t,d])=>{const a=d*Math.PI/180;g.fillText(t,c+Math.sin(a)*(r-140),c-Math.cos(a)*(r-140))})})}));
+disk.rotation.x=-Math.PI/2;disk.position.y=FLOOR;scene.add(disk);
+const base=new THREE.Mesh(new THREE.CylinderGeometry(PR+1,PR+2,2,96),M(0xc9d3da));base.position.y=FLOOR-1.05;scene.add(base);
+/* 頭＋肩膀 */
+const skin=M(0xf2c9a5,{roughness:0.6});
+const head=new THREE.Mesh(new THREE.SphereGeometry(9,40,30),skin);head.scale.set(0.95,1.12,1.02);scene.add(head);
+const hair=new THREE.Mesh(new THREE.SphereGeometry(9.4,40,30,0,Math.PI*2,0,Math.PI*0.52),M(0x3a2a22));hair.scale.set(0.97,1.12,1.06);hair.position.set(0,0.6,0.5);hair.rotation.x=0.35;scene.add(hair);
+const nose=new THREE.Mesh(new THREE.ConeGeometry(1.3,3.4,16),skin);nose.rotation.x=-Math.PI/2;nose.position.set(0,-0.5,-9.6);scene.add(nose);
+for(const s of [-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(0.9,12,10),M(0x1d1d1d));e.position.set(s*3.2,2,-8.3);scene.add(e)}
+const ears=[-1,1].map(s=>{const m=new THREE.Mesh(new THREE.SphereGeometry(2.2,20,16),M(0xe8b48c,{emissive:0x000000}));m.scale.set(0.55,1.2,0.85);m.position.set(s*EAR*0.93,0,0.4);scene.add(m);return m});
+const neck=new THREE.Mesh(new THREE.CylinderGeometry(3.6,4.2,8,24),skin);neck.position.y=-12;scene.add(neck);
+const body=new THREE.Mesh(new THREE.SphereGeometry(14,32,20,0,Math.PI*2,0,Math.PI/2),M(0x2a6fb8));body.scale.set(1.3,0.95,0.7);body.position.y=FLOOR+3;scene.add(body);
+const bodyC=new THREE.Mesh(new THREE.CylinderGeometry(18.2,18.2,3,32),M(0x2a6fb8));bodyC.scale.set(1,1,0.53);bodyC.position.y=FLOOR+1.5;scene.add(bodyC);
+/* 喇叭 */
+const spk=new THREE.Group();scene.add(spk);
+{const b=new THREE.Mesh(new THREE.BoxGeometry(9,13,8),M(0x2b3238));spk.add(b);
+ const cone=new THREE.Mesh(new THREE.CircleGeometry(3.2,32),M(0x111111,{roughness:0.4}));cone.position.set(0,-1.5,-4.05);cone.rotation.y=Math.PI;spk.add(cone);
+ const tw=new THREE.Mesh(new THREE.CircleGeometry(1.3,24),M(0x5b6872));tw.position.set(0,4,-4.05);tw.rotation.y=Math.PI;spk.add(tw);
+ const st=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,-FLOOR-6.5,12),M(0x8a949b));st.position.y=(FLOOR-6.5)/2;spk.add(st)}
+/* 文字 */
+function label(t,col="#18232b",size=5){const c=document.createElement("canvas"),g=c.getContext("2d");g.font="bold 56px 'Noto Sans TC',sans-serif";const w=g.measureText(t).width+36;c.width=w;c.height=80;
+  g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.roundRect?g.roundRect(0,0,w,80,22):g.rect(0,0,w,80);g.fill();g.font="bold 56px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textBaseline="middle";g.fillText(t,18,42);
+  const tt=new THREE.CanvasTexture(c);tt.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tt,depthTest:false}));s.scale.set(size*w/80,size,1);s.renderOrder=9;scene.add(s);return s}
+const cs=getComputedStyle(document.documentElement);
+const lL=label("左耳","#2a6fb8"),lR=label("右耳","#d9532c");lL.position.set(-EAR-7,7,0);lR.position.set(EAR+7,7,0);
+/* 聲波圈圈：一個 BufferGeometry 裝很多圈，每一幀更新 */
+const NR=48,SEG=120,ringPos=new Float32Array(NR*SEG*2*3),ringCol=new Float32Array(NR*SEG*2*3),idx=[];
+for(let k=0;k<NR;k++)for(let i=0;i<SEG;i++){const a=(k*SEG+i)*2,b=(k*SEG+(i+1)%SEG)*2;idx.push(a,a+1,b,a+1,b+1,b)}
+const rg=new THREE.BufferGeometry();rg.setAttribute("position",new THREE.BufferAttribute(ringPos,3));rg.setAttribute("color",new THREE.BufferAttribute(ringCol,3));rg.setIndex(idx);
+const ringMesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity:0.92,depthWrite:false}));ringMesh.renderOrder=3;scene.add(ringMesh);
+const CREST=new THREE.Color(0xf06292),TROUGH=new THREE.Color(0x4a90d9),BG=new THREE.Color(0xfbfaf6);
+/* 狀態 */
+let ang=+$("hAng").value,SP=new THREE.Vector3(),running=false,t0=0,tStop=null,hist=[],clock=new THREE.Clock();
+const dist=(p,x)=>Math.hypot(p.x-x,p.z);
+function place(){const a=ang*Math.PI/180;SP.set(Math.sin(a)*R_VIS,0,-Math.cos(a)*R_VIS);spk.position.copy(SP);spk.lookAt(0,0,0);}
+function itdMs(){const a=ang*Math.PI/180,sx=Math.sin(a)*100,sz=-Math.cos(a)*100;return (Math.hypot(sx+EAR,sz)-Math.hypot(sx-EAR,sz))/34.3}  // 喇叭在 1 公尺外的真實時間差（左耳減右耳）
+function resText(){const d=itdMs(),ad=Math.abs(d);
+  if(ad<0.015)return "兩隻耳朵<b>同時</b>聽到，時間差是 0。聲音在正前方或正後方。";
+  const first=d>0?"右耳":"左耳",late=d>0?"左耳":"右耳";
+  return `<b>${first}</b>先聽到，${late}晚了 <b>${ad.toFixed(2)}</b> 毫秒（${(ad/1000).toFixed(5)} 秒）。`}
+function updRes(){$("hRes").innerHTML=resText()+(running?"":"<br><span class='note'>按「發出聲音」看聲波。</span>")}
+function setAng(v){ang=((Math.round(v)%360)+360)%360;$("hAng").value=ang;place();hist=[];if(running){t0=clock.getElapsedTime();tStop=null}updRes()}
+$("hAng").addEventListener("input",e=>setAng(+e.target.value));
+document.querySelectorAll("[data-ha]").forEach(b=>b.addEventListener("click",()=>setAng(+b.dataset.ha)));
+$("hPlay").addEventListener("click",()=>{const t=clock.getElapsedTime();
+  if(!running){running=true;t0=t;tStop=null;hist=[];$("hPlay").textContent="■ 停止"}
+  else if(tStop===null){tStop=t;$("hPlay").textContent="▶ 發出聲音"}
+  else{t0=t;tStop=null;hist=[];$("hPlay").textContent="■ 停止"}
+  updRes()});
+/* 點地板放喇叭 */
+const ray=new THREE.Raycaster(),down={x:0,y:0};
+cv.addEventListener("pointerdown",e=>{down.x=e.clientX;down.y=e.clientY});
+cv.addEventListener("pointerup",e=>{if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)return;const r=cv.getBoundingClientRect();
+  ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},cam);const h=ray.intersectObject(disk)[0];
+  if(h&&Math.hypot(h.point.x,h.point.z)>16)setAng(Math.atan2(h.point.x,-h.point.z)*180/Math.PI)});
+/* 視角 */
+const VIEWS={tilt:[[42,92,128],[0,-8,-6]],top:[[0,215,1],[0,0,0]]};
+function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();document.querySelectorAll("[data-hv]").forEach(b=>b.classList.toggle("on",b.dataset.hv===k))}
+document.querySelectorAll("[data-hv]").forEach(b=>b.addEventListener("click",()=>view(b.dataset.hv)));
+/* 波形 */
+const sc=$("hScope"),sg=sc.getContext("2d");let WIN=5;
+function earVal(t,dE){const front=CV*(t-t0);if(front<dE)return 0;if(tStop!==null&&CV*(t-tStop)>dE)return 0;return Math.cos(2*Math.PI*(front-dE)/LAM)}
+function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);if(sc.width!==Math.round(r.width*dpr)){sc.width=Math.round(r.width*dpr);sc.height=Math.round(r.height*dpr)}
+  const W=r.width,H=r.height;WIN=W<560?2.5:5;sg.setTransform(dpr,0,0,dpr,0,0);sg.clearRect(0,0,W,H);
+  const ink=cs.getPropertyValue("--ink").trim(),mut=cs.getPropertyValue("--muted").trim(),line=cs.getPropertyValue("--line").trim(),ca=getComputedStyle(document.documentElement).getPropertyValue("--a").trim(),cb=getComputedStyle(document.documentElement).getPropertyValue("--b").trim();
+  const x0=56,x1=W-10,lanes=[[H*0.27,"左耳",ca,0],[H*0.73,"右耳",cb,1]],amp=H*0.17;
+  sg.font="600 14px 'Noto Sans TC',sans-serif";sg.textBaseline="middle";
+  for(const [y,n,c,i] of lanes){sg.strokeStyle=line;sg.lineWidth=1;sg.beginPath();sg.moveTo(x0,y);sg.lineTo(x1,y);sg.stroke();sg.fillStyle=c;sg.fillText(n,6,y);
+    sg.strokeStyle=c;sg.lineWidth=2.5;sg.beginPath();let st=false;
+    for(const h of hist){const x=x1-(t-h[0])/WIN*(x1-x0);if(x<x0)continue;const yy=y-h[1+i]*amp;st?sg.lineTo(x,yy):sg.moveTo(x,yy);st=true}sg.stroke()}
+  sg.fillStyle=mut;sg.font="12px 'Noto Sans TC',sans-serif";sg.textAlign="right";sg.fillText("現在 →",x1,H-8);sg.textAlign="left";sg.fillText("← 比較早",x0,H-8);
+  // 標出錯開：最新一個波峰
+  if(running&&hist.length>4){const dL=dist(SP,-EAR),dR=dist(SP,EAR),lag=(dL-dR)/CV;if(Math.abs(lag)>0.03){
+    const k=Math.floor((CV*(t-t0)-Math.max(dL,dR))/LAM);if(k>=1){const tc=t0+(Math.max(dL,dR)+k*LAM)/CV,te=tc-Math.abs(lag);
+      const xa=x1-(t-te)/WIN*(x1-x0),xb=x1-(t-tc)/WIN*(x1-x0);const first=lag>0?1:0;if(xa>x0){
+        sg.strokeStyle=ink;sg.setLineDash([4,3]);sg.lineWidth=1.2;sg.beginPath();sg.moveTo(xa,lanes[first][0]-amp);sg.lineTo(xa,H*0.5);sg.moveTo(xb,lanes[1-first][0]-amp);sg.lineTo(xb,H*0.5);sg.stroke();sg.setLineDash([]);
+        sg.beginPath();sg.moveTo(xa,H*0.5);sg.lineTo(xb,H*0.5);sg.stroke();sg.fillStyle=ink;sg.textAlign="center";sg.font="600 13px 'Noto Sans TC',sans-serif";sg.fillText("錯開",(xa+xb)/2,H*0.5-9);sg.textAlign="left"}}}}}
+/* 每一幀 */
+function rings(t){let n=0;if(running){const front=CV*(t-t0),tail=tStop===null?-1:CV*(t-tStop);
+  for(let k=0;k<NR/2&&n<NR;k++){for(const [off,col] of [[0,CREST],[LAM/2,TROUGH]]){const r=front-k*LAM-off;if(r<=0.5||r<=tail||r>230||n>=NR)continue;
+    const fade=Math.max(0,Math.min(1,1-(r-120)/110)),c=col.clone().lerp(BG,1-fade*0.95),w=0.8;
+    for(let i=0;i<SEG;i++){const a=i/SEG*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a),j=((n*SEG+i)*2)*3;
+      ringPos[j]=SP.x+ca*(r-w);ringPos[j+1]=0;ringPos[j+2]=SP.z+sa*(r-w);ringPos[j+3]=SP.x+ca*(r+w);ringPos[j+4]=0;ringPos[j+5]=SP.z+sa*(r+w);
+      ringCol.set([c.r,c.g,c.b,c.r,c.g,c.b],j)}n++}}}
+  rg.setDrawRange(0,n*SEG*6);rg.attributes.position.needsUpdate=true;rg.attributes.color.needsUpdate=true}
+let vis=true;try{new IntersectionObserver(es=>{vis=es[0].isIntersecting}).observe(host)}catch(e){}
+function resize(){const r=host.getBoundingClientRect();if(!r.width)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
+addEventListener("resize",resize);
+function tick(){requestAnimationFrame(tick);const t=clock.getElapsedTime();if(!vis)return;ctl.update();rings(t);
+  const vL=running?earVal(t,dist(SP,-EAR)):0,vR=running?earVal(t,dist(SP,EAR)):0;
+  ears[0].material.emissive.setRGB(Math.max(0,vL)**3*0.9,Math.max(0,vL)**3*0.2,Math.max(0,vL)**3*0.4);ears[1].material.emissive.setRGB(Math.max(0,vR)**3*0.9,Math.max(0,vR)**3*0.2,Math.max(0,vR)**3*0.4);
+  if(running){hist.push([t,vL,vR]);while(hist.length&&t-hist[0][0]>WIN+0.2)hist.shift();
+    if(tStop!==null&&CV*(t-tStop)>240){running=false;tStop=null;hist=[];updRes()}}
+  drawScope(t);renderer.render(scene,cam)}
+place();view("tilt");resize();updRes();tick();
+window.__h3d={setAng,cam,ctl};
+})();
+
+/* ================= 二、不用三角函數：多走的路 → 半圓 → 角度 ================= */
+(()=>{
+const NS="http://www.w3.org/2000/svg",svg=$("tri");
+const E=(tag,a,p=svg,txt)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;p.appendChild(e);return e};
+const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const OG="#e07a10",PX=10;                        // 1 公分＝10 px
+const L={x:220,y:190},Rr={x:420,y:190},HC={x:320,y:190};   // 上面：兩隻耳朵相距 20 公分
+const O={x:320,y:492},RAD=200;                    // 下面：半圓（半徑 20 公分）
+let th=+$("tAng").value,anim=null;
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
+// 每一步的時間（秒）
+const SEQ=[2.2,1.4,1.6,1.8,1.4,1.8];const T0=SEQ.reduce((a,b,i)=>(a.push((a[i-1]||0)+b),a),[]);
+function txtAng(){const a=Math.abs(th);$("tAngTxt").textContent=th===0?"正前方（0°）":`${th>0?"右":"左"}邊 ${a}°`}
+function draw(t){ // t：動畫時間；null＝全部畫完
+  svg.innerHTML="";const ink=col("--ink"),mut=col("--muted"),line=col("--line"),acc=col("--accent"),ca=col("--a"),cb=col("--b"),paper=col("--paper");
+  const step=t===null?9:T0.findIndex(x=>t<x),p=k=>t===null?1:ease((t-(T0[k-1]||0))/SEQ[k]);
+  const a=th*Math.PI/180,s={x:Math.sin(a),y:-Math.cos(a)};               // s：指向聲音來的方向
+  const near=th>=0?Rr:L,far=th>=0?L:Rr,dpx=Math.abs(2*(HC.x-L.x)*Math.sin(a)),dcm=dpx/PX;
+  // 上半部（剪裁）
+  const cp=E("clipPath",{id:"topclip"},E("defs",{}));E("rect",{x:0,y:0,width:640,height:262},cp);
+  const top=E("g",{"clip-path":"url(#topclip)"});
+  E("rect",{x:0,y:0,width:640,height:262,fill:col("--bg"),rx:10},top);
+  // 浪：垂直於 s 的直線；c＝p·s
+  const cNear=near.x*s.x+near.y*s.y;let off;
+  if(step===0){off=(1-p(0))*170}else off=0;            // 第 0 步：浪從遠處走過來
+  for(let k=-1;k<6;k++){const c=cNear+off+k*42;if(k<0&&step>0)continue;
+    const cx=HC.x*s.x+HC.y*s.y,d=c-cx,bx=HC.x+s.x*d,by=HC.y+s.y*d,tx=-s.y,ty=s.x;
+    const hi=k===0&&step>=1;E("line",{x1:bx-tx*500,y1:by-ty*500,x2:bx+tx*500,y2:by+ty*500,stroke:hi?acc:"#4a90d9",
+      "stroke-width":hi?3.5:2,"stroke-dasharray":hi?"":"8 6",opacity:hi?1:0.55},top)}
+  // 箭頭：聲音前進方向
+  const ax=HC.x+s.x*150,ay=HC.y+s.y*150;E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:"#4a90d9","stroke-width":3,"marker-end":"url(#arw)"},top);
+  const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},svg.querySelector("defs"));E("path",{d:"M0,0 L10,5 L0,10 z",fill:"#4a90d9"},mk);
+  E("text",{x:ax+s.x*14,y:ay+s.y*14+5,"text-anchor":"middle","font-size":14,fill:"#4a90d9","font-weight":700},top,"聲音");
+  // 頭（從上面看）
+  E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:104,fill:"#f2c9a5",stroke:"#c99b77","stroke-width":2},top);
+  E("path",{d:`M${HC.x-12},${HC.y-100} L${HC.x},${HC.y-122} L${HC.x+12},${HC.y-100}`,fill:"#f2c9a5",stroke:"#c99b77","stroke-width":2},top);
+  E("text",{x:HC.x,y:HC.y+6,"text-anchor":"middle","font-size":15,fill:"#7a5a40"},top,"從頭頂往下看");
+  E("text",{x:HC.x,y:HC.y-128,"text-anchor":"middle","font-size":13,fill:mut},top,"前");
+  for(const [e,n,c] of [[L,"左耳",ca],[Rr,"右耳",cb]]){const lit=(step>=1&&e===near)||(step>=3&&e===far);
+    E("circle",{cx:e.x,cy:e.y,r:lit?12:9,fill:c,stroke:paper,"stroke-width":3},top);E("text",{x:e.x+(e===L?-18:18),y:e.y+34,"text-anchor":"middle","font-size":15,"font-weight":700,fill:c},top,n)}
+  if(step>=1&&th!==0){E("text",{x:near.x,y:near.y-22,"text-anchor":"middle","font-size":13,"font-weight":700,fill:acc},top,"先聽到")}
+  // 多走的路（從遠的耳朵沿 s 方向到浪線）
+  const seg=k=>({x1:far.x,y1:far.y,x2:far.x+s.x*dpx*k,y2:far.y+s.y*dpx*k});
+  if(step>=2&&dpx>0.5){const q=step===2?p(2):1,g=seg(q);E("line",Object.assign(g,{stroke:OG,"stroke-width":7,"stroke-linecap":"round"}),top);
+    if(q>0.9)E("text",{x:far.x+s.x*dpx/2+(th>=0?-14:14),y:far.y+s.y*dpx/2-10,"text-anchor":th>=0?"end":"start","font-size":14,"font-weight":700,fill:OG},top,`多走的路 ${dcm.toFixed(1)} 公分`)}
+  // 下半部：半圓＋直尺＋量角器
+  const g2=E("g",{});
+  E("path",{d:`M${O.x-RAD},${O.y} A${RAD},${RAD} 0 0 1 ${O.x+RAD},${O.y} Z`,fill:paper,stroke:ink,"stroke-width":2},g2);
+  for(let d=-90;d<=90;d+=5){const r=d*Math.PI/180,l=d%30===0?14:d%10===0?9:5;E("line",{x1:O.x+Math.sin(r)*RAD,y1:O.y-Math.cos(r)*RAD,x2:O.x+Math.sin(r)*(RAD-l),y2:O.y-Math.cos(r)*(RAD-l),stroke:ink,"stroke-width":d%30===0?2:1},g2);
+    if(d%30===0)E("text",{x:O.x+Math.sin(r)*(RAD-28),y:O.y-Math.cos(r)*(RAD-28)+5-(Math.abs(d)===90?14:0),"text-anchor":"middle","font-size":13,fill:mut},g2,Math.abs(d)+"°")}
+  E("line",{x1:O.x,y1:O.y,x2:O.x,y2:O.y-RAD,stroke:line,"stroke-width":1.5,"stroke-dasharray":"5 4"},g2);
+  E("text",{x:O.x,y:O.y-RAD-8,"text-anchor":"middle","font-size":13,fill:mut},g2,"正前方");
+  for(let c=-20;c<=20;c++){const x=O.x+c*PX,l=c%5===0?10:5;E("line",{x1:x,y1:O.y,x2:x,y2:O.y+l,stroke:ink,"stroke-width":c%5===0?1.6:1},g2);if(c%5===0)E("text",{x,y:O.y+24,"text-anchor":"middle","font-size":12,fill:mut},g2,Math.abs(c))}
+  E("text",{x:O.x+RAD+6,y:O.y+24,"font-size":12,fill:mut},g2,"公分");
+  E("circle",{cx:O.x,cy:O.y,r:4,fill:ink},g2);
+  const sg=Math.sign(th)||1,xr=O.x+sg*dpx;
+  if(step>=3&&dpx>0.5){ // 搬到直尺上：從上面的位置滑下來
+    const q=step===3?p(3):1,g=seg(1),sx1=g.x1+(O.x-g.x1)*q,sy1=g.y1+(O.y-g.y1)*q,sx2=g.x2+(xr-g.x2)*q,sy2=g.y2+(O.y-g.y2)*q;
+    E("line",{x1:sx1,y1:sy1,x2:sx2,y2:sy2,stroke:OG,"stroke-width":7,"stroke-linecap":"round",opacity:0.95},svg)}
+  const P={x:xr,y:O.y-Math.sqrt(Math.max(0,RAD*RAD-dpx*dpx))};
+  if(step>=4){const q=step===4?p(4):1;E("line",{x1:xr,y1:O.y,x2:xr,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
+  if(step>=5){const q=step===5?p(5):1;E("line",{x1:O.x,y1:O.y,x2:O.x+(P.x-O.x)*q,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":3.5},svg);
+    if(q>0.95){E("circle",{cx:P.x,cy:P.y,r:6,fill:acc},svg);const ar=60,r=th*Math.PI/180;
+      if(th!==0)E("path",{d:`M${O.x},${O.y-ar} A${ar},${ar} 0 0 ${th>0?1:0} ${O.x+Math.sin(r)*ar},${O.y-Math.cos(r)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg);
+      E("text",{x:O.x+Math.sin(r/2)*(ar+30),y:O.y-Math.cos(r/2)*(ar+30)+5,"text-anchor":"middle","font-size":18,"font-weight":700,fill:OG},svg,`${Math.abs(th)}°`)}}
+  // 說明文字
+  const ms=dcm/34.3;E("text",{x:12,y:288,"font-size":14,fill:ink},svg,`多走的路 ${dcm.toFixed(1)} 公分`);
+  E("text",{x:12,y:308,"font-size":14,fill:mut},svg,`時間差 ＝ ${dcm.toFixed(1)} ÷ 34 ≈ ${ms.toFixed(2)} 毫秒`);
+  document.querySelectorAll("#tSteps li").forEach(li=>li.classList.toggle("on",t!==null&&+li.dataset.s===Math.min(5,Math.max(1,step))))}
+function play(){const st=performance.now();cancelAnimationFrame(anim);$("tPlay").disabled=true;
+  (function f(){const t=(performance.now()-st)/1000;if(t>=T0[T0.length-1]){draw(null);$("tPlay").disabled=false;anim=null;return}draw(t);anim=requestAnimationFrame(f)})()}
+$("tAng").addEventListener("input",e=>{th=+e.target.value;txtAng();if(!anim)draw(null)});
+$("tPlay").addEventListener("click",play);
+txtAng();draw(null);
+const redraw=()=>{if(!anim)draw(null)};matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* 換我試試：可以拖曳的半圓尺 */
+const rs=$("ruler"),RO={x:220,y:250},RR=200;let rx=5;   // 公分
+function drawRuler(){rs.innerHTML="";const ink=col("--ink"),mut=col("--muted"),acc=col("--accent"),paper=col("--paper"),line=col("--line");
+  const e=(t,a,txt)=>E(t,a,rs,txt);
+  e("path",{d:`M${RO.x-RR},${RO.y} A${RR},${RR} 0 0 1 ${RO.x+RR},${RO.y} Z`,fill:paper,stroke:ink,"stroke-width":2});
+  for(let d=-90;d<=90;d+=5){const r=d*Math.PI/180,l=d%30===0?14:d%10===0?9:5;e("line",{x1:RO.x+Math.sin(r)*RR,y1:RO.y-Math.cos(r)*RR,x2:RO.x+Math.sin(r)*(RR-l),y2:RO.y-Math.cos(r)*(RR-l),stroke:ink,"stroke-width":d%30===0?2:1});
+    if(d%10===0)e("text",{x:RO.x+Math.sin(r)*(RR-(d%30===0?28:22)),y:RO.y-Math.cos(r)*(RR-(d%30===0?28:22))+4-(Math.abs(d)===90?12:0),"text-anchor":"middle","font-size":d%30===0?12:9,fill:mut},Math.abs(d))}
+  e("line",{x1:RO.x,y1:RO.y,x2:RO.x,y2:RO.y-RR,stroke:line,"stroke-dasharray":"5 4"});
+  for(let c=-20;c<=20;c++){const x=RO.x+c*10,l=c%5===0?9:4;e("line",{x1:x,y1:RO.y,x2:x,y2:RO.y+l,stroke:ink,"stroke-width":c%5===0?1.5:1});if(c%5===0)e("text",{x,y:RO.y+20,"text-anchor":"middle","font-size":11,fill:mut},Math.abs(c))}
+  const x=RO.x+rx*10,P={x,y:RO.y-Math.sqrt(Math.max(0,RR*RR-(rx*10)**2))},ang=Math.asin(Math.max(-1,Math.min(1,rx/20)))*180/Math.PI;
+  e("line",{x1:RO.x,y1:RO.y,x2:x,y2:RO.y,stroke:OG,"stroke-width":6,"stroke-linecap":"round"});
+  e("line",{x1:x,y1:RO.y,x2:P.x,y2:P.y,stroke:acc,"stroke-width":2,"stroke-dasharray":"5 4"});
+  e("line",{x1:RO.x,y1:RO.y,x2:P.x,y2:P.y,stroke:acc,"stroke-width":3});
+  e("circle",{cx:x,cy:RO.y,r:10,fill:OG,stroke:paper,"stroke-width":3,style:"cursor:ew-resize"});
+  $("rulerTxt").textContent=`尺上 ${Math.abs(rx).toFixed(1)} 公分 → 角度大約 ${Math.round(Math.abs(ang))}°（拖曳橘色的點）`}
+function setX(ev){const r=rs.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*440;rx=Math.max(-20,Math.min(20,Math.round((vx-RO.x)/10*2)/2));drawRuler()}
+let drag=false;rs.addEventListener("pointerdown",e=>{drag=true;rs.setPointerCapture(e.pointerId);setX(e)});
+rs.addEventListener("pointermove",e=>{if(drag)setX(e)});rs.addEventListener("pointerup",()=>drag=false);rs.addEventListener("pointercancel",()=>drag=false);
+drawRuler();window.__redrawRuler=drawRuler;
+})();
+
+/* ================= 三、路口要幾支麥克風？（從上面看的路口） =================
+   單位：公尺。原點＝路口中心，x 往東、y 往北。 */
+(()=>{
+const cv=$("map"),g=cv.getContext("2d"),host=$("mapStage");
+const VIEW=40,RW=8,C_REAL=343,C_VIS=14,LAM=5;      // 畫面 ±40 m；路寬 16 m；動畫聲速放慢
+let mics=[{x:-3,y:0},{x:3,y:0}],amb={x:30,y:3};
+let t0=null,heard=false,raf=0,spreadPrev=50;
+const ROADS={N:{x:-4,y:30},E:{x:30,y:3},S:{x:4,y:-30},W:{x:-30,y:-3}},RNAME={N:"北",E:"東",S:"南",W:"西"};
+const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+let W=600,S=7.5;
+const X=x=>W/2+x*S,Y=y=>W/2-y*S;
+const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function resize(){const r=host.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);W=r.width;S=W/(2*VIEW);cv.width=Math.round(W*dpr);cv.height=Math.round(W*dpr);g.setTransform(dpr,0,0,dpr,0,0);draw(performance.now()/1000)}
+function centroid(){return {x:mics.reduce((s,m)=>s+m.x,0)/mics.length,y:mics.reduce((s,m)=>s+m.y,0)/mics.length}}
+function arrivals(src){return mics.map(m=>D(src,m)/C_REAL*1000)}   // 毫秒
+function roadOf(az){return ["N","E","S","W"][Math.round((((az%360)+360)%360)/90)%4]}
+function candidates(){if(mics.length<2)return null;const C=centroid(),R=Math.max(1,D(amb,C)),ta=arrivals(amb);
+  let span=0;for(const a of mics)for(const b of mics)span=Math.max(span,D(a,b));const tol=Math.max(0.004,0.035*span/C_REAL*1000);
+  const ok=[];for(let az=0;az<360;az++){const r=az*Math.PI/180,P={x:C.x+Math.sin(r)*R,y:C.y+Math.cos(r)*R},tp=arrivals(P);
+    let e=0;for(let i=1;i<mics.length;i++)e=Math.max(e,Math.abs((tp[i]-tp[0])-(ta[i]-ta[0])));ok.push(e<tol)}
+  // 把連在一起的角度合成一組，取中間
+  const groups=[];let i0=ok.indexOf(false);if(i0<0)return [];for(let k=1;k<=360;k++){const i=(i0+k)%360;if(ok[i]&&!ok[(i+359)%360])groups.push([i]);if(ok[i]&&groups.length)groups[groups.length-1].push(i)}
+  return groups.map(gr=>{const s=gr.reduce((a,v)=>({x:a.x+Math.sin(v*Math.PI/180),y:a.y+Math.cos(v*Math.PI/180)}),{x:0,y:0});return (Math.atan2(s.x,s.y)*180/Math.PI+360)%360})}
+const fmt=v=>v<1?v.toFixed(3):v<10?v.toFixed(2):v.toFixed(1);
+function result(){const n=mics.length;$("micN").textContent=n;$("micAdd").disabled=n>=4;$("micDel").disabled=n<=1;
+  if(!heard){$("mRes").innerHTML=t0===null?"按「鳴笛」。":"聲音傳過去……";$("mapHud").innerHTML="";return}
+  const ta=arrivals(amb),ord=ta.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]),first=ord[0][0];
+  $("mapHud").innerHTML=ord.map(([v,i],k)=>k===0?`麥克風 ${i+1} 最先聽到`:`麥克風 ${i+1} 晚了 <b>${fmt(v-first)}</b> 毫秒`).join("<br>");
+  if(n===1){$("mRes").innerHTML="只有 1 支麥克風：只知道「有救護車」，沒有時間差可以比，<b>每個方向都有可能</b>。";return}
+  const cs=candidates(),roads=[...new Set(cs.map(roadOf))];
+  let t=`系統找到 <b>${cs.length}</b> 個可能的方向`;
+  if(cs.length>1&&roads.length>1)t+=`：可能在 <b>${roads.map(r=>RNAME[r]+"路").join("、")}</b> → <b style="color:var(--b)">分不出來！</b>`;
+  else if(cs.length>1)t+=`，但都在 <b>${RNAME[roads[0]]}路</b>，還分得出來。`;
+  else t+=`：救護車在 <b>${RNAME[roads[0]]}路</b>。`;
+  $("mRes").innerHTML=t}
+function drawMap(P){const roadC="#4b5054",grass="#cfe3b0",side="#e6e0d2";
+  g.fillStyle=grass;g.fillRect(0,0,W,W);
+  g.fillStyle=side;g.fillRect(X(-VIEW),Y(RW+3),W,(2*RW+6)*S);g.fillRect(X(-RW-3),Y(VIEW),(2*RW+6)*S,W);
+  g.fillStyle=roadC;g.fillRect(X(-VIEW),Y(RW),W,2*RW*S);g.fillRect(X(-RW),Y(VIEW),2*RW*S,W);
+  g.strokeStyle="#f2c230";g.lineWidth=Math.max(1.5,0.35*S);g.setLineDash([2.5*S,2*S]);
+  g.beginPath();g.moveTo(X(-VIEW),Y(0));g.lineTo(X(-RW-6),Y(0));g.moveTo(X(RW+6),Y(0));g.lineTo(X(VIEW),Y(0));g.moveTo(X(0),Y(VIEW));g.lineTo(X(0),Y(RW+6));g.moveTo(X(0),Y(-RW-6));g.lineTo(X(0),Y(-VIEW));g.stroke();g.setLineDash([]);
+  g.fillStyle="rgba(255,255,255,.9)";for(let i=-RW+1;i<RW;i+=2){for(const [x,y,w,h] of [[i,RW+5,1,4],[i,-RW-1,1,4],[RW+1,i+1,4,1],[-RW-5,i+1,4,1]])g.fillRect(X(x),Y(y),w*S,h*S)}
+  g.font=`700 ${Math.max(14,W*0.035)}px 'Noto Sans TC',sans-serif`;g.fillStyle="#18232b";g.textAlign="center";g.textBaseline="middle";
+  [["北",0,VIEW-3.5],["南",0,-VIEW+3.5],["東",VIEW-3.5,0],["西",-VIEW+3.5,0]].forEach(([t,x,y])=>{g.fillStyle="rgba(255,255,255,.85)";g.beginPath();g.arc(X(x),Y(y),W*0.032,0,7);g.fill();g.fillStyle="#18232b";g.fillText(t,X(x),Y(y)+1)})}
+function drawAmb(t){const horiz=Math.abs(amb.x)>Math.abs(amb.y);g.save();g.translate(X(amb.x),Y(amb.y));if(!horiz)g.rotate(Math.PI/2);
+  const l=5.4*S,w=2.4*S;g.fillStyle="rgba(0,0,0,.25)";g.fillRect(-l/2+2,-w/2+3,l,w);g.fillStyle="#fff";g.strokeStyle="#9aa3a8";g.lineWidth=1.5;g.fillRect(-l/2,-w/2,l,w);g.strokeRect(-l/2,-w/2,l,w);
+  g.fillStyle="#d32f2f";g.fillRect(-l/2,-w*0.12,l,w*0.24);g.fillRect(-w*0.12-l*0.12,-w*0.38,w*0.24,w*0.76);
+  const on=Math.floor(t*4)%2;g.fillStyle=on?"#ff2a2a":"#2a6bff";g.fillRect(l*0.18,-w*0.45,w*0.3,w*0.35);g.fillStyle=on?"#2a6bff":"#ff2a2a";g.fillRect(l*0.18,w*0.1,w*0.3,w*0.35);g.restore()}
+function drawWaves(t){if(t0===null)return;const front=C_VIS*(t-t0),tailT=Math.max(...mics.map(m=>D(amb,m)))/C_VIS+1.2,tail=t-t0>tailT?C_VIS*(t-t0-tailT):-1;
+  g.lineWidth=2.2;for(let k=0;k<40;k++){const r=front-k*LAM;if(r<=0)break;if(r<=tail)continue;if(r>VIEW*3)continue;g.strokeStyle=`rgba(240,98,146,${Math.max(0.15,0.85-r/90)})`;g.beginPath();g.arc(X(amb.x),Y(amb.y),r*S,0,7);g.stroke()}
+  if(tail>VIEW*3){t0=null}}
+function drawMics(t){const front=t0===null?Infinity:C_VIS*(t-t0),ta=arrivals(amb),ord=ta.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  mics.forEach((m,i)=>{const got=heard||front>=D(amb,m),k=ord.indexOf(i);
+    g.fillStyle=got?"#1f7a5a":"#18232b";g.strokeStyle="#fff";g.lineWidth=3;g.beginPath();g.arc(X(m.x),Y(m.y),Math.max(11,1.4*S),0,7);g.fill();g.stroke();
+    g.fillStyle="#fff";g.font=`700 ${Math.max(12,1.5*S)}px 'JetBrains Mono',monospace`;g.textAlign="center";g.textBaseline="middle";g.fillText(i+1,X(m.x),Y(m.y)+1);
+    if(got&&mics.length>1){g.font="700 13px 'Noto Sans TC',sans-serif";const lab=k===0?"先聽到":`第 ${k+1}`;const tw=g.measureText(lab).width+10;g.fillStyle="rgba(255,255,255,.92)";g.fillRect(X(m.x)-tw/2,Y(m.y)-Math.max(11,1.4*S)-22,tw,18);g.fillStyle=k===0?"#1f7a5a":"#18232b";g.fillText(lab,X(m.x),Y(m.y)-Math.max(11,1.4*S)-12)}})}
+function drawCands(){if(!heard)return;const C=centroid(),acc="#1f7a5a";
+  if(mics.length===1){g.strokeStyle="rgba(217,83,44,.7)";g.lineWidth=6;g.setLineDash([6,6]);g.beginPath();g.arc(X(C.x),Y(C.y),22*S,0,7);g.stroke();g.setLineDash([]);return}
+  const cs=candidates();cs.forEach(az=>{const r=az*Math.PI/180,L=24;const x2=C.x+Math.sin(r)*L,y2=C.y+Math.cos(r)*L;
+    g.strokeStyle=cs.length>1?"#d9532c":acc;g.fillStyle=g.strokeStyle;g.lineWidth=5;g.setLineDash([]);g.beginPath();g.moveTo(X(C.x),Y(C.y));g.lineTo(X(x2),Y(y2));g.stroke();
+    const hx=Math.sin(r),hy=Math.cos(r);g.beginPath();g.moveTo(X(x2+hx*2.6),Y(y2+hy*2.6));g.lineTo(X(x2-hy*1.6),Y(y2+hx*1.6));g.lineTo(X(x2+hy*1.6),Y(y2-hx*1.6));g.fill()})}
+function draw(t){drawMap();drawWaves(t);drawCands();drawAmb(t);drawMics(t)}
+function loop(){const t=performance.now()/1000;
+  if(t0!==null&&!heard){const front=C_VIS*(t-t0);if(mics.every(m=>front>=D(amb,m))){heard=true;result()}}
+  draw(t);raf=requestAnimationFrame(loop)}
+function changed(){if(t0!==null&&!heard){t0=null}result()}
+$("mPlay").addEventListener("click",()=>{t0=performance.now()/1000;heard=false;result()});
+$("micAdd").addEventListener("click",()=>{if(mics.length>=4)return;const C=centroid(),k=mics.length===2?1:-1;mics.push({x:Math.max(-38,Math.min(38,C.x+(mics.length===3?3:0))),y:Math.max(-38,Math.min(38,C.y+k*5))});changed()});
+$("micDel").addEventListener("click",()=>{if(mics.length>1){mics.pop();changed()}});
+const fac=v=>Math.pow(2,(v-50)/12.5);
+$("spread").addEventListener("input",e=>{const v=+e.target.value,k=fac(v)/fac(spreadPrev);spreadPrev=v;const C=centroid();
+  mics=mics.map(m=>({x:Math.max(-38,Math.min(38,C.x+(m.x-C.x)*k)),y:Math.max(-38,Math.min(38,C.y+(m.y-C.y)*k))}));changed()});
+document.querySelectorAll("[data-road]").forEach(b=>b.addEventListener("click",()=>{amb={...ROADS[b.dataset.road]};changed()}));
+/* 拖曳 */
+let drag=null;
+function pt(e){const r=cv.getBoundingClientRect();return {x:((e.clientX-r.left)/r.width*W-W/2)/S,y:-((e.clientY-r.top)/r.height*W-W/2)/S}}
+cv.addEventListener("pointerdown",e=>{const p=pt(e),rr=Math.max(2.2,16/S);let best=null,bd=1e9;
+  mics.forEach((m,i)=>{const d=D(p,m);if(d<rr&&d<bd){bd=d;best=i}});if(best===null&&D(p,amb)<Math.max(3.5,20/S))best="amb";
+  if(best!==null){drag=best;cv.setPointerCapture(e.pointerId);e.preventDefault()}});
+cv.addEventListener("pointermove",e=>{const p=pt(e);if(drag===null){const rr=Math.max(2.2,16/S);cv.style.cursor=mics.some(m=>D(p,m)<rr)||D(p,amb)<Math.max(3.5,20/S)?"grab":"default";return}
+  const q={x:Math.max(-38,Math.min(38,p.x)),y:Math.max(-38,Math.min(38,p.y))};if(drag==="amb")amb=q;else mics[drag]=q;changed()});
+const up=()=>{drag=null};cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+addEventListener("resize",resize);resize();result();loop();
+window.__map={get mics(){return mics},set mics(v){mics=v;changed()},get amb(){return amb},set amb(v){amb=v;changed()},play:()=>$("mPlay").click(),candidates};
+})();
+
+/* ================= 學習單（三）：資料、表格、圖、匯出 ================= */
+const KEY="ws3-doa-v1";
+const POS=[["正前方（0°）"],["右前方（45°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
+const PRACT=[0.10,0.29,0.50];
+const ROADN=["北","東","南","西"],ROADA={北:0,東:90,南:180,西:270};
+const NTR=8;
+let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRACT.map(ms=>({ms,cm:"",deg:""})),
+  t33:[...Array(5)].map(()=>({n:"",how:"",road:"",cand:"",ok:""})),q31:"",q32:"",
+  exp:{1:[],2:[],3:[],4:[]},c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
+for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const num=v=>v===""||v==null||isNaN(+v)?null:+v;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function bind(id,obj,key,ev="input",after){const e=$(id);if(!e)return;e.value=obj[key]??"";e.addEventListener(ev,()=>{obj[key]=e.value;save();after&&after()})}
+const sel=(opts,v,attrs="")=>`<select ${attrs}>${["",...opts].map(o=>`<option${o===v?" selected":""}>${esc(o)}</option>`).join("")}</select>`;
+
+/* 表 3-1 */
+function buildT31(){const tb=$("t31").tBodies[0];tb.innerHTML="";S.t31.forEach((r,i)=>{const tr=tb.insertRow();
+  tr.innerHTML=`<td>${esc(r.p)}</td><td>${sel(["左耳","右耳","同時"],r.first,`data-k="first" aria-label="${esc(r.p)} 哪隻耳朵先聽到"`)}</td><td>${sel(["大","小","沒有"],r.big,`data-k="big" aria-label="${esc(r.p)} 時間差"`)}</td>`;
+  tr.querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{r[s.dataset.k]=s.value;save()}))})}
+/* 表 3-2 */
+function buildT32(){const tb=$("t32").tBodies[0];tb.innerHTML="";S.t32.forEach((r,i)=>{const tr=tb.insertRow();
+  tr.innerHTML=`<td class="num">${r.ms.toFixed(2)}</td><td><input type="number" step="0.1" data-k="cm" value="${esc(r.cm)}" aria-label="多走的路"></td><td><input type="number" step="1" data-k="deg" value="${esc(r.deg)}" aria-label="角度"></td><td><button class="xbtn">對答案</button> <span class="ans" aria-live="polite"></span></td>`;
+  tr.querySelectorAll("input").forEach(e=>e.addEventListener("input",()=>{r[e.dataset.k]=e.value;save();tr.querySelector(".ans").textContent=""}));
+  tr.querySelector("button").addEventListener("click",()=>{const cm=r.ms*34.3,deg=Math.asin(Math.min(1,cm/20))*180/Math.PI,a=tr.querySelector(".ans");
+    const okc=num(r.cm)!==null&&Math.abs(num(r.cm)-cm)<=0.6,okd=num(r.deg)!==null&&Math.abs(num(r.deg)-deg)<=4;
+    a.innerHTML=okc&&okd?`<b style="color:var(--accent)">✓ 對了！</b>`:`${okc?"距離 ✓":"距離再算算"}，${okd?"角度 ✓":"角度再量量"}`;
+    a.title=`參考：約 ${cm.toFixed(1)} 公分、${Math.round(deg)}°`})})}
+/* 表 3-3 */
+function buildT33(){const tb=$("t33").tBodies[0];tb.innerHTML="";S.t33.forEach(r=>{const tr=tb.insertRow();
+  tr.innerHTML=`<td>${sel(["1 支","2 支","3 支","4 支"],r.n,'data-k="n" aria-label="麥克風幾支"')}</td><td><input type="text" data-k="how" class="wide" value="${esc(r.how)}" placeholder="例如：排成一直線、三角形" aria-label="怎麼擺"></td>
+    <td>${sel(["北路","東路","南路","西路"],r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" min="0" data-k="cand" value="${esc(r.cand)}" aria-label="可能方向數"></td><td>${sel(["分得出來","分不出來"],r.ok,'data-k="ok" aria-label="分得出來嗎"')}</td>`;
+  tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"?"change":"input",()=>{r[e.dataset.k]=e.value;save()}))})}
+/* 表 3-4：實驗 */
+const cdiff=(a,b)=>{const d=Math.abs(((a-b)%360+360)%360);return Math.min(d,360-d)};
+const roadOfA=a=>ROADN[Math.round(((a%360)+360)%360/90)%4];
+function rowCalc(r){const tr=num(r.tr),ra=r.nodir?null:num(r.ra);return {err:tr!==null&&ra!==null?cdiff(tr,ra):null,rr:ra!==null?roadOfA(ra):(r.nodir?"沒有方向":""),ok:r.road&&(ra!==null||r.nodir)?(ra!==null&&roadOfA(ra)===r.road):null}}
+function stats(n){const R=S.exp[n].map(rowCalc),done=S.exp[n].filter((r,i)=>R[i].ok!==null).length,ok=R.filter(x=>x.ok).length,errs=R.map(x=>x.err).filter(x=>x!==null);
+  return {done,ok,acc:done?ok/done*100:null,err:errs.length?errs.reduce((a,b)=>a+b,0)/errs.length:null}}
+function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
+  document.querySelectorAll("#nTabs button").forEach(b=>{const on=+b.dataset.n===n;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
+  $("t34cap").textContent=`表 3-4　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
+  S.exp[n].forEach((r,i)=>{const tr=tb.insertRow();
+    tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>x),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" aria-label="真實角度"></td>
+      <td><input type="number" step="1" data-k="ra" value="${esc(r.ra)}" aria-label="雷達角度" ${r.nodir?"disabled":""}>${n===1?`<br><label class="nodir"><input type="checkbox" data-k="nodir" ${r.nodir?"checked":""}>雷達沒有方向</label>`:""}</td>
+      <td class="num" data-o="err"></td><td data-o="rr"></td><td data-o="ok"></td>`;
+    tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"||e.type==="checkbox"?"change":"input",()=>{r[e.dataset.k]=e.type==="checkbox"?e.checked:e.value;
+      if(e.type==="checkbox"){const ra=tr.querySelector('[data-k="ra"]');ra.disabled=e.checked}save();fillRow(tr,r);calcT35()}));
+    fillRow(tr,r)});calcT35()}
+function fillRow(tr,r){const c=rowCalc(r);tr.querySelector('[data-o="err"]').textContent=c.err===null?"":Math.round(c.err);tr.querySelector('[data-o="rr"]').textContent=c.rr?(c.rr==="沒有方向"?c.rr:c.rr+"路"):"";
+  const o=tr.querySelector('[data-o="ok"]');o.textContent=c.ok===null?"":c.ok?"✓":"✗";o.className=c.ok===null?"":c.ok?"ok":"no"}
+document.querySelectorAll("#nTabs button").forEach(b=>b.addEventListener("click",()=>{S.tab=+b.dataset.n;save();buildT34()}));
+function calcT35(){const tb=$("t35").tBodies[0];tb.innerHTML="";for(const n of [1,2,3,4]){const s=stats(n),tr=tb.insertRow();
+  tr.innerHTML=`<td>${n} 支</td><td class="num">${s.done?`${s.ok} / ${s.done}`:""}</td><td class="num">${s.acc===null?"":Math.round(s.acc)+"%"}</td><td class="num">${s.err===null?"":s.err.toFixed(1)}</td>`}
+  drawBars($("cAcc"),"acc");drawBars($("cErr"),"err")}
+/* 圖 3-2、3-3 */
+const SVGNS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
+function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),line:g("--line"),bar:g("--accent"),bar2:g("--a")}}
+const PRINT={ink:"#18232b",muted:"#5b6872",line:"#d3dbe0",bar:"#1f7a5a",bar2:"#2a6fb8"};
+function drawBars(s,kind,P=pal()){s.innerHTML="";const x0=56,y0=250,H=210,Wd=340,vals=[1,2,3,4].map(n=>stats(n)[kind]);
+  const max=kind==="acc"?100:Math.max(30,Math.ceil(Math.max(0,...vals.filter(v=>v!==null))/10)*10),step=kind==="acc"?25:max/5;
+  for(let v=0;v<=max+1e-6;v+=step){const y=y0-v/max*H;el("line",{x1:x0,y1:y,x2:x0+Wd,y2:y,stroke:P.line,"stroke-width":1},s);el("text",{x:x0-8,y:y+4,"text-anchor":"end","font-size":12,fill:P.muted},s,Math.round(v)+(kind==="acc"?"%":"°"))}
+  el("text",{x:14,y:y0-H/2,"text-anchor":"middle","font-size":12,fill:P.muted,transform:`rotate(-90 14 ${y0-H/2})`},s,kind==="acc"?"正確率":"平均角度差（度）");
+  vals.forEach((v,i)=>{const bw=Wd/4,cx=x0+bw*(i+0.5);el("text",{x:cx,y:y0+20,"text-anchor":"middle","font-size":13,fill:P.ink},s,`${i+1} 支`);
+    if(v===null)return;const h=Math.max(1,v/max*H);el("rect",{x:cx-bw*0.28,y:y0-h,width:bw*0.56,height:h,rx:3,fill:kind==="acc"?P.bar:P.bar2},s);
+    el("text",{x:cx,y:y0-h-6,"text-anchor":"middle","font-size":13,"font-weight":700,fill:P.ink},s,kind==="acc"?Math.round(v)+"%":v.toFixed(1)+"°")});
+  el("line",{x1:x0,y1:y0,x2:x0+Wd,y2:y0,stroke:P.ink,"stroke-width":1.4},s);
+  el("text",{x:x0+Wd/2,y:y0+42,"text-anchor":"middle","font-size":12,fill:P.muted},s,"麥克風數量")}
+
+/* 其他欄位 */
+for(const id of ["p1","p2","p4","q31","q32","c1","c2","c4","c5","date","names"])bind(id,S,id);
+for(const id of ["p3","c3a","c3b"])bind(id,S,id,"change");
+buildT31();buildT32();buildT33();buildT34();
+const redraw=()=>calcT35();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ================= 匯出 Word ================= */
+(()=>{const btn=$("export"),msg=$("expMsg");
+async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(svg);const img=new Image();img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml.replace("<svg",`<svg width="${w}" height="${h}"`));
+  await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+  return await (await new Promise(r=>c.toBlob(r,"image/png"))).arrayBuffer()}
+function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+btn.addEventListener("click",async()=>{
+  if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
+  btn.disabled=true;msg.textContent="正在產生 Word 檔……";
+  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
+    const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
+    const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:21})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
+    const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
+    const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
+    const B=[];
+    B.push(P("智「where」交通　科展實驗紀錄單（三）聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("聲音從哪裡來？路口要幾支麥克風？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
+    B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
+    B.push(H("先想一想"));B.push(P("戴上耳塞後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
+    B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
+    B.push(H("一、兩隻耳朵的時間差"));
+    B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));
+    B.push(H("二、不用三角函數，也能從時間差找出角度"));
+    B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
+    B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));B.push(cap("表 3-2、從時間差找出角度"));
+    B.push(H("三、路口要幾支麥克風？"));
+    const r33=S.t33.filter(r=>r.n||r.how||r.road||r.cand||r.ok).map(r=>[r.n,r.how,r.road,r.cand,r.ok]);
+    B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));B.push(cap("表 3-3、麥克風的數量和擺法"));
+    B.push(P("兩支麥克風怎麼擺，時間差才會比較大？"+(S.q31||"＿＿")));B.push(P("為什麼 2 支麥克風有時候分不出在哪條路？"+(S.q32||"＿＿")));
+    B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));
+    for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
+      B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`))}
+    B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));B.push(cap("表 3-5、四種麥克風數量的比較"));
+    for(const [k,t] of [["acc","圖 3-2、選對路的正確率"],["err","圖 3-3、平均角度差（越小越準）"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);
+      B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(s,420,300),transformation:{width:360,height:257}})]}));B.push(cap(t))}
+    B.push(H("五、結果與結論"));
+    B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 不用三角函數，怎麼從時間差找出角度？"+(S.c2||"＿＿")));
+    B.push(P(`3. 麥克風越多，正確率越 ${S.c3a||"＿"}，角度差越 ${S.c3b||"＿"}。`));B.push(P("4. 我的假設對嗎？至少要幾支、怎麼擺？"+(S.c4||"＿＿")));B.push(P("5. 結論：給智慧路口的建議："+(S.c5||"＿＿＿＿")));
+    B.push(P("➜ 本紀錄單的成果＝科展報告「研究三：聲音從哪裡來？路口要幾支麥克風」",{color:"5B6872",size:20}));
+    const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
+    const blob=await Packer.toBlob(doc);
+    const fn=`紀錄單三_聲源定位篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
+    let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
+    if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。"}done=true}}
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
+  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
+  btn.disabled=false})})();
+<\/script>
+<style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
+<script>
+(()=>{let loaded=false;const f=document.getElementById("ws3frame");
+function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
+window.__ws3Show=on=>{if(!on||loaded)return;loaded=true;
+  f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
+  f.srcdoc=document.getElementById("ws3src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+addEventListener("resize",fit);})();
+</script>
+<!-- TAB6 END -->
 <script>
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
@@ -2659,6 +3378,7 @@ document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()
   document.getElementById("tab3").hidden=t!=="tab3"; if(window.__modelShow) window.__modelShow(t==="tab3");
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
   document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
+  document.getElementById("tab6").hidden=t!=="tab6"; if(window.__ws3Show) window.__ws3Show(t==="tab6");
   if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
   if(t!=="tab2"&&window.__cockpitStop) window.__cockpitStop();
   window.dispatchEvent(new Event("resize"));
