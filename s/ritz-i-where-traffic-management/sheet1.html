@@ -367,7 +367,7 @@ part(new THREE.TorusGeometry(5.2,1.6,10,24),redM,0,97.8,0,kid).rotation.x=Math.P
 part(new THREE.BoxGeometry(3,7,0.8),poloM,0,92,-12.2,kid);for(const y of [94,91])part(new THREE.SphereGeometry(0.6,8,6),whiteM,0,y,-12.6,kid);
 logo(-5.6,86,-12.5,5.6,kid);
 for(const s of [-1,1])part(new THREE.SphereGeometry(5,16,12),redM,s*12,93,0,kid);                              // 紅色肩膀
-limb([-12.5,92,0],[-14,80,0],4.3,redM,kid);limb([-14,80,0],[-14.5,62,-1],2.9,skin,kid);                       // 左手（垂下）
+limb([-13,92,0],[-14.4,84,0],4.3,redM,kid);limb([-14.4,84,0],[-15,63,-0.5],2.9,skin,kid);part(new THREE.SphereGeometry(3.6,14,10),skin,-15.1,60.2,-0.6,kid);   // 左手（垂下，有拳頭）
 const ears=headBase(kid);face(kid,false);
 part(new THREE.SphereGeometry(HR+0.9,40,30,0,Math.PI*2,0,Math.PI*0.47),hairM,0,HY+0.4,0.4,kid);               // 黑短髮（蓋住頭頂）
 part(new THREE.SphereGeometry(HR+0.7,40,30,0,Math.PI,Math.PI*0.4,Math.PI*0.32),hairM,0,HY,0.2,kid);           // 後腦勺
@@ -376,8 +376,8 @@ const band=part(new THREE.CylinderGeometry(HR+0.6,HR+0.6,6,40,1,true),M(0x15181b
 const plugM=M(0xff8a2a,{roughness:0.5,emissive:0x5a2200});
 const plugs=[-1,1].map(s=>{const p=part(new THREE.CylinderGeometry(2.4,2.4,4,12),plugM,s*(HR+3),HY,1,kid);p.rotation.z=Math.PI/2;return p});
 // 右手（從右肩伸出，可旋轉指方向）
-const arm=new THREE.Group();arm.position.set(12.5,92,0);kid.add(arm);
-limb([0,0,0],[0,0,-11],4.3,redM,arm);limb([0,0,-11],[0,0,-36],2.9,skin,arm);part(new THREE.SphereGeometry(3.6,12,10),skin,0,0,-38,arm);
+const arm=new THREE.Group();arm.position.set(13.6,92,0);kid.add(arm);
+limb([0,0,0],[0,0,-8],4.3,redM,arm);limb([0,0,-8],[0,0,-29],2.9,skin,arm);part(new THREE.SphereGeometry(3.6,14,10),skin,0,0,-32,arm);
 
 /* ---------- 播音員：女生（白襯衫、條紋領帶、格子裙、黑長髮）拿著喇叭 ---------- */
 const ann=new THREE.Group();scene.add(ann);
@@ -458,7 +458,7 @@ function tick(now){requestAnimationFrame(tick);
   const el=(now-playT)/1000, on=el>=0&&el<2;
   waves.forEach(w=>{if(!on){w.material.opacity=0;return}const p=(el*0.9+w.userData.ph)%1,r=10+p*230;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
   if(armTarget!==null){armAngle+=(armTarget-armAngle)*(reduce?1:0.12);arm.rotation.y=-armAngle*Math.PI/180;arm.rotation.x=0}
-  else arm.rotation.x=-1.3;
+  else{arm.rotation.x=-1.5;arm.rotation.y=0}
   ctl.update();renderer.render(scene,cam)}
 requestAnimationFrame(tick);
 })();
