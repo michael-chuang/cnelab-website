@@ -3105,7 +3105,7 @@ const NS="http://www.w3.org/2000/svg",svg=$("tri");
 const E=(tag,a,p=svg,txt)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;p.appendChild(e);return e};
 const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
 const OG="#e07a10",PX=10;                        // 1 公分＝10 px
-const L={x:220,y:190},Rr={x:420,y:190},HC={x:320,y:190};   // 上面：兩隻耳朵相距 20 公分
+const L={x:220,y:142},Rr={x:420,y:142},HC={x:320,y:142};   // 上面：兩隻耳朵相距 20 公分
 const O={x:320,y:492},RAD=200;                    // 下面：半圓（半徑 20 公分）
 let th=+$("tAng").value,anim=null;
 const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
@@ -3121,28 +3121,47 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   const cp=E("clipPath",{id:"topclip"},E("defs",{}));E("rect",{x:0,y:0,width:640,height:262},cp);
   const top=E("g",{"clip-path":"url(#topclip)"});
   E("rect",{x:0,y:0,width:640,height:262,fill:col("--bg"),rx:10},top);
-  // 浪：垂直於 s 的直線；c＝p·s
-  const cNear=near.x*s.x+near.y*s.y;let off;
-  if(step===0){off=(1-p(0))*170}else off=0;            // 第 0 步：浪從遠處走過來
-  for(let k=-1;k<6;k++){const c=cNear+off+k*42;if(k<0&&step>0)continue;
-    const cx=HC.x*s.x+HC.y*s.y,d=c-cx,bx=HC.x+s.x*d,by=HC.y+s.y*d,tx=-s.y,ty=s.x;
-    const hi=k===0&&step>=1;E("line",{x1:bx-tx*500,y1:by-ty*500,x2:bx+tx*500,y2:by+ty*500,stroke:hi?acc:"#4a90d9",
-      "stroke-width":hi?3.5:2,"stroke-dasharray":hi?"":"8 6",opacity:hi?1:0.55},top)}
+  // 浪：黃色漸層、一排一排平平地走過來（只畫在浪已經到的那一側）
+  const cNear=near.x*s.x+near.y*s.y,off=step===0?(1-p(0))*170:0,cF=cNear+off,defs=svg.querySelector("defs");
+  const fx=HC.x+s.x*(cF-(HC.x*s.x+HC.y*s.y)),fy=HC.y+s.y*(cF-(HC.x*s.x+HC.y*s.y)),tx=-s.y,ty=s.x;
+  const wg=E("linearGradient",{id:"wg",gradientUnits:"userSpaceOnUse",spreadMethod:"repeat",x1:fx,y1:fy,x2:fx+s.x*42,y2:fy+s.y*42},defs);
+  [[0,0.85],[0.5,0.05],[1,0.85]].forEach(([o,a])=>E("stop",{offset:o,"stop-color":"#ffb703","stop-opacity":a},wg));
+  E("polygon",{points:[[fx-tx*900,fy-ty*900],[fx+tx*900,fy+ty*900],[fx+tx*900+s.x*900,fy+ty*900+s.y*900],[fx-tx*900+s.x*900,fy-ty*900+s.y*900]].map(q=>q.join(",")).join(" "),fill:"url(#wg)"},top);
   // 箭頭：聲音前進方向
-  const ax=HC.x+s.x*150,ay=HC.y+s.y*150;E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:"#4a90d9","stroke-width":3,"marker-end":"url(#arw)"},top);
-  const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},svg.querySelector("defs"));E("path",{d:"M0,0 L10,5 L0,10 z",fill:"#4a90d9"},mk);
-  E("text",{x:ax+s.x*14,y:ay+s.y*14+5,"text-anchor":"middle","font-size":14,fill:"#4a90d9","font-weight":700},top,"聲音");
-  // 頭（從上面看）
-  E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:104,fill:"#f2c9a5",stroke:"#c99b77","stroke-width":2},top);
-  E("path",{d:`M${HC.x-12},${HC.y-100} L${HC.x},${HC.y-122} L${HC.x+12},${HC.y-100}`,fill:"#f2c9a5",stroke:"#c99b77","stroke-width":2},top);
-  E("text",{x:HC.x,y:HC.y+6,"text-anchor":"middle","font-size":15,fill:"#7a5a40"},top,"從頭頂往下看");
-  E("text",{x:HC.x,y:HC.y-128,"text-anchor":"middle","font-size":13,fill:mut},top,"前");
+  const ax=HC.x+s.x*150,ay=HC.y+s.y*150,AMB="#d98e00";E("line",{x1:ax,y1:ay,x2:ax-s.x*44,y2:ay-s.y*44,stroke:AMB,"stroke-width":3,"marker-end":"url(#arw)"},top);
+  const mk=E("marker",{id:"arw",viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:6,markerHeight:6,orient:"auto"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:AMB},mk);
+  E("text",{x:ax+s.x*14,y:ay+s.y*14+5,"text-anchor":"middle","font-size":14,fill:AMB,"font-weight":700},top,"聲音");
+  // 可愛的頭（從頭頂往下看）：臉在前面，頭髮、馬尾、蝴蝶結在後面
+  const hcp=E("clipPath",{id:"headclip"},defs);E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:94},hcp);
+  E("ellipse",{cx:HC.x,cy:HC.y+104,rx:20,ry:22,fill:"#8a5a3c"},top);                                          // 馬尾
+  
+  for(const sx of [-1,1])E("ellipse",{cx:HC.x+sx*93,cy:HC.y,rx:10,ry:17,fill:"#f6c7a6",stroke:"#d9a07c","stroke-width":2},top);   // 耳朵
+  E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:94,fill:"#fbd9bf"},top);                                               // 臉（前面）
+  E("path",{d:`M${HC.x-11},${HC.y-91} Q${HC.x},${HC.y-110} ${HC.x+11},${HC.y-91}`,fill:"#fbd9bf"},top);          // 鼻子
+  const hair=E("g",{"clip-path":"url(#headclip)"},top);
+  E("path",{d:`M${HC.x-100},${HC.y-62} Q${HC.x-72},${HC.y-80} ${HC.x-46},${HC.y-66} Q${HC.x-24},${HC.y-86} ${HC.x},${HC.y-70} Q${HC.x+24},${HC.y-86} ${HC.x+46},${HC.y-66} Q${HC.x+72},${HC.y-80} ${HC.x+100},${HC.y-62} L${HC.x+100},${HC.y+110} L${HC.x-100},${HC.y+110} Z`,fill:"#9a6a48"},hair); // 頭髮＋瀏海
+  E("path",{d:`M${HC.x},${HC.y-70} Q${HC.x-4},${HC.y+10} ${HC.x},${HC.y+94}`,fill:"none",stroke:"#7a4e36","stroke-width":3},hair);      // 髮線
+  for(const sx of [-1,1])E("path",{d:`M${HC.x+sx*22},${HC.y-40} Q${HC.x+sx*58},${HC.y-30} ${HC.x+sx*66},${HC.y+4}`,fill:"none",stroke:"rgba(255,255,255,.32)","stroke-width":7,"stroke-linecap":"round"},hair); // 光澤
+  for(const sx of [-1,1])E("ellipse",{cx:HC.x+sx*40,cy:HC.y-84,rx:9,ry:4,fill:"#ff9fb2",opacity:0.8},top);                        // 腮紅（從上面看得到一點點）
+  E("ellipse",{cx:HC.x,cy:HC.y,rx:92,ry:94,fill:"none",stroke:"#c48d6a","stroke-width":2},top);
+  E("ellipse",{cx:HC.x-22,cy:HC.y+70,rx:22,ry:12,fill:"#ff6b9a",stroke:"#e8467a","stroke-width":2},top);E("ellipse",{cx:HC.x+22,cy:HC.y+70,rx:22,ry:12,fill:"#ff6b9a",stroke:"#e8467a","stroke-width":2},top);E("circle",{cx:HC.x,cy:HC.y+70,r:8,fill:"#e8467a"},top); // 蝴蝶結
+  E("text",{x:HC.x,y:HC.y-116,"text-anchor":"middle","font-size":13,fill:mut},top,"前");
+  E("text",{x:14,y:24,"font-size":13,fill:mut},top,"從頭頂往下看");
+  // 兩耳之間的綠線（＝量角器上的綠色斜線，長 20 公分）
+  E("line",{x1:L.x,y1:L.y,x2:Rr.x,y2:Rr.y,stroke:acc,"stroke-width":4},top);
   for(const [e,n,c] of [[L,"左耳",ca],[Rr,"右耳",cb]]){const lit=(step>=1&&e===near)||(step>=3&&e===far);
-    E("circle",{cx:e.x,cy:e.y,r:lit?12:9,fill:c,stroke:paper,"stroke-width":3},top);E("text",{x:e.x+(e===L?-18:18),y:e.y+34,"text-anchor":"middle","font-size":15,"font-weight":700,fill:c},top,n)}
-  if(step>=1&&th!==0){E("text",{x:near.x,y:near.y-22,"text-anchor":"middle","font-size":13,"font-weight":700,fill:acc},top,"先聽到")}
-  // 多走的路（從遠的耳朵沿 s 方向到浪線）
+    E("circle",{cx:e.x,cy:e.y,r:lit?12:9,fill:c,stroke:paper,"stroke-width":3},top);E("text",{x:e.x+(e===L?-26:26),y:e.y+38,"text-anchor":"middle","font-size":15,"font-weight":700,fill:c},top,n)}
+  if(step>=1&&th!==0){E("text",{x:near.x+(near===Rr?18:-18),y:near.y+58,"text-anchor":"middle","font-size":13,"font-weight":700,fill:acc},top,"（先聽到）")}
+  // 多走的路（從遠的耳朵沿 s 方向到浪線）＋三角形（跟下面量角器的三角形一模一樣）
   const seg=k=>({x1:far.x,y1:far.y,x2:far.x+s.x*dpx*k,y2:far.y+s.y*dpx*k});
-  if(step>=2&&dpx>0.5){const q=step===2?p(2):1,g=seg(q);E("line",Object.assign(g,{stroke:OG,"stroke-width":7,"stroke-linecap":"round"}),top);
+  const Q={x:far.x+s.x*dpx,y:far.y+s.y*dpx};
+  if(step>=2&&dpx>0.5){const q=step===2?p(2):1,g=seg(q);
+    if(q>0.9){E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:"#fff","fill-opacity":0.6},top);E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:acc,"fill-opacity":0.22},top);
+      E("line",{x1:near.x,y1:near.y,x2:Q.x,y2:Q.y,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},top);
+      const ar=34,u1=Math.atan2(far.y-near.y,far.x-near.x),u2=Math.atan2(Q.y-near.y,Q.x-near.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
+      E("path",{d:`M${near.x+Math.cos(u1)*ar},${near.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${near.x+Math.cos(u2)*ar},${near.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},top);
+      const um=u1+sw/2;E("text",{x:near.x+Math.cos(um)*(ar+16),y:near.y+Math.sin(um)*(ar+16)+5,"text-anchor":"middle","font-size":14,"font-weight":700,fill:OG},top,`${Math.abs(th)}°`)}
+    E("line",Object.assign(g,{stroke:OG,"stroke-width":7,"stroke-linecap":"round"}),top);
     if(q>0.9)E("text",{x:far.x+s.x*dpx/2+(th>=0?-14:14),y:far.y+s.y*dpx/2-10,"text-anchor":th>=0?"end":"start","font-size":14,"font-weight":700,fill:OG},top,`多走的路 ${dcm.toFixed(1)} 公分`)}
   // 下半部：半圓＋直尺＋量角器
   const g2=E("g",{});
@@ -3160,6 +3179,9 @@ function draw(t){ // t：動畫時間；null＝全部畫完
     E("line",{x1:sx1,y1:sy1,x2:sx2,y2:sy2,stroke:OG,"stroke-width":7,"stroke-linecap":"round",opacity:0.95},svg)}
   const P={x:xr,y:O.y-Math.sqrt(Math.max(0,RAD*RAD-dpx*dpx))};
   if(step>=4){const q=step===4?p(4):1;E("line",{x1:xr,y1:O.y,x2:xr,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
+  if(step>=5&&dpx>0.5&&p(5)>0.95){E("polygon",{points:`${O.x},${O.y} ${P.x},${P.y} ${xr},${O.y}`,fill:"#fff","fill-opacity":0.6},svg);E("polygon",{points:`${O.x},${O.y} ${P.x},${P.y} ${xr},${O.y}`,fill:acc,"fill-opacity":0.22},svg);
+    const ar=30,u1=Math.atan2(O.y-P.y,O.x-P.x),u2=Math.PI/2,sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
+    E("path",{d:`M${P.x+Math.cos(u1)*ar},${P.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${P.x+Math.cos(u2)*ar},${P.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg)}
   if(step>=5){const q=step===5?p(5):1;E("line",{x1:O.x,y1:O.y,x2:O.x+(P.x-O.x)*q,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":3.5},svg);
     if(q>0.95){E("circle",{cx:P.x,cy:P.y,r:6,fill:acc},svg);const ar=60,r=th*Math.PI/180;
       if(th!==0)E("path",{d:`M${O.x},${O.y-ar} A${ar},${ar} 0 0 ${th>0?1:0} ${O.x+Math.sin(r)*ar},${O.y-Math.cos(r)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg);
