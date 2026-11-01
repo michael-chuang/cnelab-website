@@ -1854,17 +1854,21 @@ renderLog();
 $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disabled=true;clearPoint();siren();playT=performance.now();
   $("result").textContent="警笛播放中……受試者在聽";
   setTimeout(()=>{const sd=ear==="a"?7:24;let p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5; /* 前後搞混 */
-    p=((Math.round(p)%360)+360)%360;const sgn=((p-angle+540)%360)-180;const d=Math.abs(sgn);
-    pointing=p;armTarget=p;armUp=1;
+    p=((Math.round(p)%360)+360)%360;
+    showPoint(p);const d=Math.abs(((p-angle+540)%360)-180);
+    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>40)LOG.pop();save();
+    renderLog();
+    busy=false;$("play").disabled=false},2200)});
+let playT=-1e9;
+function showPoint(p){const sgn=((p-angle+540)%360)-180,d=Math.abs(sgn);
+  pointing=p;armTarget=p;armUp=1;
     const col=ear==="a"?0x2a6fb8:0xd9532c;pointM.color.setHex(col);fanM.color.setHex(col);setLine(ptLine,p);ptLine.visible=true;
     const a0=Math.min(angle,angle+sgn),a1=Math.max(angle,angle+sgn);
     if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(PR+40,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
     const mid=dir((a0+a1)/2).multiplyScalar(160);diffLabel=label("差 "+d+"°",mid.x,26,mid.z,22,ear==="a"?"#2a6fb8":"#d9532c");
     $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
-    LOG.unshift(`${ear==="a"?"未遮蔽":"戴耳塞"}　真實 ${String(angle).padStart(3," ")}°　指 ${String(p).padStart(3," ")}°　差 ${d}°`);if(LOG.length>40)LOG.pop();save();
-    renderLog();
-    busy=false;$("play").disabled=false},2200)});
-let playT=-1e9;
+}
+
 function setAngle(v){angle=((Math.round(v)%360)+360)%360;$("angR").value=angle;$("angV").textContent=angle+"°";clearPoint();placeAnn();$("result").textContent="播音員走到 "+angle+"°（綠繩）。按「播放警笛」。"}
 $("angR").addEventListener("input",e=>setAngle(+e.target.value));
 $("rand").addEventListener("click",()=>setAngle(Math.random()*360));
@@ -1874,6 +1878,8 @@ function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t
 window.__ws1={cam,ctl,ann,kid};
 $("views").addEventListener("click",e=>{const b=e.target.closest("button");if(b)view(b.dataset.v)});
 view("side");
+showPoint(55);$("result").innerHTML="示範：女生（播音員）站在 <b>40°</b>，男生聽完舉起右手，指向他覺得的 <b>55°</b>，差 <b>15°</b>。拉滑桿換位置，按「播放警笛」試試。";
+
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tick(now){requestAnimationFrame(tick);
   const el=(now-playT)/1000, on=el>=0&&el<2;
