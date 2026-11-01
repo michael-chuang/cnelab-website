@@ -411,9 +411,10 @@ function setLine(g,d){g.rotation.y=-d*Math.PI/180}
 let angle=40, ear="a", pointing=null, busy=false;
 function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,0,p.z);ann.rotation.y=Math.PI-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
 function setEar(){plugs.forEach(p=>p.visible=ear==="b")}
-function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}arm.rotation.y=0;armTarget=null;armAngle=0;armUp=0}
+function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}armTarget=null;armUp=0}
 placeAnn();setEar();
-let armTarget=null, armAngle=0, armUp=0, armX=-1.5;
+let armTarget=null, armAngle=0, armUp=0, armX=-1.5, bodyYaw=0, bodyTarget=0;
+const wrap=d=>((d%360)+540)%360-180;   // 換成 -180～180
 
 // 警笛聲（救護車：700／950 Hz 交替）＋左右聲道；戴耳塞＝變小聲、變悶、左右差變小
 let AC=null;
@@ -440,7 +441,9 @@ $("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disab
     busy=false;$("play").disabled=false},2200)});
 let playT=-1e9;
 function showPoint(p){const sgn=((p-angle+540)%360)-180,d=Math.abs(sgn);
-  pointing=p;armTarget=p;armUp=1;
+  pointing=p;armUp=1;
+  // 身體跟著轉：手（右手）相對身體保持在右前方 0°～90°，不會穿過身體
+  const w=wrap(p);bodyTarget=w>=0&&w<=90?0:wrap(p-45);armTarget=wrap(p-bodyTarget);
     const col=ear==="a"?0x2a6fb8:0xd9532c;pointM.color.setHex(col);fanM.color.setHex(col);setLine(ptLine,p);ptLine.visible=true;
     const a0=Math.min(angle,angle+sgn),a1=Math.max(angle,angle+sgn);
     if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(PR+40,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
@@ -464,8 +467,9 @@ function tick(now){requestAnimationFrame(tick);
   const el=(now-playT)/1000, on=el>=0&&el<2;
   waves.forEach(w=>{if(!on){w.material.opacity=0;return}const p=(el*0.9+w.userData.ph)%1,r=10+p*230;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
   const k=reduce?1:0.12;   // 舉起右手：先從垂下抬到斜上方，再轉向他覺得的方向
-  if(armTarget!==null){armAngle+=(armTarget-armAngle)*k;armX+=(0.3-armX)*k;arm.rotation.y=-armAngle*Math.PI/180;arm.rotation.x=armX}
-  else{armX+=(-1.5-armX)*k;arm.rotation.x=armX;arm.rotation.y=0}
+  if(armTarget!==null){armAngle+=(armTarget-armAngle)*k;armX+=(0.12-armX)*k;bodyYaw+=wrap(bodyTarget-bodyYaw)*k}
+  else{armAngle+=(0-armAngle)*k;armX+=(-1.5-armX)*k;bodyYaw+=wrap(0-bodyYaw)*k}
+  arm.rotation.x=armX;arm.rotation.y=-armAngle*Math.PI/180;kid.rotation.y=-bodyYaw*Math.PI/180;
   ctl.update();renderer.render(scene,cam)}
 requestAnimationFrame(tick);
 })();
