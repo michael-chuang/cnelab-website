@@ -1570,7 +1570,7 @@ svg text{font-family:var(--body)}
       <li>遮光眼罩、隔音耳塞</li></ul></div>
     <div class="card"><h3>研究問題與假設</h3>
       <p>耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？</p>
-      <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2" placeholder="例如：會變大，因為……"></textarea></div>
+      <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2"></textarea></div>
   </div>
   <ol class="card" style="padding-left:2.2em">
     <li>把大型量角器放在地上，圓心對準受試者坐的位置，量角器的正前方對準受試者的臉。</li>
@@ -1585,7 +1585,7 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>表 1-1　一位受試者的紀錄</h2>
-  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who" placeholder="名字或編號"><span class="note">輸入兩條繩子讀到的刻度，角度差和平均會自動算好。</span></div>
+  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who"><span class="note">輸入兩條繩子讀到的刻度，角度差和平均會自動算好。</span></div>
   <div class="tbl"><table id="t1">
     <thead><tr><th>第幾次</th><th class="a">A 未遮蔽<br>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳塞<br>真實角度</th><th class="b">B 戴耳塞<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
     <tbody></tbody></table></div>
@@ -2170,10 +2170,10 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
   <div class="two">
     <div class="card"><h3>自然課學過的聲音</h3>
       <p class="note">回想一下，自然課學過哪些跟聲音有關的事？</p>
-      <label for="n1">聲音是怎麼產生的？</label><input type="text" id="n1" style="max-width:none;width:100%;text-align:left" placeholder="例如：拍桌子、撥橡皮筋，東西會……">
-      <label for="n2">聲音靠什麼傳到耳朵？</label><input type="text" id="n2" style="max-width:none;width:100%;text-align:left" placeholder="例如：空氣、水、桌子……">
-      <label for="n3">聲音的高低（高音、低音）跟什麼有關？</label><input type="text" id="n3" style="max-width:none;width:100%;text-align:left" placeholder="例如：振動得快或慢……">
-      <label for="n4">聲音的大小（大聲、小聲）跟什麼有關？</label><input type="text" id="n4" style="max-width:none;width:100%;text-align:left" placeholder="例如：振動得大或小、用力……">
+      <label for="n1">聲音是怎麼產生的？</label><input type="text" id="n1" style="max-width:none;width:100%;text-align:left">
+      <label for="n2">聲音靠什麼傳到耳朵？</label><input type="text" id="n2" style="max-width:none;width:100%;text-align:left">
+      <label for="n3">聲音的高低（高音、低音）跟什麼有關？</label><input type="text" id="n3" style="max-width:none;width:100%;text-align:left">
+      <label for="n4">聲音的大小（大聲、小聲）跟什麼有關？</label><input type="text" id="n4" style="max-width:none;width:100%;text-align:left">
     </div>
     <div class="card"><h3>器材</h3><ul>
       <li>彩色串珠一大盒（拆散）、手機或相機（拍照）</li>
@@ -2274,8 +2274,8 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
   <div class="tbl"><table id="t23">
     <thead><tr><th>我發出的聲音</th><th>波形規律嗎？</th><th>頻譜有尖尖的山峰嗎？</th><th>主要頻率（Hz）</th></tr></thead><tbody></tbody></table></div>
   <div class="two">
-    <div class="photo card"><h3>截圖：<input type="text" id="cap3" class="name" placeholder="例如：長長的啊～"> 的波形或頻譜</h3><label class="drop" for="ph3"><img id="im_ph3" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph3" accept="image/*" hidden><button class="xbtn" data-clear="ph3">移除照片</button></div>
-    <div class="photo card"><h3>截圖：<input type="text" id="cap4" class="name" placeholder="例如：唱高音"> 的波形或頻譜</h3><label class="drop" for="ph4"><img id="im_ph4" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph4" accept="image/*" hidden><button class="xbtn" data-clear="ph4">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap3" class="name"> 的波形或頻譜</h3><label class="drop" for="ph3"><img id="im_ph3" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph3" accept="image/*" hidden><button class="xbtn" data-clear="ph3">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap4" class="name"> 的波形或頻譜</h3><label class="drop" for="ph4"><img id="im_ph4" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph4" accept="image/*" hidden><button class="xbtn" data-clear="ph4">移除照片</button></div>
   </div>
   <div class="card qa"><ol>
     <li>怎麼發聲，波形才會很規律、頻譜才會出現尖尖的山峰？<textarea id="qp1" rows="2"></textarea></li>
@@ -2284,13 +2284,13 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <section>
   <h2>四、警笛聲調查：YouTube＋Phyphox</h2>
-  <div class="card"><label for="sirens">先想一想：生活中有哪些警笛或警報聲？寫下來：</label><textarea id="sirens" rows="2" placeholder="例如：救護車、警車、消防車、火災警報器……"></textarea>
+  <div class="card"><label for="sirens">先想一想：生活中有哪些警笛或警報聲？寫下來：</label><textarea id="sirens" rows="2"></textarea>
     <p class="note">在 YouTube 找這些聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，手機放 1 公尺外，看 Phyphox「Audio Spectrum」的「Spectrum」。記下主要頻率、頻率範圍（山峰在哪兩個頻率之間移動）和變化形式。請在大人陪同下使用 YouTube。</p></div>
   <div class="tbl"><table id="t24">
     <thead><tr><th>警笛／警報聲</th><th>影片網址</th><th>主要頻率（Hz）</th><th>頻率範圍（Hz）</th><th>變化形式</th></tr></thead><tbody></tbody></table></div>
   <div class="two">
-    <div class="photo card"><h3>截圖：<input type="text" id="cap5" class="name" placeholder="例如：救護車"> 的頻譜</h3><label class="drop" for="ph5"><img id="im_ph5" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph5" accept="image/*" hidden><button class="xbtn" data-clear="ph5">移除照片</button></div>
-    <div class="photo card"><h3>截圖：<input type="text" id="cap6" class="name" placeholder="例如：消防車"> 的頻譜</h3><label class="drop" for="ph6"><img id="im_ph6" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph6" accept="image/*" hidden><button class="xbtn" data-clear="ph6">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap5" class="name"> 的頻譜</h3><label class="drop" for="ph5"><img id="im_ph5" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph5" accept="image/*" hidden><button class="xbtn" data-clear="ph5">移除照片</button></div>
+    <div class="photo card"><h3>截圖：<input type="text" id="cap6" class="name"> 的頻譜</h3><label class="drop" for="ph6"><img id="im_ph6" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph6" accept="image/*" hidden><button class="xbtn" data-clear="ph6">移除照片</button></div>
   </div>
 </section>
 
@@ -2599,11 +2599,11 @@ function buildT23(){const tb=$("t23").querySelector("tbody");tb.innerHTML="";
     tb.appendChild(tr);bind("vr"+i,r,"reg","change");bind("vp"+i,r,"peak","change");bind("vh"+i,r,"hz")})}
 function buildT24(){const tb=$("t24").querySelector("tbody");tb.innerHTML="";
   S.t24.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name" placeholder="${["救護車","警車","消防車","火災警報器",""][i]||""}"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><div class="rngw"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></div></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
+    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><div class="rngw"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></div></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
     tb.appendChild(tr);bind("ss"+i,r,"s");bind("su"+i,r,"url");bind("sh"+i,r,"hz");bind("sl"+i,r,"lo");bind("sx"+i,r,"hi");bind("sf"+i,r,"form","change")})}
 function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
   S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name" placeholder="___～___ Hz"></td><td><input type="text" id="lt${i}" class="name" placeholder="___ 秒"></td><td><input type="text" id="mr${i}" class="name"></td><td><input type="text" id="mt${i}" class="name"></td><td><select id="lok${i}"><option value="">選</option><option>符合</option><option>不符合</option><option>不確定</option></select></td>`;
+    tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name"></td><td><input type="text" id="lt${i}" class="name"></td><td><input type="text" id="mr${i}" class="name"></td><td><input type="text" id="mt${i}" class="name"></td><td><select id="lok${i}"><option value="">選</option><option>符合</option><option>不符合</option><option>不確定</option></select></td>`;
     tb.appendChild(tr);bind("lr"+i,r,"lr");bind("lt"+i,r,"lt");bind("mr"+i,r,"mr");bind("mt"+i,r,"mt");bind("lok"+i,r,"ok","change")})}
 
 /* 圖 2-2：法規警報聲的時頻圖（按鈕打開） */
@@ -2925,10 +2925,10 @@ td.no{color:var(--b);font-weight:700}
 <section>
   <div class="two">
     <div class="card"><h3>先想一想</h3>
-      <label for="p1">學習單（一）發現：戴上耳塞後，指方向變得怎樣？</label><input type="text" id="p1" class="wide" placeholder="例如：比較不準、會前後搞錯……">
-      <label for="p2">你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？</label><input type="text" id="p2" class="wide" placeholder="例如：哪一邊比較大聲、哪一邊先聽到……">
+      <label for="p1">學習單（一）發現：戴上耳塞後，指方向變得怎樣？</label><input type="text" id="p1" class="wide">
+      <label for="p2">你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？</label><input type="text" id="p2" class="wide">
       <label for="p3">我猜：路口至少要裝幾支麥克風，才分得出救護車從哪一條路來？</label>
-      <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em" placeholder="因為……"></div>
+      <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em"></div>
     </div>
     <div class="card"><h3>器材</h3><ul>
       <li>電腦或平板（用這個網頁做動畫和模擬）</li>
@@ -3480,7 +3480,7 @@ function buildT32(){const tb=$("t32").tBodies[0];tb.innerHTML="";S.t32.forEach((
     a.title=`參考：約 ${cm.toFixed(1)} 公分、${Math.round(deg)}°`})})}
 /* 表 3-3 */
 function buildT33(){const tb=$("t33").tBodies[0];tb.innerHTML="";S.t33.forEach(r=>{const tr=tb.insertRow();
-  tr.innerHTML=`<td>${sel(["1 支","2 支","3 支","4 支"],r.n,'data-k="n" aria-label="麥克風幾支"')}</td><td><input type="text" data-k="how" class="wide" value="${esc(r.how)}" placeholder="例如：排成一直線、三角形" aria-label="怎麼擺"></td>
+  tr.innerHTML=`<td>${sel(["1 支","2 支","3 支","4 支"],r.n,'data-k="n" aria-label="麥克風幾支"')}</td><td><input type="text" data-k="how" class="wide" value="${esc(r.how)}" aria-label="怎麼擺"></td>
     <td>${sel(["北路","東路","南路","西路"],r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" min="0" data-k="cand" value="${esc(r.cand)}" aria-label="可能方向數"></td><td>${sel(["分得出來","分不出來"],r.ok,'data-k="ok" aria-label="分得出來嗎"')}</td>`;
   tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"?"change":"input",()=>{r[e.dataset.k]=e.value;save()}))})}
 /* 表 3-4：實驗 */
