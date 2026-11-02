@@ -129,6 +129,7 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
     <button class="tab" data-tab="tab4" role="tab">𖥕 學習單(一) 人因工程篇</button>
     <button class="tab" data-tab="tab5" role="tab">𖥕 學習單(二) 傅立葉轉換篇</button>
     <button class="tab" data-tab="tab6" role="tab">𖥕 學習單(三) 聲源定位篇</button>
+    <button class="tab" data-tab="tab7" role="tab">𖥕 科展作品說明(初審)</button>
   </div>
 </header>
 
@@ -1139,6 +1140,29 @@ frame();
 </div>
 <script>
 (()=>{ if(!window.THREE) return;
+/* PANPAD START */
+/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
+function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.9);color:#18232b;border:1px solid rgba(24,35,43,.22);cursor:pointer;touch-action:none">${t}</button>`).join("");
+  host.appendChild(pad);
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
+      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
+    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
+    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
+  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+/* PANPAD END */
 /* ================= 小模型路口 3D：紙箱房子＋紙膠帶道路＋玩具小汽車（1 單位＝1 cm） ================= */
 function initModel3D(host){
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
@@ -1149,6 +1173,7 @@ host.insertBefore(renderer.domElement,host.firstChild);
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(42,1,1,5000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.49; ctl.minDistance=20; ctl.maxDistance=400;
+addPanPad(host,cam,ctl,"mr");
 ctl.autoRotate=false; ctl.autoRotateSpeed=0.5;
 function resize(){const r=host.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(host); resize();
@@ -1720,6 +1745,29 @@ buildT1();calcT1();buildT2();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawProt();calcT2()});
 new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
+/* PANPAD START */
+/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
+function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.9);color:#18232b;border:1px solid rgba(24,35,43,.22);cursor:pointer;touch-action:none">${t}</button>`).join("");
+  host.appendChild(pad);
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
+      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
+    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
+    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
+  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+/* PANPAD END */
 /* ================= 3D 模擬（1 單位＝1 cm） ================= */
 (()=>{ if(!window.THREE) return;
 const stage=$("stage");
@@ -1729,6 +1777,7 @@ stage.insertBefore(renderer.domElement,stage.firstChild);
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfe8ee);
 const cam=new THREE.PerspectiveCamera(40,4/3,1,5000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.495; ctl.minDistance=80; ctl.maxDistance=1200;
+addPanPad(stage,cam,ctl,"bl");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x9a8a70,0.7));
@@ -2335,6 +2384,29 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
 /* ===== 彩虹彈簧 ===== */
+/* PANPAD START */
+/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
+function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.9);color:#18232b;border:1px solid rgba(24,35,43,.22);cursor:pointer;touch-action:none">${t}</button>`).join("");
+  host.appendChild(pad);
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
+      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
+    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
+    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
+  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+/* PANPAD END */
 /* ===== 空氣分子：喇叭推空氣（壓縮與稀疏） ===== */
 (()=>{ if(!window.THREE) return;
 const $=id=>document.getElementById(id);
@@ -2344,6 +2416,7 @@ stage.insertBefore(renderer.domElement,stage.firstChild);
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0f1424);
 const cam=new THREE.PerspectiveCamera(36,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=15; ctl.maxDistance=220;
+addPanPad(stage,cam,ctl,"bl");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.8));
@@ -2426,6 +2499,7 @@ const scene=new THREE.Scene();
 scene.background=(()=>{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#1a2140");gr.addColorStop(1,"#0b0f1c");g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t})();
 const cam=new THREE.PerspectiveCamera(38,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=12; ctl.maxDistance=200;
+addPanPad(stage,cam,ctl,"bl");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));
@@ -3049,6 +3123,29 @@ td.no{color:var(--b);font-weight:700}
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
 const $=id=>document.getElementById(id);
+/* PANPAD START */
+/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
+function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.9);color:#18232b;border:1px solid rgba(24,35,43,.22);cursor:pointer;touch-action:none">${t}</button>`).join("");
+  host.appendChild(pad);
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
+      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
+    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
+    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
+  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+/* PANPAD END */
 /* ================= 一、兩隻耳朵的時間差（3D：草地上的小女孩） =================
    單位：公分。耳朵高度 y=0；正前方＝-z，右邊＝+x。角度 0° 正前方，順時針（90° 正右方）。 */
 (()=>{
@@ -3061,6 +3158,7 @@ scene.background=tex(4,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr
 scene.fog=new THREE.Fog(0xdcefff,700,1900);
 const cam=new THREE.PerspectiveCamera(36,16/9,1,4000);
 const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxDistance=650;ctl.minDistance=90;ctl.maxPolarAngle=Math.PI*0.495;
+addPanPad(host,cam,ctl,"br");
 scene.add(new THREE.HemisphereLight(0xffffff,0x6c8f4a,0.8));
 const sun=new THREE.DirectionalLight(0xfff6e0,0.65);sun.position.set(-120,300,160);scene.add(sun);
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.7},o));
@@ -3587,6 +3685,237 @@ window.__ws3Show=on=>{if(!on||loaded)return;loaded=true;
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB6 END -->
+<!-- TAB7 START -->
+<div class="wrap" id="tab7" hidden style="margin-top:20px">
+<iframe id="ws4frame" title="科展作品說明(初審)" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+</div>
+<script type="text/plain" id="ws4src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
+/* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
+(()=>{if(window.__audioUnlock)return;window.__audioUnlock=1;const ACs=[];const O=window.AudioContext||window.webkitAudioContext;
+if(O){const W=function(o){const c=o?new O(o):new O();ACs.push(c);return c};W.prototype=O.prototype;try{window.AudioContext=W;window.webkitAudioContext=W}catch(e){}}
+let done=false;
+function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
+  if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
+  ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+<\/script>
+</head><body><title>科展作品說明（初審）</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout：一欄式學習單。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+:root{
+  --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
+  --a:#2a6fb8;        /* 未遮蔽 */
+  --b:#d9532c;        /* 有遮蔽（戴耳塞） */
+  --accent:#1f7a5a;   /* 真實方向、按鈕 */
+  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:14px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3vw,26px);margin:0;text-wrap:balance}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.lead{color:var(--muted);max-width:66ch}
+section{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
+.tag.a{background:var(--a)} .tag.b{background:var(--b)}
+/* 3D */
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.stage{aspect-ratio:1/1}}
+.stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
+.stage canvas{display:block;width:100%;height:100%}
+.views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
+.views button.on{background:#18232b;color:#fff}
+.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp h3{font-size:14px;color:var(--muted);font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 14px}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+button.seg-a.on{background:var(--a);border-color:var(--a);color:#fff}
+button.seg-b.on{background:var(--b);border-color:var(--b);color:#fff}
+button.go{font-family:var(--display);font-size:18px;border-radius:12px;padding:10px 18px;background:var(--accent);border-color:var(--accent);color:#fff}
+button.go:disabled{opacity:.5;cursor:wait}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3a008;outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}
+.log{display:flex;flex-direction:column;gap:2px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* 表格 */
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:14px;line-height:1.35;white-space:nowrap}
+th.a{color:var(--a)} th.b{color:var(--b)}
+td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+tr.avg td{font-weight:700;border-bottom:0}
+input[type=number],input[type=text]{font:inherit;font-size:15px;width:100%;max-width:7em;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center}
+input[type=text].name{max-width:9em}
+textarea{font:inherit;width:100%;min-height:5em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+.fill{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:2px solid var(--ink);text-align:center;font-family:var(--num);font-weight:700}
+.cap{font-size:14px;color:var(--muted);text-align:center}
+svg text{font-family:var(--body)}
+.xbtn{padding:2px 9px;font-size:13px;white-space:nowrap}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa li{line-height:2}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 作品說明（初審）：照學校附件 2 的表格 */
+.form{padding:0;overflow:hidden}
+.ftitle{font-family:var(--display);font-size:clamp(17px,2.6vw,22px);text-align:center;padding:12px;border-bottom:1px solid var(--ink)}
+.frow{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);border-bottom:1px solid var(--ink)}
+.frow:last-child{border-bottom:0}
+.fh{padding:10px 12px;border-right:1px solid var(--ink);font-weight:500;display:flex;flex-direction:column;gap:6px}
+.fh small{font-size:13px;color:var(--muted);font-weight:400}
+.fc{padding:8px 10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.fc textarea{min-height:6em;border-color:var(--line);background:var(--bg)}
+.fc input.wide{max-width:none!important;width:100%;text-align:left!important}
+.grade{flex-direction:row!important;align-items:center;flex-wrap:wrap;gap:6px!important}
+.grade input.sm{max-width:4em}
+.grade .nm{margin-left:14px;font-weight:500}
+.grade input.wide{flex:1;min-width:8em;width:auto}
+.kinds{flex-direction:row!important;flex-wrap:wrap;gap:6px 16px!important;align-items:center}
+.kinds label{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin:0}
+.kinds input{width:18px;height:18px;accent-color:var(--accent)}
+.pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pics:empty{display:none}
+.pic{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.pic img{display:block;width:100%;height:auto}
+.pic input{width:100%;max-width:none;border:0;border-top:1px solid var(--line);border-radius:0;text-align:left;font-size:13px}
+.pic button{position:absolute;top:4px;right:4px;padding:1px 8px;font-size:12px;background:rgba(255,255,255,.9);color:#18232b}
+.addpic{align-self:flex-start;margin:0;font-size:14px;cursor:pointer;color:var(--accent);border:1px dashed var(--accent);border-radius:999px;padding:4px 12px}
+@media (max-width:560px){.frow{grid-template-columns:minmax(0,1fr)}.fh{border-right:0;border-bottom:1px dashed var(--line);flex-direction:row;flex-wrap:wrap;align-items:baseline}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">智「where」交通　校內科學展覽（初審）</div>
+  <h1>校內科學展覽作品說明（初審）</h1>
+  <p class="lead">照學校「附件 2」的格式，把三張學習單做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
+</header>
+<section>
+  <div class="card form">
+    <div class="ftitle">臺中市麗喆雙語中小學　校內科學展覽作品說明（初審）</div>
+    <div class="frow"><div class="fh">年級</div><div class="fc grade"><input type="text" id="yr" class="sm" aria-label="年">年<input type="text" id="cls" class="sm" aria-label="班">班<span class="nm">姓名</span><input type="text" id="nm" class="wide" aria-label="姓名"></div></div>
+    <div class="frow"><div class="fh">科別</div><div class="fc kinds" id="kinds"></div></div>
+    <div class="frow"><div class="fh">作品名稱</div><div class="fc"><input type="text" id="title" class="wide" aria-label="作品名稱"></div></div>
+    <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea></div></div>
+    <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea></div></div>
+    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea></div></div>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><textarea id="proc" rows="12" aria-label="研究過程"></textarea>
+      <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" hidden></label></div></div>
+    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea>
+      <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" hidden></label></div></div>
+    <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
+  </div>
+</section>
+<section>
+  <h2>儲存與匯出</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <p>寫的內容和照片會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見；照片會縮小再存）。寫完按下面的按鈕存成 Word 檔，格式和學校的附件 2 一樣。</p>
+    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
+  </div>
+</section>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
+<script>
+/* ================= 作品說明（初審）：資料、照片、匯出 Word（照附件 2 的表格） ================= */
+const $=id=>document.getElementById(id);
+const KEY="ws4-entry-v1";
+const KINDS=["物理","化學","生物","地球科學","數學","生活與應用科學"];
+const FIELDS=["yr","cls","nm","title","motive","goal","tools","proc","result","refs"];
+let S={kinds:[],procPics:[],resPics:[]};FIELDS.forEach(k=>S[k]="");
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
+FIELDS.forEach(k=>{const e=$(k);e.value=S[k]||"";e.addEventListener("input",()=>{S[k]=e.value;save()})});
+$("kinds").innerHTML=KINDS.map((k,i)=>`<label><input type="checkbox" value="${k}"${S.kinds.includes(k)?" checked":""}>${k}</label>`).join("");
+$("kinds").addEventListener("change",()=>{S.kinds=[...$("kinds").querySelectorAll("input:checked")].map(x=>x.value);save()});
+/* 照片：縮小後存起來 */
+function shrink(file){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const m=1000,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",0.75))};img.onerror=no;img.src=u})}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function showPics(k){const box=document.querySelector(`.pics[data-k="${k}"]`);box.innerHTML="";
+  S[k].forEach((p,i)=>{const d=document.createElement("div");d.className="pic";d.innerHTML=`<img alt="" src="${p.src}"><input type="text" value="${esc(p.cap)}" aria-label="圖說"><button type="button">移除</button>`;
+    d.querySelector("input").addEventListener("input",e=>{p.cap=e.target.value;save()});
+    d.querySelector("button").addEventListener("click",()=>{S[k].splice(i,1);save();showPics(k)});box.appendChild(d)})}
+document.querySelectorAll('input[type=file][data-k]').forEach(inp=>inp.addEventListener("change",async e=>{const k=inp.dataset.k;
+  for(const f of e.target.files){try{S[k].push({src:await shrink(f),cap:""})}catch(err){}}
+  if(!save()){$("expMsg").textContent="照片太多，瀏覽器存不下了；這些照片只會留到關掉頁面前，記得先匯出 Word。"}inp.value="";showPics(k)}));
+showPics("procPics");showPics("resPics");
+
+/* ================= 匯出 Word ================= */
+(()=>{const btn=$("export"),msg=$("expMsg");
+function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
+async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
+btn.addEventListener("click",async()=>{
+  if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
+  btn.disabled=true;msg.textContent="正在產生 Word 檔……";
+  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,VerticalAlign,BorderStyle}=D;
+    const B={style:BorderStyle.SINGLE,size:6,color:"000000"},BD={top:B,bottom:B,left:B,right:B};
+    const para=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??40,line:300},children:[new TextRun({text:t,bold:o.bold,size:o.size??24,color:o.color})]});
+    const lines=t=>String(t||"").split("\n").map(l=>para(l));
+    const head=(t,hint)=>new TableCell({width:{size:2300,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:100,right:100},children:[para(t,{bold:true}),...(hint?[para(""),para(hint,{size:20,color:"666666"})]:[])]});
+    async function pics(arr){const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
+      out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:120},children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:W,height:H}})]}));
+      if(p.cap)out.push(para(p.cap,{align:AlignmentType.CENTER,size:20,color:"444444",after:120}))}return out}
+    const body=(kids)=>new TableCell({width:{size:7600,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:120,right:120},children:kids.length?kids:[para("")]});
+    const row=(h,hint,kids,minH)=>new TableRow({height:minH?{value:minH,rule:"atLeast"}:undefined,children:[head(h,hint),body(kids)]});
+    const box=k=>(S.kinds.includes(k)?"■":"□")+k;
+    const rows=[
+      new TableRow({children:[new TableCell({columnSpan:2,borders:BD,margins:{top:100,bottom:100},children:[para("臺中市麗喆雙語中小學　校內科學展覽作品說明(初審)",{align:AlignmentType.CENTER,size:30,bold:true})]})]}),
+      row("年級",null,[para(`${S.yr||"　"} 年 ${S.cls||"　"} 班　　姓名：${S.nm||""}`)]),
+      row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
+      row("作品名稱",null,[para(S.title||"",{bold:true})]),
+      row("研究動機","（描述為何想研究的起因）",lines(S.motive),1800),
+      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",lines(S.goal),1800),
+      row("使用器材","（此實驗所需的器材）",lines(S.tools),1400),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...lines(S.proc),...await pics(S.procPics)],2400),
+      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...lines(S.result),...await pics(S.resPics)],2000),
+      row("參考資料及其他",null,lines(S.refs),1000)];
+    const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
+      sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2：",{size:22}),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[2300,7600],layout:D.TableLayoutType.FIXED,rows})]}]});
+    const blob=await Packer.toBlob(doc);
+    const fn=`校內科展作品說明_初審_${(S.nm||"").replace(/[\/\\:*?"<>|]/g,"")||"未填姓名"}.docx`;
+    let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
+    if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。"}done=true}}
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
+  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
+  btn.disabled=false})})();
+<\/script>
+<style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
+<script>
+(()=>{let loaded=false;const f=document.getElementById("ws4frame");
+function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
+window.__ws4Show=on=>{if(!on||loaded)return;loaded=true;
+  f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
+  f.srcdoc=document.getElementById("ws4src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+addEventListener("resize",fit);})();
+</script>
+<!-- TAB7 END -->
 <script>
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
@@ -3595,6 +3924,7 @@ document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
   document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
   document.getElementById("tab6").hidden=t!=="tab6"; if(window.__ws3Show) window.__ws3Show(t==="tab6");
+  document.getElementById("tab7").hidden=t!=="tab7"; if(window.__ws4Show) window.__ws4Show(t==="tab7");
   if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
   if(t!=="tab2"&&window.__cockpitStop) window.__cockpitStop();
   window.dispatchEvent(new Event("resize"));
