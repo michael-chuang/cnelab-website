@@ -2003,8 +2003,7 @@ svg text{font-family:var(--body)}
     <li>看圖 1-1：左右兩邊的點比起來，哪一邊離中間的 0° 比較遠？ <input type="text" id="q3" style="max-width:10em"></li>
     <li>如果駕駛在關緊車窗的車裡，會不會聽不出救護車在哪裡？寫下你的結論：
       <textarea id="concl" rows="3"></textarea></li>
-  </ol>
-  <p class="note">本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」。請把「全部平均」抄到紀錄單（四）表 4-4，和機器比較。</p></div>
+  </ol></div>
 </section>
 
 <section>
@@ -2398,7 +2397,6 @@ btn.addEventListener("click",async()=>{
     body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
-    body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
     const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -2848,8 +2846,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
     <li>頻率是什麼？用自己的話說：<textarea id="c1" rows="2"></textarea></li>
     <li>串珠和頻譜哪裡很像？<textarea id="c2" rows="2"></textarea></li>
     <li>警笛聲的主要頻率大約在 <input type="number" id="c3a" style="max-width:6em"> ～ <input type="number" id="c3b" style="max-width:6em"> Hz；跟我們說話的聲音比，比較 <select id="c3c"><option value="">選一個</option><option>高</option><option>低</option></select>。</li>
-    <li>我們量到的警笛符合法規嗎？寫下你的結論：<textarea id="c4" rows="3"></textarea></li></ol>
-  <p class="note">本紀錄單的成果＝科展報告「研究二：聲音的頻率與警笛的身分證」。</p></div>
+    <li>我們量到的警笛符合法規嗎？寫下你的結論：<textarea id="c4" rows="3"></textarea></li></ol></div>
 </section>
 
 <section>
@@ -3329,7 +3326,6 @@ btn.addEventListener("click",async()=>{
     B.push(P("1. 頻率是什麼？"+(S.c1||"＿＿")));B.push(P("2. 串珠和頻譜哪裡很像？"+(S.c2||"＿＿")));
     B.push(P(`3. 警笛聲的主要頻率大約在 ${S.c3a||"＿＿"}～${S.c3b||"＿＿"} Hz；跟說話的聲音比，比較 ${S.c3c||"＿"}。`));
     B.push(P("4. 結論："+(S.c4||"＿＿＿＿")));
-    B.push(P("➜ 本紀錄單的成果＝科展報告「研究二：聲音的頻率與警笛的身分證」",{color:"5B6872",size:20}));
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單二_傅立葉轉換篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -4298,7 +4294,6 @@ btn.addEventListener("click",async()=>{
     B.push(H("五、結果與結論"));
     B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 不用三角函數，怎麼從時間差找出角度？"+(S.c2||"＿＿")));
     B.push(P(`3. 麥克風越多，正確率越 ${S.c3a||"＿"}，角度差越 ${S.c3b||"＿"}。`));B.push(P("4. 我的假設對嗎？至少要幾支、怎麼擺？"+(S.c4||"＿＿")));B.push(P("5. 結論：給智慧路口的建議："+(S.c5||"＿＿＿＿")));
-    B.push(P("➜ 本紀錄單的成果＝科展報告「研究三：聲音從哪裡來？路口要幾支麥克風」",{color:"5B6872",size:20}));
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單三_聲源定位篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;

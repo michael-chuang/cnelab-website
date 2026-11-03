@@ -282,8 +282,7 @@ svg text{font-family:var(--body)}
     <li>看圖 1-1：左右兩邊的點比起來，哪一邊離中間的 0° 比較遠？ <input type="text" id="q3" style="max-width:10em"></li>
     <li>如果駕駛在關緊車窗的車裡，會不會聽不出救護車在哪裡？寫下你的結論：
       <textarea id="concl" rows="3"></textarea></li>
-  </ol>
-  <p class="note">本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」。請把「全部平均」抄到紀錄單（四）表 4-4，和機器比較。</p></div>
+  </ol></div>
 </section>
 
 <section>
@@ -677,7 +676,6 @@ btn.addEventListener("click",async()=>{
     body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
-    body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
     const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
