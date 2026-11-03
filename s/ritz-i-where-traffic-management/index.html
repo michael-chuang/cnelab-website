@@ -38,7 +38,7 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
 <!-- AUDIOUNLOCK END -->
-<title>智慧路口情境模擬</title>
+<title>智「where」開道、平安駕到</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,26 +129,24 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
 <div class="wrap">
 <header style="display:flex;flex-direction:column;gap:6px">
-  <h2>智「where」開道、平安駕到</h2>
-  <p class="subtitle" style="margin:-2px 0 4px;font-size:15px;color:var(--muted,#55636d)">——導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</p>
-  <h1>智慧路口情境模擬</h1>
-  <p class="lead">① 路口模式：路口聽出警笛方向，讓那邊變綠燈。② 駕駛艙模式：坐在車裡，儀表板的羅盤告訴你警笛從哪裡來。③ 實驗模型：看看用紙箱、紙膠帶和玩具車怎麼擺出小路口。
+  <h1>智「where」開道、平安駕到</h1>
+  <p class="subtitle" style="margin:0 0 6px;font-size:15px;color:var(--muted,#55636d)">——導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</p>
   <div class="row tabs" role="tablist">
     <button class="tab on" data-tab="tab0" role="tab">🧭 研究架構</button>
-    <button class="tab" data-tab="tab1" role="tab">① 路口模式</button>
-    <button class="tab" data-tab="tab2" role="tab">② 駕駛艙模式</button>
-    <button class="tab" data-tab="tab3" role="tab">③ 實驗模型</button>
-    <button class="tab" data-tab="tab4" role="tab">𖥕 學習單(一) 人因工程篇</button>
-    <button class="tab" data-tab="tab5" role="tab">𖥕 學習單(二) 傅立葉轉換篇</button>
-    <button class="tab" data-tab="tab6" role="tab">𖥕 學習單(三) 聲源定位篇</button>
-    <button class="tab" data-tab="tab7" role="tab">𖥕 科展作品說明(初審)</button>
+    <button class="tab" data-tab="tab1" role="tab">🚦 情境1：路口</button>
+    <button class="tab" data-tab="tab2" role="tab">🚗 情境2：駕駛</button>
+    <button class="tab" data-tab="tab3" role="tab">📦 實驗模型</button>
+    <button class="tab" data-tab="tab4" role="tab">📝 學習單(一) Why 人因工程篇</button>
+    <button class="tab" data-tab="tab5" role="tab">📝 學習單(二) What 傅立葉轉換篇</button>
+    <button class="tab" data-tab="tab6" role="tab">📝 學習單(三) Where 聲源定位篇</button>
+    <button class="tab" data-tab="tab7" role="tab">📋 科展作品說明(初審)</button>
   </div>
 </header>
 
 <!-- TAB0 START -->
 <div id="tab0" style="margin-top:20px">
 <style>
-#tab0{--fwL:var(--accent);--fwR:var(--go);--fwV:#7a4fc4}
+#tab0{--fwL:var(--go);--fwR:var(--accent);--fwV:#7a4fc4}
 #tab0 .fw-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
 #tab0 h3{font-family:var(--display);font-size:20px;margin:0 0 12px;color:var(--fg)}
 #tab0 .fw-kick{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}
@@ -171,9 +169,21 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 #tab0 .fw-node.sub .t{font-size:15px}
 #tab0 .fw-node.sub ul{margin:6px 0 0;padding-left:1.2em;font-size:15px;line-height:1.6;color:var(--fg)}
 #tab0 .fw-v{width:2px;height:22px;background:var(--line);margin:0 auto}
+#tab0 .fw-node.cause{border-color:var(--stop)!important;background:color-mix(in srgb,var(--stop) 7%,var(--panel))}
+#tab0 .fw-node.cause .t{color:var(--stop)!important;font-size:16px}
+#tab0 .fw-node.cause .s{font-size:15px;color:var(--fg)}
+#tab0 .fw-node.sub{display:flex;flex-direction:column;gap:6px}
+#tab0 .fw-node.sub .t{color:var(--fg)!important;font-size:16px}
+#tab0 .fw-node.sub p{margin:0;font-size:14px;line-height:1.6;color:var(--muted)}
+#tab0 .fw-node .q{font-family:var(--num);font-size:13px;font-weight:500;color:#fff;align-self:flex-start;padding:2px 10px;border-radius:999px}
+#tab0 .fw-node .go{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+#tab0 .fw-node .go button{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
+#tab0 .fw-node .go button:hover{border-color:var(--accent);color:var(--accent)}
+#tab0 .fw-fill{flex:1;min-height:0;width:2px;background:var(--line);margin:0 auto}
+#tab0 .fw-node.sub{border-style:solid;border-width:1px}
 /* 分岔、匯合線 */
 #tab0 .fw-split,#tab0 .fw-join{grid-column:1/3;height:26px;position:relative}
-#tab0 .fw-split::before,#tab0 .fw-join::before{content:"";position:absolute;left:25%;right:25%;border:2px solid var(--line)}
+#tab0 .fw-split::before,#tab0 .fw-join::before{content:"";position:absolute;left:calc((100% - 28px)/4 - 1px);right:calc((100% - 28px)/4 - 1px);border:2px solid var(--line)}
 #tab0 .fw-split::before{top:12px;height:14px;border-bottom:0;border-radius:10px 10px 0 0}
 #tab0 .fw-join::before{top:0;height:12px;border-top:0;border-radius:0 0 10px 10px}
 #tab0 .fw-split::after,#tab0 .fw-join::after{content:"";position:absolute;left:50%;width:2px;background:var(--line);transform:translateX(-1px)}
@@ -209,39 +219,36 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
   <div class="fw-card">
     <h3>研究架構</h3>
-    <div class="fw-tree" role="img" aria-label="研究架構圖：宏觀願景是智慧救援綠色通道，分成路口基礎設施端和車室駕駛人因端，最後得到車路協同最佳化的結論">
-      <div class="fw-node fw-vision"><div class="t">【宏觀願景】智慧救援綠色通道</div></div>
+    <div class="fw-tree" role="img" aria-label="研究架構圖：從「智where開道、平安駕到」分成兩邊。左邊是內在困境，人在車室內不容易聽到外面聲音，對應車室駕駛者人因端與 Why；右邊是外在困境，路口紅燈受困車陣之中，對應路口紅綠燈設施端、What 與 Where；最後合併成科展研究建議：路口不停等加車輛不卡位等於救援黃金時間縮短">
+      <div class="fw-node fw-vision"><div class="t">【智「where」開道、平安駕到】</div></div>
       <div class="fw-split"></div>
       <div class="fw-col fw-L">
-        <div class="fw-node"><div class="t">【路口基礎設施端】</div><div class="s">解決號誌死板延誤</div></div>
+        <div class="fw-node cause"><div class="t">阻塞原因 1：內在困境</div><div class="s">人在車室內不容易聽到外面聲音</div></div>
         <div class="fw-v"></div>
-        <div class="fw-node sub"><div class="t">［實體模型驗證］</div><ul><li>ReSpeaker 麥克風陣列</li><li>TDOA／DOA 判斷方位開綠燈</li></ul></div>
+        <div class="fw-node"><div class="t">【車室駕駛者人因端】</div></div>
+        <div class="fw-v"></div>
+        <div class="fw-node sub"><span class="q" style="background:var(--stop)">Why</span><div class="t">在車內判斷警笛聲來源的誤差有多大？</div>
+          <p>子假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。</p>
+          <div class="go"><button data-goto="tab4">📝 學習單(一)</button><button data-goto="tab2">🚗 情境2：駕駛</button></div></div>
+        <div class="fw-fill"></div>
       </div>
       <div class="fw-col fw-R">
-        <div class="fw-node"><div class="t">【車室駕駛人因端】</div><div class="s">解決駕駛聽覺迷航</div></div>
+        <div class="fw-node cause"><div class="t">阻塞原因 2：外在困境</div><div class="s">路口紅燈受困車陣之中</div></div>
         <div class="fw-v"></div>
-        <div class="fw-node sub"><div class="t">［駕駛艙模擬測驗］</div><ul><li>車窗開關 vs. 羅盤輔助</li><li>反應時間（s）與辨位正確率（%）</li></ul></div>
+        <div class="fw-node"><div class="t">【路口紅綠燈設施端】</div></div>
+        <div class="fw-v"></div>
+        <div class="fw-node sub"><span class="q" style="background:var(--amber)">What</span><div class="t">警笛聲「長」什麼樣？</div>
+          <p>子假設二：警笛頻率特殊，FFT 能清楚將其與一般引擎低頻噪音分開。</p>
+          <div class="go"><button data-goto="tab5">📝 學習單(二)</button></div></div>
+        <div class="fw-v"></div>
+        <div class="fw-node sub"><span class="q" style="background:var(--accent)">Where</span><div class="t">警笛聲從哪裡來？</div>
+          <p>子假設三：2 支麥克風不夠（有前後模糊），4 支環形麥克風才能顯著降低角度差、提高路口判斷率。</p>
+          <div class="go"><button data-goto="tab6">📝 學習單(三)</button><button data-goto="tab1">🚦 情境1：路口</button><button data-goto="tab3">📦 實驗模型</button></div></div>
+        <div class="fw-fill"></div>
       </div>
       <div class="fw-join"></div>
-      <div class="fw-node fw-end"><div class="t">【驗證結論】車路協同最佳化</div>
+      <div class="fw-node fw-end"><div class="t">【科展研究建議】</div>
         <div class="fw-eq"><span>路口不停等</span> ＋ <span>車輛不卡位</span> ＝ <span>救援黃金時間縮短</span></div></div>
-    </div>
-  </div>
-
-  <div class="fw-card">
-    <h3>三個假設：痛點驗證 → 頻率辨識 → 陣列定位</h3>
-    <div class="fw-hyp">
-      <div class="fw-h"><span class="q" style="background:var(--stop)">Why</span><div class="n">子假設一：為什麼需要做</div>
-        <p>證明關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。</p>
-        <div class="go"><button data-goto="tab4">學習單(一)</button><button data-goto="tab2">② 駕駛艙模式</button></div></div>
-      <div class="fw-arrow" aria-hidden="true">➜</div>
-      <div class="fw-h"><span class="q" style="background:var(--amber)">What</span><div class="n">子假設二：電腦怎麼認出聲音</div>
-        <p>證明警笛頻率特殊，FFT 能清楚將其與一般引擎低頻噪音分開。</p>
-        <div class="go"><button data-goto="tab5">學習單(二)</button></div></div>
-      <div class="fw-arrow" aria-hidden="true">➜</div>
-      <div class="fw-h"><span class="q" style="background:var(--accent)">Where</span><div class="n">子假設三：電腦怎麼抓出方向</div>
-        <p>證明 2 支麥克風不夠（有前後模糊），4 支環形麥克風才能顯著降低角度差、提高路口判斷率。</p>
-        <div class="go"><button data-goto="tab6">學習單(三)</button><button data-goto="tab1">① 路口模式</button><button data-goto="tab3">③ 實驗模型</button></div></div>
     </div>
   </div>
 </div>
@@ -1644,7 +1651,7 @@ window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer
 <!-- SAVEFILE END -->
 <!-- TAB4 START -->
 <div class="wrap" id="tab4" hidden style="margin-top:20px">
-<iframe id="ws1frame" title="學習單(一) 人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws1frame" title="學習單(一) Why 人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws1src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -1819,7 +1826,7 @@ svg text{font-family:var(--body)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
@@ -2260,7 +2267,7 @@ btn.addEventListener("click",async()=>{
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
-    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
@@ -2321,7 +2328,7 @@ addEventListener("resize",fit);})();
 <!-- TAB4 END -->
 <!-- TAB5 START -->
 <div class="wrap" id="tab5" hidden style="margin-top:20px">
-<iframe id="ws2frame" title="學習單(二) 傅立葉轉換篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws2frame" title="學習單(二) What 傅立葉轉換篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws2src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -2571,7 +2578,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（二）傅立葉轉換篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（二）What 傅立葉轉換篇</div>
   <h1>聲音裡藏了哪些頻率？</h1>
   <p class="lead">自然課學過：聲音是物體在振動。這張學習單先認識「頻率」（每秒振動幾次），再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
 </header>
@@ -3178,7 +3185,7 @@ btn.addEventListener("click",async()=>{
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const pic=async(u,w)=>{const [iw,ih]=await imgSize(u);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(u),transformation:{width:w,height:Math.round(w*ih/iw)}})]})};
     const B=[];
-    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（二）傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（二）What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音裡藏了哪些頻率？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
@@ -3229,7 +3236,7 @@ addEventListener("resize",fit);})();
 <!-- TAB5 END -->
 <!-- TAB6 START -->
 <div class="wrap" id="tab6" hidden style="margin-top:20px">
-<iframe id="ws3frame" title="學習單(三) 聲源定位篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws3frame" title="學習單(三) Where 聲源定位篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws3src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -3447,7 +3454,7 @@ td.no{color:var(--b);font-weight:700}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（三）聲源定位篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（三）Where 聲源定位篇</div>
   <h1>聲音從哪裡來？路口要幾支麥克風？</h1>
   <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這張學習單先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
 </header>
@@ -3462,7 +3469,7 @@ td.no{color:var(--b);font-weight:700}
     </div>
     <div class="card"><h3>器材</h3><ul>
       <li>電腦或平板（用這個網頁做動畫和模擬）</li>
-      <li>小模型路口（見 ③ 實驗模型）、玩具救護車＋藍牙喇叭</li>
+      <li>小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭</li>
       <li>陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」</li>
       <li>量角器或角度墊、捲尺</li>
       <li>要量音量（分貝）時：建議用 NIOSH SLM app（美國國家職業安全衛生研究所的免費分貝計）</li></ul></div>
@@ -4126,7 +4133,7 @@ btn.addEventListener("click",async()=>{
     const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const B=[];
-    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（三）聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（三）Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音從哪裡來？路口要幾支麥克風？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("先想一想"));B.push(P("戴上耳塞後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
