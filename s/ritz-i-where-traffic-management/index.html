@@ -253,7 +253,7 @@ readColors();
 let BK=1,VZ=1,VX=0,VY=0;   // 畫面縮放與平移（移動按鍵）
 function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*d;BK=r.width*d/S;applyView()}
 function applyView(){ctx.setTransform(BK*VZ,0,0,BK*VZ,BK*(C-C*VZ+VX),BK*(C-C*VZ+VY))}
-makePad(cv.parentElement,{corner:"mr",name:"路口模式",snap:()=>cv.toDataURL("image/png"),step(k,f){const s=55/VZ*f;
+makePad(cv.parentElement,{corner:"mr",name:"路口模式",snap:()=>window.__ix3d&&__ix3d.is()?__ix3d.snap():cv.toDataURL("image/png"),step(k,f){if(window.__ix3d&&__ix3d.is())return __ix3d.step(k,f);const s=55/VZ*f;
   if(k==="c"){VZ=1;VX=0;VY=0}else if(k==="zi")VZ=Math.min(4,VZ*Math.pow(1.25,f));else if(k==="zo")VZ=Math.max(0.5,VZ/Math.pow(1.25,f));
   else if(k==="r")VX-=s;else if(k==="l")VX+=s;else if(k==="d")VY-=s;else if(k==="u")VY+=s;applyView()}});
 new ResizeObserver(resize).observe(cv);
@@ -1032,6 +1032,14 @@ sw.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) retur
   else if(b.dataset.v==="spin"){ctl.autoRotate=!ctl.autoRotate;ctl.autoRotateSpeed=0.6;b.textContent="自動旋轉："+(ctl.autoRotate?"開":"關")}
   else if(b.dataset.v) view(b.dataset.v)});
 setMode("3d");
+{const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();   // 給右邊的 ▲▼◀▶＋－📷 用（3D 時動 3D 鏡頭）
+ window.__ix3d={is:()=>mode==="3d",
+  snap(){renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},
+  step(k,f){cam.updateMatrixWorld();
+   if(k==="c"){home();return}
+   if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);const L=Math.max(ctl.minDistance,Math.min(ctl.maxDistance,off.length()*Math.pow(k==="zi"?0.8:1.25,f)));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+   const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+   off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);cam.position.add(off);ctl.target.add(off);ctl.update()}};}
 
 // 天空、光
 function ctex(w,h,f){const c=document.createElement("canvas");c.width=w;c.height=h;f(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
