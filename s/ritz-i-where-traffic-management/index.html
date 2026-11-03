@@ -1943,15 +1943,10 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>實驗方法</h2>
-  <div class="two">
-    <div class="card"><h3>器材</h3><ul>
+  <div class="card"><h3>器材</h3><ul>
       <li>大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）</li>
       <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
       <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
-    <div class="card"><h3>研究問題與假設</h3>
-      <p data-sync-ro="wwt-fw-h1q">為什麼光靠駕駛的耳朵不夠？</p>
-      <label for="hyp" class="note">假設：</label><textarea id="hyp" rows="2" data-sync-rw="wwt-fw-h1" data-def="假設一：關上車窗（用耳機模擬）後，聲音變小、變悶，指出警笛方向的角度差會變大，也更容易前後搞混，所以光靠駕駛的耳朵不夠。"></textarea></div>
-  </div>
   <div class="card"><h3>實驗步驟</h3><ol style="padding-left:1.6em;margin:0;display:grid;gap:6px">
     <li><b>準備場地</b>：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
     <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
@@ -2098,7 +2093,7 @@ $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
   S.t1={a:[["40","46"],["95","88"],["130","118"],["15","10"],["160","152"]].map(([r,p])=>({r,p})),b:[["70","92"],["20","45"],["150","126"],["100","70"],["35","20"]].map(([r,p])=>({r,p}))};save();buildT1();calcT1()});
 $("who").value=S.who;$("who").addEventListener("input",e=>{S.who=e.target.value;save()});
-for(const id of ["hyp","q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
+for(const id of ["q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
 buildT1();calcT1();buildT2();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawProt();calcT2()});
 new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -2368,12 +2363,9 @@ btn.addEventListener("click",async()=>{
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
-    body.push(H("貳、研究問題與假設"));
-    body.push(P("問題："+(localStorage.getItem("wwt-fw-h1q")||"為什麼光靠駕駛的耳朵不夠？")));
-    body.push(P("假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
-    body.push(H("參、實驗方法"));
+    body.push(H("貳、實驗方法"));
     body.push(P("實驗步驟：",{bold:true}));["準備場地：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
-    body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
+    body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
       body.push(P(`受試者：${x.name}`,{bold:true}));
@@ -2383,7 +2375,7 @@ btn.addEventListener("click",async()=>{
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
       body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));
     }
-    body.push(H("伍、全組整理（表 1-2、圖 1-2）"));
+    body.push(H("肆、全組整理（表 1-2、圖 1-2）"));
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
     const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
     const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
@@ -2392,7 +2384,7 @@ btn.addEventListener("click",async()=>{
     const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);
     body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bv,420,300),transformation:{width:360,height:257}})]}));
     body.push(cap("圖 1-2、未遮蔽和戴耳機的平均角度差"));
-    body.push(H("陸、結果與結論"));
+    body.push(H("伍、結果與結論"));
     body.push(P(`1. 未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳機時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`));
     body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
