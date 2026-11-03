@@ -3489,7 +3489,16 @@ scene.background=tex(4,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr
 scene.fog=new THREE.Fog(0xdcefff,700,1900);
 const cam=new THREE.PerspectiveCamera(36,16/9,1,4000);
 const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxDistance=650;ctl.minDistance=90;ctl.maxPolarAngle=Math.PI*0.495;
-addPanPad(host,cam,ctl,"br",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"學習單三_兩隻耳朵");
+addPanPad(host,cam,ctl,"br",()=>{renderer.render(scene,cam);   // 截圖：女孩＋下面的說明與波形，拼成一張
+  const a=renderer.domElement,sc=$("hScope"),W=a.width,k=W/a.clientWidth,pad=Math.round(16*k);
+  const res=$("hRes").cloneNode(true);res.querySelectorAll(".note,br").forEach(e=>e.remove());const txt=res.textContent.trim();
+  const sh=sc.width?Math.round(sc.height*(W-2*pad)/sc.width):0,th=txt?Math.round(40*k):0;
+  const c=document.createElement("canvas");c.width=W;c.height=a.height+pad+th+sh+pad;const g=c.getContext("2d");
+  const cs=getComputedStyle(document.documentElement);g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,c.width,c.height);
+  g.drawImage(a,0,0);let y=a.height+pad;
+  if(txt){g.fillStyle=cs.getPropertyValue("--ink").trim()||"#1d2a33";g.font="600 "+Math.round(20*k)+"px 'Noto Sans TC',sans-serif";g.textBaseline="middle";g.fillText(txt,pad,y+th/2,W-2*pad);y+=th}
+  if(sh)g.drawImage(sc,pad,y,W-2*pad,sh);
+  return c.toDataURL("image/png")},"學習單三_兩隻耳朵");
 scene.add(new THREE.HemisphereLight(0xffffff,0x6c8f4a,0.8));
 const sun=new THREE.DirectionalLight(0xfff6e0,0.65);sun.position.set(-120,300,160);scene.add(sun);
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.7},o));
