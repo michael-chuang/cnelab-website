@@ -203,6 +203,46 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 </div>
 
 <script>
+/* PANPAD START */
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  host.appendChild(pad);
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k,f){keep();cam.updateMatrixWorld();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  return makePad(host,{corner,step,snap,name})}
+/* PANPAD END */
 /* ===== 基本設定 ===== */
 const S=600, C=S/2, RW=60, HALF=RW, STOPOFF=HALF+10; // 路寬 120（每向一車道 60）
 const NAME={N:"北邊",E:"東邊",S:"南邊",W:"西邊"}, SIREN={amb:"救護車",fire:"消防車",police:"警車",trash:"垃圾車"}, SYS={0:"關閉",2:"2 支麥克風",4:"4 支麥克風"};
@@ -213,16 +253,9 @@ readColors();
 let BK=1,VZ=1,VX=0,VY=0;   // 畫面縮放與平移（移動按鍵）
 function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*d;BK=r.width*d/S;applyView()}
 function applyView(){ctx.setTransform(BK*VZ,0,0,BK*VZ,BK*(C-C*VZ+VX),BK*(C-C*VZ+VY))}
-(()=>{const host=cv.parentElement,pad=document.createElement("div");pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
-  pad.style.cssText="position:absolute;top:50%;right:10px;transform:translateY(-50%);z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:'zi u zo' 'l c r' '. d .';opacity:.6;transition:opacity .2s";
-  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
-  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");host.appendChild(pad);
-  function step(k){const s=18/VZ;if(k==="c"){VZ=1;VX=0;VY=0}else if(k==="zi")VZ=Math.min(3,VZ*1.06);else if(k==="zo")VZ=Math.max(0.6,VZ/1.06);
-    else if(k==="l")VX-=s;else if(k==="r")VX+=s;else if(k==="u")VY-=s;else if(k==="d")VY+=s;applyView()}
-  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
-  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
-    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop))})})();
+makePad(cv.parentElement,{corner:"mr",name:"路口模式",snap:()=>cv.toDataURL("image/png"),step(k,f){const s=55/VZ*f;
+  if(k==="c"){VZ=1;VX=0;VY=0}else if(k==="zi")VZ=Math.min(4,VZ*Math.pow(1.25,f));else if(k==="zo")VZ=Math.max(0.5,VZ/Math.pow(1.25,f));
+  else if(k==="r")VX-=s;else if(k==="l")VX+=s;else if(k==="d")VY-=s;else if(k==="u")VY+=s;applyView()}});
 new ResizeObserver(resize).observe(cv);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -661,6 +694,7 @@ let camX=-1.75, egoV=CRUISE, travel=0;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*H/W*d;g.setTransform(r.width*d/W,0,0,r.width*d/W,0,0)}
 new ResizeObserver(resize).observe(cv);
+makePad(cv.parentElement,{corner:"tr",keys:[],name:"駕駛艙模式",snap:()=>cv.toDataURL("image/png"),step(){}});
 
 /* 道路（x＝往右公尺）：對向車道 -11～-4，雙黃線 -3.6，左車道中心 -1.75，車道線 0，右車道中心 +1.75，路邊線 +3.6，機車道到 +5.6
    z＝在我前面幾公尺（負＝後面）。每台車有 x0（原本車道）與 side（讓道時往哪邊靠） */
@@ -1154,28 +1188,44 @@ frame();
 <script>
 (()=>{ if(!window.THREE) return;
 /* PANPAD START */
-/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
-function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
-  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
   pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
-  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
-  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
-  pad.style.opacity=".6";pad.style.transition="opacity .2s";pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
   host.appendChild(pad);
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
   let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
   const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
-  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+  function step(k,f){keep();cam.updateMatrixWorld();
     if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
-    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
-      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
-    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
-    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
     cam.position.add(off);ctl.target.add(off);ctl.update()}
-  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
-  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
-    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
-  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+  return makePad(host,{corner,step,snap,name})}
 /* PANPAD END */
 /* ================= 小模型路口 3D：紙箱房子＋紙膠帶道路＋玩具小汽車（1 單位＝1 cm） ================= */
 function initModel3D(host){
@@ -1187,7 +1237,7 @@ host.insertBefore(renderer.domElement,host.firstChild);
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(42,1,1,5000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.49; ctl.minDistance=20; ctl.maxDistance=400;
-addPanPad(host,cam,ctl,"mr");
+addPanPad(host,cam,ctl,"mr",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"實驗模型");
 ctl.autoRotate=false; ctl.autoRotateSpeed=0.5;
 function resize(){const r=host.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(host); resize();
@@ -1461,7 +1511,7 @@ document.getElementById("mviews").addEventListener("click",e=>{const b=e.target.
 <!-- TAB3 END -->
 <!-- SAVEFILE START -->
 <script>
-window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer()],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer()],{type:/\.png$/i.test(fn)?"image/png":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
   if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return "已存好 "+fn}}
   const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return "已下載 "+fn};
 </script>
@@ -1820,28 +1870,44 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{draw
 new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
 /* PANPAD START */
-/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
-function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
-  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
   pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
-  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
-  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
-  pad.style.opacity=".6";pad.style.transition="opacity .2s";pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
   host.appendChild(pad);
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
   let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
   const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
-  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+  function step(k,f){keep();cam.updateMatrixWorld();
     if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
-    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
-      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
-    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
-    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
     cam.position.add(off);ctl.target.add(off);ctl.update()}
-  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
-  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
-    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
-  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+  return makePad(host,{corner,step,snap,name})}
 /* PANPAD END */
 /* ================= 3D 模擬（1 單位＝1 cm） ================= */
 (()=>{ if(!window.THREE) return;
@@ -1852,7 +1918,7 @@ stage.insertBefore(renderer.domElement,stage.firstChild);
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfe8ee);
 const cam=new THREE.PerspectiveCamera(40,4/3,1,5000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.495; ctl.minDistance=80; ctl.maxDistance=1200;
-addPanPad(stage,cam,ctl,"bl");
+addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"學習單一_3D");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x9a8a70,0.7));
@@ -2520,28 +2586,44 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <script>
 /* ===== 彩虹彈簧 ===== */
 /* PANPAD START */
-/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
-function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
-  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
   pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
-  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
-  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
-  pad.style.opacity=".6";pad.style.transition="opacity .2s";pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
   host.appendChild(pad);
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
   let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
   const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
-  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+  function step(k,f){keep();cam.updateMatrixWorld();
     if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
-    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
-      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
-    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
-    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
     cam.position.add(off);ctl.target.add(off);ctl.update()}
-  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
-  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
-    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
-  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+  return makePad(host,{corner,step,snap,name})}
 /* PANPAD END */
 /* ===== 空氣分子：喇叭推空氣（壓縮與稀疏） ===== */
 (()=>{ if(!window.THREE) return;
@@ -2552,7 +2634,7 @@ stage.insertBefore(renderer.domElement,stage.firstChild);
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0f1424);
 const cam=new THREE.PerspectiveCamera(36,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=15; ctl.maxDistance=220;
-addPanPad(stage,cam,ctl,"bl");
+addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.8));
@@ -2635,7 +2717,7 @@ const scene=new THREE.Scene();
 scene.background=(()=>{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#1a2140");gr.addColorStop(1,"#0b0f1c");g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t})();
 const cam=new THREE.PerspectiveCamera(38,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=12; ctl.maxDistance=200;
-addPanPad(stage,cam,ctl,"bl");
+addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));
@@ -3320,28 +3402,44 @@ td.no{color:var(--b);font-weight:700}
 <script>
 const $=id=>document.getElementById(id);
 /* PANPAD START */
-/* PANPAD：3D 畫面的移動按鍵（▲▼◀▶ 平移、＋－ 縮放、⟲ 回到一開始的樣子）。按住會一直移動 */
-function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="static")host.style.position="relative";
-  const pad=document.createElement("div"),pos=corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
   pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
-  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
-  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
-  pad.style.opacity=".6";pad.style.transition="opacity .2s";pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
   host.appendChild(pad);
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
   let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
   const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
-  function step(k){keep();const dist=cam.position.distanceTo(ctl.target),s=dist*0.03;cam.updateMatrix();
+  function step(k,f){keep();cam.updateMatrixWorld();
     if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
-    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target).multiplyScalar(k==="zi"?0.95:1/0.95);const L=off.length();
-      if((ctl.minDistance&&L<ctl.minDistance)||(ctl.maxDistance&&L>ctl.maxDistance))return;cam.position.copy(ctl.target).add(off);ctl.update();return}
-    rt.setFromMatrixColumn(cam.matrix,0);up.setFromMatrixColumn(cam.matrix,1);
-    off.set(0,0,0).addScaledVector(rt,k==="l"?s:k==="r"?-s:0).addScaledVector(up,k==="u"?-s:k==="d"?s:0);   // 畫面往右＝東西往右跑
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
     cam.position.add(off);ctl.target.add(off);ctl.update()}
-  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
-  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
-    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
-  return {resetHome(){home=[cam.position.clone(),ctl.target.clone()]}}}
+  return makePad(host,{corner,step,snap,name})}
 /* PANPAD END */
 /* ================= 一、兩隻耳朵的時間差（3D：草地上的小女孩） =================
    單位：公分。耳朵高度 y=0；正前方＝-z，右邊＝+x。角度 0° 正前方，順時針（90° 正右方）。 */
@@ -3355,7 +3453,7 @@ scene.background=tex(4,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr
 scene.fog=new THREE.Fog(0xdcefff,700,1900);
 const cam=new THREE.PerspectiveCamera(36,16/9,1,4000);
 const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxDistance=650;ctl.minDistance=90;ctl.maxPolarAngle=Math.PI*0.495;
-addPanPad(host,cam,ctl,"br");
+addPanPad(host,cam,ctl,"br",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"學習單三_兩隻耳朵");
 scene.add(new THREE.HemisphereLight(0xffffff,0x6c8f4a,0.8));
 const sun=new THREE.DirectionalLight(0xfff6e0,0.65);sun.position.set(-120,300,160);scene.add(sun);
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.7},o));
@@ -3633,6 +3731,7 @@ svg.addEventListener("pointerdown",e=>{const r=svg.getBoundingClientRect(),y=(e.
 svg.addEventListener("pointermove",e=>{if(dragT)setFrom(e)});
 const endT=()=>{dragT=false};svg.addEventListener("pointerup",endT);svg.addEventListener("pointercancel",endT);
 draw(null);
+makePad(svg.parentElement,{corner:"tr",keys:[],name:"學習單三_找角度",snap:()=>svgSnap(svg),step(){}});
 const redraw=()=>{if(!anim)draw(null)};matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
@@ -3740,6 +3839,7 @@ cv.addEventListener("pointermove",e=>{const p=pt(e);if(drag===null){const rr=Mat
   const q={x:Math.max(-38,Math.min(38,p.x)),y:Math.max(-38,Math.min(38,p.y))};if(drag==="amb")amb=q;else mics[drag]=q;changed()});
 const up=()=>{drag=null};cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 addEventListener("resize",resize);resize();result();loop();
+makePad(host,{corner:"br",keys:[],name:"學習單三_路口麥克風",snap:()=>cv.toDataURL("image/png"),step(){}});
 window.__map={get mics(){return mics},set mics(v){mics=v;changed()},get amb(){return amb},set amb(v){amb=v;changed()},play:()=>$("mPlay").click(),candidates};
 })();
 
