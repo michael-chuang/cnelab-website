@@ -138,30 +138,30 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 </style>
 <script>
 /* 大標題、副標題：點一下就能改；跟「科展作品說明」的作品名稱連動；全隊共用，存到雲端（kid=_team） */
-(()=>{const T=[["ttlMain","wwt-title","智「where」開道、平安駕到"],["ttlSub","wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"]];
+(()=>{const T=[["ttlMain","wwt-title","智「where」開道、平安駕到"],["ttlSub","wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"],["fwMotive","wwt-motive","能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？",1]];
 const URL_="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec",TOKEN="ritz",KID="_team",KEY="ws0-title",TS="wwt-title#ts";
 const url=()=>{try{return localStorage.getItem("wwt-sync-url")||URL_}catch(e){return URL_}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}};
 const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let tm=null;
-function show(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=get(k,d)});document.title=get("wwt-title",T[0][2])}
+function show(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=get(k,d)});document.title=get("wwt-title",T[0][2]);const v=document.getElementById("fwVision");if(v)v.textContent=get("wwt-title",T[0][2])}
 function edited(){set(TS,String(Date.now()));clearTimeout(tm);tm=setTimeout(push,1500)}
 async function push(beacon){clearTimeout(tm);tm=null;
-  const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({t:get("wwt-title",T[0][2]),s:get("wwt-subtitle",T[1][2])})});
+  const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({t:get("wwt-title",T[0][2]),s:get("wwt-subtitle",T[1][2]),m:get("wwt-motive",T[2][2])})});
   if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url(),body);return}
   try{const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw 0}catch(e){tm=setTimeout(push,15000)}}
 async function pull(){try{const r=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+KID+"&key="+KEY)).json();
   if(!r.ok||!(r.ts>(+get(TS,"0"))))return;const o=JSON.parse(r.data||"{}");
-  if(typeof o.t==="string")set("wwt-title",o.t);if(typeof o.s==="string")set("wwt-subtitle",o.s);set(TS,String(r.ts));show();
-  document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-title",newValue:o.t}));f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-subtitle",newValue:o.s}))}catch(e){}})}catch(e){}}
-function init(){T.forEach(([id,k,d])=>{if(get(k,null)===null)set(k,d);const e=document.getElementById(id);if(!e)return;
+  if(typeof o.t==="string")set("wwt-title",o.t);if(typeof o.s==="string")set("wwt-subtitle",o.s);if(typeof o.m==="string")set("wwt-motive",o.m);set(TS,String(r.ts));show();
+  document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-title",newValue:o.t}));f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-subtitle",newValue:o.s}));if(typeof o.m==="string")f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-motive",newValue:o.m}))}catch(e){}})}catch(e){}}
+function init(){T.forEach(([id,k,d,ml])=>{if(!ml&&get(k,null)===null)set(k,d);const e=document.getElementById(id);if(!e)return;
   try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
   e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=d;
-  e.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();e.blur()}});
-  e.addEventListener("input",()=>{set(k,e.textContent.replace(/\s*\n\s*/g," "));if(id==="ttlMain")document.title=e.textContent||d;edited()});
+  e.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ml){ev.preventDefault();e.blur()}});
+  e.addEventListener("input",()=>{set(k,ml?e.innerText.replace(/\n$/,""):e.textContent.replace(/\s*\n\s*/g," "));if(id==="ttlMain"){document.title=e.textContent||d;const v=document.getElementById("fwVision");if(v)v.textContent=e.textContent||d}edited()});
   e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=d;set(k,d);edited()}})});
   show();pull();
-  addEventListener("storage",ev=>{if(ev.key==="wwt-title"||ev.key==="wwt-subtitle"){show();edited()}});   // 作品說明那邊改的
+  addEventListener("storage",ev=>{if(ev.key==="wwt-title"||ev.key==="wwt-subtitle"||ev.key==="wwt-motive"){show();edited()}});   // 作品說明那邊改的
   addEventListener("pagehide",()=>{if(tm)push(true)});
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){if(tm)push(true)}else pull()})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
@@ -252,14 +252,14 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 </style>
 <div style="display:flex;flex-direction:column;gap:20px">
   <div class="fw-card">
-    <p class="fw-kick">研究動機</p>
-    <p class="fw-motive">能不能用科技幫忙長出<b>靈敏的耳朵</b>，判斷警笛聲來源？</p>
+    <p class="fw-kick">研究動機（描述為何想研究的起因）</p>
+    <p class="fw-motive" id="fwMotive" style="white-space:pre-wrap">能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？</p>
   </div>
 
   <div class="fw-card">
     <h3>研究架構</h3>
     <div class="fw-tree" role="img" aria-label="研究架構圖：從「智where開道、平安駕到」分成兩邊。左邊是內在困境，人在車室內不容易聽到外面聲音，對應車室駕駛者人因端與 Why；右邊是外在困境，路口紅燈受困車陣之中，對應路口紅綠燈設施端、What 與 Where；最後合併成研究成果建議：路口不停等加車輛不卡位等於救援黃金時間縮短">
-      <div class="fw-node fw-vision"><div class="t">【智「where」開道、平安駕到】</div></div>
+      <div class="fw-node fw-vision"><div class="t">【<span id="fwVision">智「where」開道、平安駕到</span>】</div></div>
       <div class="fw-split"></div>
       <div class="fw-col fw-L">
         <div class="fw-node cause"><div class="t">阻塞原因 1：內在困境</div><div class="s">人在車室內不容易聽到外面聲音</div></div>
@@ -4459,7 +4459,7 @@ let S={kinds:[],procPics:[],resPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
 /* 作品名稱跟網站最上面的大標題連動（同一台電腦、全隊共用） */
-const SHARED={title:["wwt-title","智「where」開道、平安駕到"],subtitle:["wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"]};
+const SHARED={title:["wwt-title","智「where」開道、平安駕到"],subtitle:["wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"],motive:["wwt-motive","能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？"]};
 for(const k in SHARED){const [lk,def]=SHARED[k];let v=null;try{v=localStorage.getItem(lk)}catch(e){}
   if(v===null){v=S[k]||def;try{localStorage.setItem(lk,v)}catch(e){}}S[k]=v}
 save();
