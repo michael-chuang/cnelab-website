@@ -101,8 +101,8 @@ window.__kid=()=>kid;
 /* 題目跟網站最上面的大標題一樣（唯讀顯示） */
 function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v});
   document.querySelectorAll("[data-sync-rw]").forEach(e=>{const v=LS.getItem(e.dataset.syncRw);   // 和研究架構雙向同步（全隊共用）
-    if(v!==null&&e.value!==v){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
-    else if(v===null&&!e.value&&e.dataset.def){e.value=e.dataset.def;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    if(v!==null&&v!==""&&e.value!==v){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    else if((v===null||v==="")&&!e.value&&e.dataset.def){e.value=e.dataset.def;e.dispatchEvent(new Event("input",{bubbles:true}))}
     if(!e.__rw){e.__rw=1;e.addEventListener("input",ev=>{if(ev.isTrusted)LS.setItem(e.dataset.syncRw,e.value)})}})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
@@ -228,13 +228,13 @@ svg text{font-family:var(--body)}
       <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
       <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
     <div class="card"><h3>研究問題與假設</h3>
-      <p data-sync-ro="wwt-fw-h1q">在車內判斷警笛聲來源的誤差有多大？</p>
-      <label for="hyp" class="note">假設：</label><textarea id="hyp" rows="2" data-sync-rw="wwt-fw-h1" data-def="假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。"></textarea></div>
+      <p data-sync-ro="wwt-fw-h1q">為什麼光靠駕駛的耳朵不夠？</p>
+      <label for="hyp" class="note">假設：</label><textarea id="hyp" rows="2" data-sync-rw="wwt-fw-h1" data-def="假設一：關上車窗（用耳機模擬）後，聲音變小、變悶，指出警笛方向的角度差會變大，也更容易前後搞混，所以光靠駕駛的耳朵不夠。"></textarea></div>
   </div>
   <div class="card"><h3>實驗步驟</h3><ol style="padding-left:1.6em;margin:0;display:grid;gap:6px">
-    <li><b>準備場地</b>：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者坐的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
+    <li><b>準備場地</b>：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
     <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
-    <li>受試者坐在圓心的椅子上，<b>戴上眼罩</b>，頭不能轉、身體不能動。</li>
+    <li>受試者站在圓心，<b>戴上眼罩</b>，頭不能轉、身體不能動。</li>
     <li>播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。<b>正面面對受試者</b>，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。</li>
     <li>記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。</li>
     <li><b>受試者聽完會用手指方向</b>：用右手指出他覺得聲音來的方向，手先不要放下。</li>
@@ -590,7 +590,7 @@ renderer.domElement.addEventListener("pointerdown",e=>{downXY=[e.clientX,e.clien
 renderer.domElement.addEventListener("pointerup",e=>{if(!downXY)return;const moved=Math.hypot(e.clientX-downXY[0],e.clientY-downXY[1]);downXY=null;if(moved>6||busy)return;
   const r=renderer.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,cam);
   const hit=ray.intersectObject(floor)[0];if(!hit)return;const x=hit.point.x,z=hit.point.z,R=Math.hypot(x,z);if(R<40)return;
-  angle=((Math.round(Math.atan2(x,-z)*180/Math.PI)%360)+360)%360;dist=Math.max(70,Math.min(600,R));clearPoint();placeAnn();play()});
+  angle=((Math.round(Math.atan2(x,-z)*180/Math.PI)%360)+360)%360;dist=215;   /* 距離固定（約 2 公尺），只換方向 */clearPoint();placeAnn();play()});
 $("gMask").addEventListener("click",()=>{mask=!mask;clearPoint();setEar();$("result").textContent=mask?"受試者戴上眼罩了。":"受試者沒戴眼罩。"});
 $("gEar").addEventListener("click",()=>{ear=ear==="a"?"b":"a";clearPoint();setEar();$("result").textContent=ear==="b"?"受試者戴上耳機了（橘色）。":"拿掉耳機了（未遮蔽）。"});
 const VIEWS={side:[[300,420,460],[0,30,0]],top:[[0,820,1],[0,0,0]],kid:[[0,170,140],[0,80,-120]]};
@@ -649,10 +649,10 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、研究問題與假設"));
-    body.push(P("問題："+(localStorage.getItem("wwt-fw-h1q")||"在車內判斷警笛聲來源的誤差有多大？")));
+    body.push(P("問題："+(localStorage.getItem("wwt-fw-h1q")||"為什麼光靠駕駛的耳朵不夠？")));
     body.push(P("假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
     body.push(H("參、實驗方法"));
-    body.push(P("實驗步驟：",{bold:true}));["準備場地：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者坐的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者坐在圓心的椅子上，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
+    body.push(P("實驗步驟：",{bold:true}));["準備場地：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
     body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
