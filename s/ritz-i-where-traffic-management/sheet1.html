@@ -59,14 +59,26 @@ function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textConte
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
   if(!old&&!L.slice(0,-1).length){for(const k of Object.keys(LS))if(isWS(k)&&!k.includes("@")&&g(k+"@"+n)===null){s(k+"@"+n,g(k));s(k+"@"+n+"#ts",String(Date.now()))}}  // 第一次選名字：原本的紀錄給他
   s("wwt-kid",n);location.reload()}
-function bar(){const b=document.createElement("div");b.id="kidBar";
-  b.style.cssText="position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;margin:-4px 0 14px;border-radius:12px;background:var(--paper,#fff);border:2px solid "+(kid?"var(--line,#d3dbe0)":"#e3a008")+";font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.06)";
-  const L=kidsList();
-  b.innerHTML=`<b>👤 我是：</b><select id="ksSel" style="font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${n.replace(/[<&]/g,"")}</option>`).join("")}<option value="__new">＋ 新增名字</option></select>
-    <span id="ksNew" hidden><input id="ksName" type="text" maxlength="12" aria-label="新的名字" style="font:inherit;font-size:15px;width:7em;padding:3px 6px;border-radius:8px;border:1px solid var(--line,#ccc)"> <button type="button" id="ksOk" style="font:inherit;font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">好</button></span>
-    <span id="ksStat" style="flex:1;min-width:10em;font-size:13px;color:var(--muted,#666)"></span>
-    <button type="button" id="ksSave" style="font:inherit;font-size:14px;padding:4px 12px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button>`;
-  const host=document.querySelector(".wrap")||document.body;host.insertBefore(b,host.firstChild);
+function bar(){const W=document.createElement("div");W.id="kidBar";
+  const top=window.top===window;
+  W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
+  const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
+  const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
+  <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
+    <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
+    <span id="ksNew" hidden><input id="ksName" type="text" maxlength="12" aria-label="新的名字" style="font:inherit;font-size:15px;width:9em;padding:3px 6px;border-radius:8px;border:1px solid var(--line,#ccc)"> <button type="button" id="ksOk" style="font:inherit;font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">好</button></span>
+    <span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span>
+    <button type="button" id="ksSave" style="font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button>
+  </div>`;
+  if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";
+  document.body.appendChild(W);
+  const P=W.querySelector("#ksPanel"),B=W.querySelector("#ksBtn");
+  const open=o=>{P.hidden=!o;P.style.display=o?"grid":"none";B.setAttribute("aria-expanded",String(o))};open(!kid);
+  B.addEventListener("click",()=>open(P.hidden));
+  document.addEventListener("click",e=>{if(kid&&!W.contains(e.target))open(false)});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&kid)open(false)});
+  const b=W;
   const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
   const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
   b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
