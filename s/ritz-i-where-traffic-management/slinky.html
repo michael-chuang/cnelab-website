@@ -185,7 +185,8 @@ function addPanPad(host,cam,ctl,corner){if(getComputedStyle(host).position==="st
   pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
   pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:"zi u zo" "l c r" ". d .";pointer-events:auto`;
   const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
-  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.9);color:#18232b;border:1px solid rgba(24,35,43,.22);cursor:pointer;touch-action:none">${t}</button>`).join("");
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.style.opacity=".6";pad.style.transition="opacity .2s";pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
   host.appendChild(pad);
   let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
   const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
