@@ -134,7 +134,8 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
   <h1>智慧路口情境模擬</h1>
   <p class="lead">① 路口模式：路口聽出警笛方向，讓那邊變綠燈。② 駕駛艙模式：坐在車裡，儀表板的羅盤告訴你警笛從哪裡來。③ 實驗模型：看看用紙箱、紙膠帶和玩具車怎麼擺出小路口。
   <div class="row tabs" role="tablist">
-    <button class="tab on" data-tab="tab1" role="tab">① 路口模式</button>
+    <button class="tab on" data-tab="tab0" role="tab">🧭 研究架構</button>
+    <button class="tab" data-tab="tab1" role="tab">① 路口模式</button>
     <button class="tab" data-tab="tab2" role="tab">② 駕駛艙模式</button>
     <button class="tab" data-tab="tab3" role="tab">③ 實驗模型</button>
     <button class="tab" data-tab="tab4" role="tab">𖥕 學習單(一) 人因工程篇</button>
@@ -144,7 +145,112 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
   </div>
 </header>
 
-<div id="tab1" style="display:flex;flex-direction:column;gap:20px">
+<!-- TAB0 START -->
+<div id="tab0" style="margin-top:20px">
+<style>
+#tab0{--fwL:var(--accent);--fwR:var(--go);--fwV:#7a4fc4}
+#tab0 .fw-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+#tab0 h3{font-family:var(--display);font-size:20px;margin:0 0 12px;color:var(--fg)}
+#tab0 .fw-kick{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}
+#tab0 .fw-motive{font-family:var(--display);font-size:clamp(20px,3.2vw,28px);line-height:1.45;margin:0;color:var(--fg)}
+#tab0 .fw-motive b{color:var(--accent)}
+/* 樹狀圖 */
+#tab0 .fw-tree{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;position:relative;margin-top:6px}
+#tab0 .fw-node{border-radius:14px;padding:12px 16px;text-align:center;background:var(--panel);border:2px solid var(--line);position:relative;z-index:1}
+#tab0 .fw-node .t{font-family:var(--display);font-size:18px;font-weight:700;color:var(--fg)}
+#tab0 .fw-node .s{font-size:14px;color:var(--muted);margin-top:2px}
+#tab0 .fw-vision{grid-column:1/3;justify-self:center;border-color:var(--fwV);background:color-mix(in srgb,var(--fwV) 10%,var(--panel));min-width:min(100%,320px)}
+#tab0 .fw-vision .t,#tab0 .fw-end .t{color:var(--fwV)}
+#tab0 .fw-end{grid-column:1/3;justify-self:center;border-color:var(--fwV);background:color-mix(in srgb,var(--fwV) 10%,var(--panel));min-width:min(100%,360px)}
+#tab0 .fw-eq{font-family:var(--display);font-size:17px;margin-top:6px;color:var(--fg)}
+#tab0 .fw-eq span{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);margin:2px}
+#tab0 .fw-col{display:flex;flex-direction:column;align-items:stretch}
+#tab0 .fw-L .fw-node{border-color:var(--fwL)} #tab0 .fw-L .fw-node .t{color:var(--fwL)}
+#tab0 .fw-R .fw-node{border-color:var(--fwR)} #tab0 .fw-R .fw-node .t{color:var(--fwR)}
+#tab0 .fw-node.sub{border-style:dashed;text-align:left}
+#tab0 .fw-node.sub .t{font-size:15px}
+#tab0 .fw-node.sub ul{margin:6px 0 0;padding-left:1.2em;font-size:15px;line-height:1.6;color:var(--fg)}
+#tab0 .fw-v{width:2px;height:22px;background:var(--line);margin:0 auto}
+/* 分岔、匯合線 */
+#tab0 .fw-split,#tab0 .fw-join{grid-column:1/3;height:26px;position:relative}
+#tab0 .fw-split::before,#tab0 .fw-join::before{content:"";position:absolute;left:25%;right:25%;border:2px solid var(--line)}
+#tab0 .fw-split::before{top:12px;height:14px;border-bottom:0;border-radius:10px 10px 0 0}
+#tab0 .fw-join::before{top:0;height:12px;border-top:0;border-radius:0 0 10px 10px}
+#tab0 .fw-split::after,#tab0 .fw-join::after{content:"";position:absolute;left:50%;width:2px;background:var(--line);transform:translateX(-1px)}
+#tab0 .fw-split::after{top:0;height:12px}
+#tab0 .fw-join::after{top:12px;height:14px}
+/* 三個假設 */
+#tab0 .fw-hyp{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
+#tab0 .fw-h{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:8px}
+#tab0 .fw-h .q{font-family:var(--num);font-size:13px;font-weight:500;color:#fff;align-self:flex-start;padding:2px 10px;border-radius:999px}
+#tab0 .fw-h .n{font-family:var(--display);font-size:18px;font-weight:700;color:var(--fg)}
+#tab0 .fw-h p{margin:0;font-size:15px;line-height:1.6;color:var(--fg)}
+#tab0 .fw-h .go{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px}
+#tab0 .fw-h .go button{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
+#tab0 .fw-h .go button:hover{border-color:var(--accent);color:var(--accent)}
+#tab0 .fw-arrow{align-self:center;font-size:22px;color:var(--muted)}
+@media (max-width:760px){
+  #tab0 .fw-tree{grid-template-columns:1fr;row-gap:0}
+  #tab0 .fw-vision,#tab0 .fw-end{grid-column:1}
+  #tab0 .fw-split,#tab0 .fw-join{grid-column:1;height:22px}
+  #tab0 .fw-split::before,#tab0 .fw-join::before{display:none}
+  #tab0 .fw-split::after,#tab0 .fw-join::after{top:0;height:22px}
+  #tab0 .fw-R{margin-top:22px;position:relative}
+  #tab0 .fw-R::before{content:"";position:absolute;top:-22px;left:50%;width:2px;height:22px;background:var(--line)}
+  #tab0 .fw-hyp{grid-template-columns:1fr}
+  #tab0 .fw-arrow{transform:rotate(90deg);justify-self:center}
+}
+</style>
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div class="fw-card">
+    <p class="fw-kick">研究動機</p>
+    <p class="fw-motive">能不能用科技幫忙長出<b>靈敏的耳朵</b>，判斷警笛聲來源？</p>
+  </div>
+
+  <div class="fw-card">
+    <h3>研究架構</h3>
+    <div class="fw-tree" role="img" aria-label="研究架構圖：宏觀願景是智慧救援綠色通道，分成路口基礎設施端和車室駕駛人因端，最後得到車路協同最佳化的結論">
+      <div class="fw-node fw-vision"><div class="t">【宏觀願景】智慧救援綠色通道</div></div>
+      <div class="fw-split"></div>
+      <div class="fw-col fw-L">
+        <div class="fw-node"><div class="t">【路口基礎設施端】</div><div class="s">解決號誌死板延誤</div></div>
+        <div class="fw-v"></div>
+        <div class="fw-node sub"><div class="t">［實體模型驗證］</div><ul><li>ReSpeaker 麥克風陣列</li><li>TDOA／DOA 判斷方位開綠燈</li></ul></div>
+      </div>
+      <div class="fw-col fw-R">
+        <div class="fw-node"><div class="t">【車室駕駛人因端】</div><div class="s">解決駕駛聽覺迷航</div></div>
+        <div class="fw-v"></div>
+        <div class="fw-node sub"><div class="t">［駕駛艙模擬測驗］</div><ul><li>車窗開關 vs. 羅盤輔助</li><li>反應時間（s）與辨位正確率（%）</li></ul></div>
+      </div>
+      <div class="fw-join"></div>
+      <div class="fw-node fw-end"><div class="t">【驗證結論】車路協同最佳化</div>
+        <div class="fw-eq"><span>路口不停等</span> ＋ <span>車輛不卡位</span> ＝ <span>救援黃金時間縮短</span></div></div>
+    </div>
+  </div>
+
+  <div class="fw-card">
+    <h3>三個假設：痛點驗證 → 頻率辨識 → 陣列定位</h3>
+    <div class="fw-hyp">
+      <div class="fw-h"><span class="q" style="background:var(--stop)">Why</span><div class="n">子假設一：為什麼需要做</div>
+        <p>證明關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。</p>
+        <div class="go"><button data-goto="tab4">學習單(一)</button><button data-goto="tab2">② 駕駛艙模式</button></div></div>
+      <div class="fw-arrow" aria-hidden="true">➜</div>
+      <div class="fw-h"><span class="q" style="background:var(--amber)">What</span><div class="n">子假設二：電腦怎麼認出聲音</div>
+        <p>證明警笛頻率特殊，FFT 能清楚將其與一般引擎低頻噪音分開。</p>
+        <div class="go"><button data-goto="tab5">學習單(二)</button></div></div>
+      <div class="fw-arrow" aria-hidden="true">➜</div>
+      <div class="fw-h"><span class="q" style="background:var(--accent)">Where</span><div class="n">子假設三：電腦怎麼抓出方向</div>
+        <p>證明 2 支麥克風不夠（有前後模糊），4 支環形麥克風才能顯著降低角度差、提高路口判斷率。</p>
+        <div class="go"><button data-goto="tab6">學習單(三)</button><button data-goto="tab1">① 路口模式</button><button data-goto="tab3">③ 實驗模型</button></div></div>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("click",()=>{const t=document.querySelector('button.tab[data-tab="'+b.dataset.goto+'"]');if(t){t.click();t.scrollIntoView({block:"nearest",behavior:"smooth"})}}));
+</script>
+</div>
+<!-- TAB0 END -->
+<div id="tab1" hidden style="display:flex;flex-direction:column;gap:20px">
 <div class="game">
   <div class="board"><canvas id="cv" aria-label="十字路口俯視圖"></canvas><div class="cap" id="cap" hidden><div id="capText"></div></div></div>
   <div class="side">
@@ -4376,7 +4482,9 @@ addEventListener("resize",fit);})();
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
   if(!b.classList.contains("on")){try{window.__hush&&window.__hush()}catch(e){}document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.__hush&&f.contentWindow.__hush()}catch(e){}})}
   document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
-  const t=b.dataset.tab;  document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
+  const t=b.dataset.tab;
+  document.getElementById("tab0").hidden=t!=="tab0";
+  document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
   document.getElementById("tab3").hidden=t!=="tab3"; if(window.__modelShow) window.__modelShow(t==="tab3");
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
   document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
