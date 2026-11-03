@@ -128,9 +128,32 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
 
 <div class="wrap">
+<!-- TITLEEDIT START -->
+<style>
+.ttl-edit{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s;padding:0 4px;margin-left:-4px}
+.ttl-edit:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.ttl-edit:focus{background:var(--panel);box-shadow:0 0 0 2px var(--accent)}
+.ttl-edit:empty::before{content:attr(data-ph);color:var(--muted)}
+.ttl-hint{font-size:12px;color:var(--muted);margin:-2px 0 4px}
+</style>
+<script>
+/* 大標題、副標題：點一下就能改；跟「科展作品說明」的作品名稱連動 */
+(()=>{const T=[["ttlMain","wwt-title","智「where」開道、平安駕到"],["ttlSub","wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"]];
+const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}};
+function init(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(!e)return;
+  try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
+  e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=d;e.textContent=get(k,d);
+  e.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();e.blur()}});
+  e.addEventListener("input",()=>{const v=e.textContent.replace(/\s*\n\s*/g," ");try{localStorage.setItem(k,v)}catch(err){}if(id==="ttlMain")document.title=v||d});
+  e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=d;try{localStorage.setItem(k,d)}catch(err){}}})});
+  document.title=get("wwt-title",T[0][2]);
+  addEventListener("storage",ev=>{T.forEach(([id,k,d])=>{if(ev.key===k){const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=ev.newValue===null?d:ev.newValue;if(id==="ttlMain")document.title=ev.newValue||d}})})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
+</script>
+<!-- TITLEEDIT END -->
 <header style="display:flex;flex-direction:column;gap:6px">
-  <h1>智「where」開道、平安駕到</h1>
-  <p class="subtitle" style="margin:0 0 6px;font-size:15px;color:var(--muted,#55636d)">——導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</p>
+  <h1 id="ttlMain">智「where」開道、平安駕到</h1>
+  <p class="subtitle" style="margin:0 0 6px;font-size:15px;color:var(--muted,#55636d)">——<span id="ttlSub">導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</span></p>
   <div class="row tabs" role="tablist">
     <button class="tab on" data-tab="tab0" role="tab">🧭 研究架構</button>
     <button class="tab" data-tab="tab1" role="tab">🚦 情境1：路口</button>
@@ -4388,7 +4411,7 @@ svg text{font-family:var(--body)}
     <div class="ftitle">臺中市麗喆雙語中小學　校內科學展覽作品說明（初審）</div>
     <div class="frow"><div class="fh">年級</div><div class="fc grade"><input type="text" id="yr" class="sm" aria-label="年">年<input type="text" id="cls" class="sm" aria-label="班">班<span class="nm">姓名</span><input type="text" id="nm" class="wide" aria-label="姓名"></div></div>
     <div class="frow"><div class="fh">科別</div><div class="fc kinds" id="kinds"></div></div>
-    <div class="frow"><div class="fh">作品名稱</div><div class="fc"><input type="text" id="title" class="wide" aria-label="作品名稱"></div></div>
+    <div class="frow"><div class="fh">作品名稱</div><div class="fc" style="display:grid;gap:6px"><input type="text" id="title" class="wide" aria-label="作品名稱（主標題）"><div style="display:flex;align-items:center;gap:6px"><span aria-hidden="true">——</span><input type="text" id="subtitle" class="wide" aria-label="作品名稱（副標題）" style="flex:1"></div></div></div>
     <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea></div></div>
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea></div></div>
@@ -4415,11 +4438,17 @@ svg text{font-family:var(--body)}
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
 const KINDS=["物理","化學","生物","地球科學","數學","生活與應用科學"];
-const FIELDS=["yr","cls","nm","title","motive","goal","tools","proc","result","refs"];
+const FIELDS=["yr","cls","nm","title","subtitle","motive","goal","tools","proc","result","refs"];
 let S={kinds:[],procPics:[],resPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
-FIELDS.forEach(k=>{const e=$(k);e.value=S[k]||"";e.addEventListener("input",()=>{S[k]=e.value;save()})});
+/* 作品名稱跟網站最上面的大標題連動（同一台電腦、全隊共用） */
+const SHARED={title:["wwt-title","智「where」開道、平安駕到"],subtitle:["wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"]};
+for(const k in SHARED){const [lk,def]=SHARED[k];let v=null;try{v=localStorage.getItem(lk)}catch(e){}
+  if(v===null){v=S[k]||def;try{localStorage.setItem(lk,v)}catch(e){}}S[k]=v}
+save();
+FIELDS.forEach(k=>{const e=$(k);e.value=S[k]||"";e.addEventListener("input",()=>{S[k]=e.value;save();if(SHARED[k])try{localStorage.setItem(SHARED[k][0],e.value)}catch(err){}})});
+addEventListener("storage",ev=>{for(const k in SHARED)if(ev.key===SHARED[k][0]&&ev.newValue!==null&&ev.newValue!==S[k]){S[k]=ev.newValue;$(k).value=ev.newValue;save()}});
 $("kinds").innerHTML=KINDS.map((k,i)=>`<label><input type="checkbox" value="${k}"${S.kinds.includes(k)?" checked":""}>${k}</label>`).join("");
 $("kinds").addEventListener("change",()=>{S.kinds=[...$("kinds").querySelectorAll("input:checked")].map(x=>x.value);save()});
 /* 照片：縮小後存起來 */
@@ -4457,7 +4486,7 @@ btn.addEventListener("click",async()=>{
       new TableRow({children:[new TableCell({columnSpan:2,borders:BD,margins:{top:100,bottom:100},children:[para("臺中市麗喆雙語中小學　校內科學展覽作品說明(初審)",{align:AlignmentType.CENTER,size:30,bold:true})]})]}),
       row("年級",null,[para(`${S.yr||"　"} 年 ${S.cls||"　"} 班　　姓名：${S.nm||""}`)]),
       row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
-      row("作品名稱",null,[para(S.title||"",{bold:true})]),
+      row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
       row("研究動機","（描述為何想研究的起因）",lines(S.motive),1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",lines(S.goal),1800),
       row("使用器材","（此實驗所需的器材）",lines(S.tools),1400),
