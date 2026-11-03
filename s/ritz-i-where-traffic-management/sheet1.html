@@ -21,7 +21,7 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
 /* 每個小孩自己的紀錄＋自動存到雲端（Google 試算表／雲端硬碟）。
    學習單的資料（ws1…、ws2…、ws3…、ws4…）在這台電腦裡依「名字」分開存；有網路時自動上傳，換電腦時自動下載最新的。 */
 (()=>{if(window.__kidsync)return;window.__kidsync=1;
-const SYNC_URL=""/*%%SYNC_URL%%*/, TOKEN="wwt-2026";
+const SYNC_URL="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec", TOKEN="ritz";
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.localStorage;
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
