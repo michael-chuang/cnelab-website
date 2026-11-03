@@ -14,7 +14,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 </script>
 <!-- AUDIOUNLOCK START -->
 <script>
@@ -25,7 +31,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 </script>
 <!-- AUDIOUNLOCK END -->
 <title>智慧路口情境模擬</title>
@@ -1537,7 +1549,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -2209,7 +2227,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -2990,6 +3014,7 @@ $("reveal").addEventListener("click",()=>{$("lawfig").hidden=false;S.reveal=true
   const KI={amb:0,fire:1,police:2};
   function clearCur(){["lawCur","lawDot","lawTxt"].forEach(id=>{const e=document.getElementById(id);if(e)e.remove()});LAWK.forEach((_,i)=>{const r=document.getElementById("lawRow"+i);if(r){r.removeAttribute("stroke");r.removeAttribute("stroke-width")}})}
   function stop(){if(osc){try{gn.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.2)}catch(e){}osc=null}kind="";cancelAnimationFrame(raf);
+  (window.__hushers=window.__hushers||[]).push(stop);
     document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.remove("on"));clearCur();$("sNow").textContent="按一種車，聽聽看、看看圓點怎麼跑。"}
   function start(k){stop();if(!k)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
     if(AC.state==="suspended")AC.resume();
@@ -3111,7 +3136,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -3632,6 +3663,7 @@ function soundOn(){if(!audioInit())return;if(AC.state==="suspended")AC.resume();
 function soundOff(){if(!AC)return;bus.gain.cancelScheduledValues(AC.currentTime);bus.gain.setTargetAtTime(0,AC.currentTime,0.15);clearInterval(mTimer);mTimer=null}
 function play(){running=true;t0=clock.getElapsedTime();tStop=null;soundOn();updRes()}
 function stop(){if(playing())tStop=clock.getElapsedTime();soundOff();updRes()}
+(window.__hushers=window.__hushers||[]).push(()=>{if(playing())stop()});
 function setAng(v){ang=((Math.round(v)%360)+360)%360;place();audioPos();updRes()}
 $("hStop").addEventListener("click",stop);cv.addEventListener("click",unlock);cv.addEventListener("touchend",unlock,{passive:true});
 /* 滑鼠：點草地＝喇叭走過去並開始播放；播放中再點一下＝停止；也可以拖著喇叭走 */
@@ -4048,7 +4080,13 @@ let done=false;
 function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
+  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -4341,8 +4379,9 @@ addEventListener("resize",fit);})();
 <!-- TAB7 END -->
 <script>
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
+  if(!b.classList.contains("on")){try{window.__hush&&window.__hush()}catch(e){}document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.__hush&&f.contentWindow.__hush()}catch(e){}})}
   document.querySelectorAll("button.tab").forEach(x=>x.classList.toggle("on",x===b));
-  const t=b.dataset.tab; document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
+  const t=b.dataset.tab;  document.getElementById("tab1").hidden=t!=="tab1"; document.getElementById("tab2").hidden=t!=="tab2";
   document.getElementById("tab3").hidden=t!=="tab3"; if(window.__modelShow) window.__modelShow(t==="tab3");
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
   document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
