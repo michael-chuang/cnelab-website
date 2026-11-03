@@ -137,17 +137,33 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .ttl-hint{font-size:12px;color:var(--muted);margin:-2px 0 4px}
 </style>
 <script>
-/* 大標題、副標題：點一下就能改；跟「科展作品說明」的作品名稱連動 */
+/* 大標題、副標題：點一下就能改；跟「科展作品說明」的作品名稱連動；全隊共用，存到雲端（kid=_team） */
 (()=>{const T=[["ttlMain","wwt-title","智「where」開道、平安駕到"],["ttlSub","wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"]];
+const URL_="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec",TOKEN="ritz",KID="_team",KEY="ws0-title",TS="wwt-title#ts";
+const url=()=>{try{return localStorage.getItem("wwt-sync-url")||URL_}catch(e){return URL_}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}};
-function init(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(!e)return;
+const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let tm=null;
+function show(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=get(k,d)});document.title=get("wwt-title",T[0][2])}
+function edited(){set(TS,String(Date.now()));clearTimeout(tm);tm=setTimeout(push,1500)}
+async function push(beacon){clearTimeout(tm);tm=null;
+  const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({t:get("wwt-title",T[0][2]),s:get("wwt-subtitle",T[1][2])})});
+  if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url(),body);return}
+  try{const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw 0}catch(e){tm=setTimeout(push,15000)}}
+async function pull(){try{const r=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+KID+"&key="+KEY)).json();
+  if(!r.ok||!(r.ts>(+get(TS,"0"))))return;const o=JSON.parse(r.data||"{}");
+  if(typeof o.t==="string")set("wwt-title",o.t);if(typeof o.s==="string")set("wwt-subtitle",o.s);set(TS,String(r.ts));show();
+  document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-title",newValue:o.t}));f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-subtitle",newValue:o.s}))}catch(e){}})}catch(e){}}
+function init(){T.forEach(([id,k,d])=>{if(get(k,null)===null)set(k,d);const e=document.getElementById(id);if(!e)return;
   try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
-  e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=d;e.textContent=get(k,d);
+  e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=d;
   e.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();e.blur()}});
-  e.addEventListener("input",()=>{const v=e.textContent.replace(/\s*\n\s*/g," ");try{localStorage.setItem(k,v)}catch(err){}if(id==="ttlMain")document.title=v||d});
-  e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=d;try{localStorage.setItem(k,d)}catch(err){}}})});
-  document.title=get("wwt-title",T[0][2]);
-  addEventListener("storage",ev=>{T.forEach(([id,k,d])=>{if(ev.key===k){const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=ev.newValue===null?d:ev.newValue;if(id==="ttlMain")document.title=ev.newValue||d}})})}
+  e.addEventListener("input",()=>{set(k,e.textContent.replace(/\s*\n\s*/g," "));if(id==="ttlMain")document.title=e.textContent||d;edited()});
+  e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=d;set(k,d);edited()}})});
+  show();pull();
+  addEventListener("storage",ev=>{if(ev.key==="wwt-title"||ev.key==="wwt-subtitle"){show();edited()}});   // 作品說明那邊改的
+  addEventListener("pagehide",()=>{if(tm)push(true)});
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){if(tm)push(true)}else pull()})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 </script>
 <!-- TITLEEDIT END -->
