@@ -32,7 +32,11 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-let kid=g("wwt-kid")||"";
+const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
 P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
@@ -58,7 +62,7 @@ async function pull(){if(!kid||!url())return;
     if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -69,6 +73,10 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>

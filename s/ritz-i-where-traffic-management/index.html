@@ -1755,7 +1755,11 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-let kid=g("wwt-kid")||"";
+const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
 P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
@@ -1781,7 +1785,7 @@ async function pull(){if(!kid||!url())return;
     if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -1792,6 +1796,10 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -2435,7 +2443,11 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-let kid=g("wwt-kid")||"";
+const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
 P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
@@ -2461,7 +2473,7 @@ async function pull(){if(!kid||!url())return;
     if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -2472,6 +2484,10 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -3346,7 +3362,11 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-let kid=g("wwt-kid")||"";
+const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
 P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
@@ -3372,7 +3392,7 @@ async function pull(){if(!kid||!url())return;
     if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -3383,6 +3403,10 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -4281,7 +4305,8 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
-</head><body><!-- KIDSYNC START -->
+</head><body><script>window.KS_TEAM=1<\/script>
+<!-- KIDSYNC START -->
 <script>
 /* 每個小孩自己的紀錄＋自動存到雲端（Google 試算表／雲端硬碟）。
    學習單的資料（ws1…、ws2…、ws3…、ws4…）在這台電腦裡依「名字」分開存；有網路時自動上傳，換電腦時自動下載最新的。 */
@@ -4292,7 +4317,11 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-let kid=g("wwt-kid")||"";
+const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
 P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
@@ -4318,7 +4347,7 @@ async function pull(){if(!kid||!url())return;
     if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -4329,6 +4358,10 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -4463,6 +4496,12 @@ svg text{font-family:var(--body)}
 .pic button{position:absolute;top:4px;right:4px;padding:1px 8px;font-size:12px;background:rgba(255,255,255,.9);color:#18232b}
 .addpic{align-self:flex-start;margin:0;font-size:14px;cursor:pointer;color:var(--accent);border:1px dashed var(--accent);border-radius:999px;padding:4px 12px}
 @media (max-width:560px){.frow{grid-template-columns:minmax(0,1fr)}.fh{border-right:0;border-bottom:1px dashed var(--line);flex-direction:row;flex-wrap:wrap;align-items:baseline}}
+
+.dates{border:2px solid var(--amber,#e3a008);border-radius:14px;padding:12px 18px;margin:0 0 18px;background:color-mix(in srgb,#e3a008 8%,var(--paper,#fff))}
+.dates h3{margin:0 0 6px;font-size:17px}
+.dates ul{margin:0;padding-left:1.1em;display:grid;gap:8px}
+.dates li span{display:block;font-size:14px;color:var(--muted,#5a646b)}
+.dates li em{font-style:normal;display:inline-block;margin-top:2px;font-size:13px;font-weight:700;color:#b45309}
 </style>
 
 <div class="wrap">
@@ -4471,6 +4510,16 @@ svg text{font-family:var(--body)}
   <h1>校內科學展覽作品說明（初審）</h1>
   <p class="lead">照學校「附件 2」的格式，把三張學習單做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
 </header>
+<section class="dates" aria-label="重要日期">
+  <h3>📅 重要日期（115 學年校內科展）</h3>
+  <ul>
+    <li data-due="2026-11-20T12:00:00+08:00"><b>報名＋初審紙本送件截止：11 月 20 日（五）中午 12:00</b>
+      <span>11/18（三）起可以送；到<b>教務處</b>交：① 報名表（附件 1）② 作品說明紙本（附件 2，就是這一份）各一份</span><em></em></li>
+    <li data-due="2026-11-25T12:30:00+08:00"><b>複審（口試）：11 月 25 日（三）中午 12:30～第 6 節（暫定）</b>
+      <span>地點：本校 5F 自然教室；初審通過才會通知參加，以口頭報告為主</span><em></em></li>
+    <li><b>通過後培訓：116 年 1 月～3 月中（含寒假）</b><span>代表學校參加臺中市科展，利用午休、作業指導時間，可能放學後</span></li>
+  </ul>
+</section>
 <section>
   <div class="card form">
     <div class="ftitle">臺中市麗喆雙語中小學　校內科學展覽作品說明（初審）</div>
@@ -4568,6 +4617,10 @@ btn.addEventListener("click",async()=>{
     if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
   }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}
   btn.disabled=false})})();
+
+/* 重要日期倒數 */
+(()=>{const f=()=>document.querySelectorAll(".dates [data-due]").forEach(li=>{const d=new Date(li.dataset.due),n=Date.now(),em=li.querySelector("em");
+  const days=Math.ceil((d-n)/864e5);em.textContent=d<n?"（已經過了）":days<=0?"⏰ 就是今天！":`⏳ 還有 ${days} 天`});f();setInterval(f,36e5)})();
 <\/script>
 <style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
 <script>
