@@ -16,6 +16,66 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));})();
 </script>
+<!-- KIDSYNC START -->
+<script>
+/* 每個小孩自己的紀錄＋自動存到雲端（Google 試算表／雲端硬碟）。
+   學習單的資料（ws1…、ws2…、ws3…、ws4…）在這台電腦裡依「名字」分開存；有網路時自動上傳，換電腦時自動下載最新的。 */
+(()=>{if(window.__kidsync)return;window.__kidsync=1;
+const SYNC_URL=""/*%%SYNC_URL%%*/, TOKEN="wwt-2026";
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.localStorage;
+const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
+const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
+try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
+const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+let kid=g("wwt-kid")||"";
+const nk=k=>kid?k+"@"+kid:k;
+P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
+P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
+P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
+const dirty=new Set();let tm=null,st="",stT=0;
+function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
+function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
+async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
+  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  const keys=[...dirty];if(!keys.length)return;
+  for(const k of keys){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});
+    if(beacon){try{navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));dirty.delete(k)}catch(e){}continue}
+    try{show("☁ 存到雲端中…");const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw r.error||"失敗";dirty.delete(k)}
+    catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
+  const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`)}
+async function pull(){if(!kid||!url())return;
+  try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
+    for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
+      const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));changed=true}}
+      else if(lt>it.ts+1000)dirty.add(it.key)}
+    for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
+    if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
+addEventListener("pagehide",()=>{if(dirty.size)push(true)});
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
+addEventListener("storage",e=>{if(e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+/* 名字列 */
+function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
+function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
+  if(!old&&!L.slice(0,-1).length){for(const k of Object.keys(LS))if(isWS(k)&&!k.includes("@")&&g(k+"@"+n)===null){s(k+"@"+n,g(k));s(k+"@"+n+"#ts",String(Date.now()))}}  // 第一次選名字：原本的紀錄給他
+  s("wwt-kid",n);location.reload()}
+function bar(){const b=document.createElement("div");b.id="kidBar";
+  b.style.cssText="position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;margin:-4px 0 14px;border-radius:12px;background:var(--paper,#fff);border:2px solid "+(kid?"var(--line,#d3dbe0)":"#e3a008")+";font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.06)";
+  const L=kidsList();
+  b.innerHTML=`<b>👤 我是：</b><select id="ksSel" style="font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${n.replace(/[<&]/g,"")}</option>`).join("")}<option value="__new">＋ 新增名字</option></select>
+    <span id="ksNew" hidden><input id="ksName" type="text" maxlength="12" aria-label="新的名字" style="font:inherit;font-size:15px;width:7em;padding:3px 6px;border-radius:8px;border:1px solid var(--line,#ccc)"> <button type="button" id="ksOk" style="font:inherit;font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">好</button></span>
+    <span id="ksStat" style="flex:1;min-width:10em;font-size:13px;color:var(--muted,#666)"></span>
+    <button type="button" id="ksSave" style="font:inherit;font-size:14px;padding:4px 12px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button>`;
+  const host=document.querySelector(".wrap")||document.body;host.insertBefore(b,host.firstChild);
+  const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
+  const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+  show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
+window.__kid=()=>kid;
+})();
+</script>
+<!-- KIDSYNC END -->
 <title>紀錄單一：有沒有遮蔽</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
