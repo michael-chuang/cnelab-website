@@ -130,46 +130,51 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 <div class="wrap">
 <!-- TITLEEDIT START -->
 <style>
-.ttl-edit{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s;padding:0 4px;margin-left:-4px}
-.ttl-edit:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.ttl-edit{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s}
+.ttl-edit:hover{background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .ttl-edit:focus{background:var(--panel);box-shadow:0 0 0 2px var(--accent)}
 .ttl-edit:empty::before{content:attr(data-ph);color:var(--muted)}
-.ttl-hint{font-size:12px;color:var(--muted);margin:-2px 0 4px}
 </style>
 <script>
-/* 大標題、副標題：點一下就能改；跟「科展作品說明」的作品名稱連動；全隊共用，存到雲端（kid=_team） */
-(()=>{const T=[["ttlMain","wwt-title","智「where」開道、平安駕到"],["ttlSub","wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"],["fwMotive","wwt-motive","能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？",1]];
-const URL_="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec",TOKEN="ritz",KID="_team",KEY="ws0-title",TS="wwt-title#ts";
+/* 網站上可以直接改的字（data-sync="鍵"）：同一個鍵的地方一起變；和「科展作品說明」連動；全隊共用，存到雲端（kid=_team） */
+(()=>{const URL_="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec",TOKEN="ritz",KID="_team",KEY="ws0-title",TS="wwt-title#ts";
 const url=()=>{try{return localStorage.getItem("wwt-sync-url")||URL_}catch(e){return URL_}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}};
 const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let tm=null;
-function show(){T.forEach(([id,k,d])=>{const e=document.getElementById(id);if(e&&document.activeElement!==e)e.textContent=get(k,d)});document.title=get("wwt-title",T[0][2]);const v=document.getElementById("fwVision");if(v)v.textContent=get("wwt-title",T[0][2])}
+const DEF={},ML={};let EL=[],tm=null;
+const els=k=>EL.filter(e=>e.dataset.sync===k);
+function paint(k,skip){const v=get(k,DEF[k]);els(k).forEach(e=>{if(e!==skip&&document.activeElement!==e)e.textContent=v});if(k==="wwt-title")document.title=v}
+function show(){Object.keys(DEF).forEach(k=>paint(k))}
 function edited(){set(TS,String(Date.now()));clearTimeout(tm);tm=setTimeout(push,1500)}
+function payload(){const v={};Object.keys(DEF).forEach(k=>v[k]=get(k,DEF[k]));return v}
 async function push(beacon){clearTimeout(tm);tm=null;
-  const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({t:get("wwt-title",T[0][2]),s:get("wwt-subtitle",T[1][2]),m:get("wwt-motive",T[2][2])})});
+  const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({v:payload()})});
   if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url(),body);return}
   try{const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw 0}catch(e){tm=setTimeout(push,15000)}}
 async function pull(){try{const r=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+KID+"&key="+KEY)).json();
   if(!r.ok||!(r.ts>(+get(TS,"0"))))return;const o=JSON.parse(r.data||"{}");
-  if(typeof o.t==="string")set("wwt-title",o.t);if(typeof o.s==="string")set("wwt-subtitle",o.s);if(typeof o.m==="string")set("wwt-motive",o.m);set(TS,String(r.ts));show();
-  document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-title",newValue:o.t}));f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-subtitle",newValue:o.s}));if(typeof o.m==="string")f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:"wwt-motive",newValue:o.m}))}catch(e){}})}catch(e){}}
-function init(){T.forEach(([id,k,d,ml])=>{if(!ml&&get(k,null)===null)set(k,d);const e=document.getElementById(id);if(!e)return;
-  try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
-  e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=d;
-  e.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ml){ev.preventDefault();e.blur()}});
-  e.addEventListener("input",()=>{set(k,ml?e.innerText.replace(/\n$/,""):e.textContent.replace(/\s*\n\s*/g," "));if(id==="ttlMain"){document.title=e.textContent||d;const v=document.getElementById("fwVision");if(v)v.textContent=e.textContent||d}edited()});
-  e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=d;set(k,d);edited()}})});
+  const v=o.v||{"wwt-title":o.t,"wwt-subtitle":o.s,"wwt-motive":o.m};
+  for(const k in v)if(typeof v[k]==="string")set(k,v[k]);set(TS,String(r.ts));show();
+  document.querySelectorAll("iframe").forEach(f=>{try{for(const k in v)if(typeof v[k]==="string")f.contentWindow.dispatchEvent(new StorageEvent("storage",{key:k,newValue:v[k]}))}catch(e){}})}catch(e){}}
+function init(){EL=[...document.querySelectorAll("[data-sync]")];
+  EL.forEach(e=>{const k=e.dataset.sync;if(!(k in DEF)){DEF[k]=e.textContent;ML[k]=e.hasAttribute("data-ml")}});
+  Object.keys(DEF).forEach(k=>{if(!ML[k]&&get(k,null)===null)set(k,DEF[k])});
+  EL.forEach(e=>{const k=e.dataset.sync,ml=ML[k];
+    try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
+    e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=DEF[k];
+    e.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ml){ev.preventDefault();e.blur()}});
+    e.addEventListener("input",()=>{set(k,ml?e.innerText.replace(/\n$/,""):e.textContent.replace(/\s*\n\s*/g," "));paint(k,e);edited()});
+    e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=DEF[k];set(k,DEF[k]);paint(k,e);edited()}})});
   show();pull();
-  addEventListener("storage",ev=>{if(ev.key==="wwt-title"||ev.key==="wwt-subtitle"||ev.key==="wwt-motive"){show();edited()}});   // 作品說明那邊改的
+  addEventListener("storage",ev=>{if(ev.key in DEF){paint(ev.key);edited()}});   // 作品說明那邊改的
   addEventListener("pagehide",()=>{if(tm)push(true)});
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){if(tm)push(true)}else pull()})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 </script>
 <!-- TITLEEDIT END -->
 <header style="display:flex;flex-direction:column;gap:6px">
-  <h1 id="ttlMain">智「where」開道、平安駕到</h1>
-  <p class="subtitle" style="margin:0 0 6px;font-size:15px;color:var(--muted,#55636d)">——<span id="ttlSub">導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</span></p>
+  <h1 id="ttlMain" data-sync="wwt-title">智「where」開道、平安駕到</h1>
+  <p class="subtitle" style="margin:0 0 6px;font-size:15px;color:var(--muted,#55636d)">——<span id="ttlSub" data-sync="wwt-subtitle">導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</span></p>
   <div class="row tabs" role="tablist">
     <button class="tab on" data-tab="tab0" role="tab">🧭 研究架構</button>
     <button class="tab" data-tab="tab1" role="tab">🚦 情境1：路口</button>
@@ -191,6 +196,8 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 #tab0 .fw-kick{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}
 #tab0 .fw-motive{font-family:var(--display);font-size:clamp(20px,3.2vw,28px);line-height:1.45;margin:0;color:var(--fg)}
 #tab0 .fw-motive b{color:var(--accent)}
+#tab0 .fw-goal{font-size:17px;line-height:1.8;margin:0;color:var(--fg)}
+#tab0 .fw-tip{margin:0;font-size:13px;color:var(--muted)}
 /* 樹狀圖 */
 #tab0 .fw-tree{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;position:relative;margin-top:6px}
 #tab0 .fw-node{border-radius:14px;padding:12px 16px;text-align:center;background:var(--panel);border:2px solid var(--line);position:relative;z-index:1}
@@ -251,43 +258,51 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 }
 </style>
 <div style="display:flex;flex-direction:column;gap:20px">
+  <p class="fw-tip">✏️ 這一頁的字都可以點一下直接修改，會自動存到雲端，全隊共用。</p>
   <div class="fw-card">
     <p class="fw-kick">研究動機（描述為何想研究的起因）</p>
-    <p class="fw-motive" id="fwMotive" style="white-space:pre-wrap">能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？</p>
+    <p class="fw-motive" data-sync="wwt-motive" data-ml style="white-space:pre-wrap">能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？</p>
+  </div>
+  <div class="fw-card">
+    <p class="fw-kick">研究目的（對此研究想要知道什麼或可以得知什麼）</p>
+    <p class="fw-goal" data-sync="wwt-goal" data-ml style="white-space:pre-wrap">1. 了解人坐在車裡（關窗、開窗）聽警笛聲時，判斷方向的誤差有多大、反應要多久。（Why）
+2. 了解警笛聲「長」什麼樣子，用傅立葉轉換找出它和一般汽車引擎聲有什麼不同。（What）
+3. 了解用 2 支麥克風模仿人的耳朵，判斷警笛方向夠不夠準確；比較 1～4 支麥克風的角度差和正確率。（Where）
+4. 根據實驗結果，想想怎麼讓路口紅綠燈和駕駛人一起幫救護車讓出通道。</p>
   </div>
 
   <div class="fw-card">
     <h3>研究架構</h3>
-    <div class="fw-tree" role="img" aria-label="研究架構圖：從「智where開道、平安駕到」分成兩邊。左邊是內在困境，人在車室內不容易聽到外面聲音，對應車室駕駛者人因端與 Why；右邊是外在困境，路口紅燈受困車陣之中，對應路口紅綠燈設施端、What 與 Where；最後合併成研究成果建議：路口不停等加車輛不卡位等於救援黃金時間縮短">
-      <div class="fw-node fw-vision"><div class="t">【<span id="fwVision">智「where」開道、平安駕到</span>】</div></div>
+    <div class="fw-tree">
+      <div class="fw-node fw-vision"><div class="t">【<span data-sync="wwt-title">智「where」開道、平安駕到</span>】</div></div>
       <div class="fw-split"></div>
       <div class="fw-col fw-L">
-        <div class="fw-node cause"><div class="t">阻塞原因 1：內在困境</div><div class="s">人在車室內不容易聽到外面聲音</div></div>
+        <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c1t">阻塞原因 1：內在困境</span></div><div class="s"><span data-sync="wwt-fw-c1s">人在車室內不容易聽到外面聲音</span></div></div>
         <div class="fw-v"></div>
-        <div class="fw-node"><div class="t">【車室駕駛者人因端】</div></div>
+        <div class="fw-node"><div class="t">【<span data-sync="wwt-fw-e1">車室駕駛者人因端</span>】</div></div>
         <div class="fw-v"></div>
-        <div class="fw-node sub"><span class="q" style="background:var(--stop)">Why</span><div class="t">在車內判斷警笛聲來源的誤差有多大？</div>
-          <p>子假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。</p>
+        <div class="fw-node sub"><span class="q" style="background:var(--stop)">Why</span><div class="t"><span data-sync="wwt-fw-h1q">在車內判斷警笛聲來源的誤差有多大？</span></div>
+          <p><span data-sync="wwt-fw-h1" data-ml>假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。</span></p>
           <div class="go"><button data-goto="tab4">📝 學習單(一)</button><button data-goto="tab2">🚗 情境2：駕駛</button></div></div>
         <div class="fw-fill"></div>
       </div>
       <div class="fw-col fw-R">
-        <div class="fw-node cause"><div class="t">阻塞原因 2：外在困境</div><div class="s">路口紅燈受困車陣之中</div></div>
+        <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c2t">阻塞原因 2：外在困境</span></div><div class="s"><span data-sync="wwt-fw-c2s">路口紅燈受困車陣之中</span></div></div>
         <div class="fw-v"></div>
-        <div class="fw-node"><div class="t">【路口紅綠燈設施端】</div></div>
+        <div class="fw-node"><div class="t">【<span data-sync="wwt-fw-e2">路口紅綠燈設施端</span>】</div></div>
         <div class="fw-v"></div>
-        <div class="fw-node sub"><span class="q" style="background:var(--amber)">What</span><div class="t">警笛聲「長」什麼樣？</div>
-          <p>子假設二：警笛頻率特殊，FFT 能清楚將其與一般引擎低頻噪音分開。</p>
+        <div class="fw-node sub"><span class="q" style="background:var(--amber)">What</span><div class="t"><span data-sync="wwt-fw-h2q">警笛聲「長」什麼樣？</span></div>
+          <p><span data-sync="wwt-fw-h2" data-ml>假設二：警笛頻率特殊，傅立葉轉換能清楚將其與一般引擎低頻噪音分開。</span></p>
           <div class="go"><button data-goto="tab5">📝 學習單(二)</button></div></div>
         <div class="fw-v"></div>
-        <div class="fw-node sub"><span class="q" style="background:var(--accent)">Where</span><div class="t">警笛聲從哪裡來？</div>
-          <p>子假設三：2 支麥克風不夠（有前後模糊），4 支環形麥克風才能顯著降低角度差、提高路口判斷率。</p>
+        <div class="fw-node sub"><span class="q" style="background:var(--accent)">Where</span><div class="t"><span data-sync="wwt-fw-h3q">警笛聲從哪裡來？</span></div>
+          <p><span data-sync="wwt-fw-h3" data-ml>假設三：用 2 支麥克風模仿人的耳朵，這樣夠準確嗎？</span></p>
           <div class="go"><button data-goto="tab6">📝 學習單(三)</button><button data-goto="tab1">🚦 情境1：路口</button><button data-goto="tab3">📦 實驗模型</button></div></div>
         <div class="fw-fill"></div>
       </div>
       <div class="fw-join"></div>
-      <div class="fw-node fw-end"><div class="t">【研究成果建議】</div>
-        <div class="fw-eq"><span>路口不停等</span> ＋ <span>車輛不卡位</span> ＝ <span>救援黃金時間縮短</span></div></div>
+      <div class="fw-node fw-end"><div class="t">【<span data-sync="wwt-fw-endt">研究成果可能的建議</span>】</div>
+        <div class="fw-eq"><span><span data-sync="wwt-fw-q1">路口不停等</span></span> ＋ <span><span data-sync="wwt-fw-q2">車輛不卡位</span></span> ＝ <span><span data-sync="wwt-fw-q3">救援黃金時間縮短</span></span></div></div>
     </div>
   </div>
 </div>
@@ -1776,6 +1791,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 <\/script>
 <!-- KIDSYNC END -->
@@ -1865,7 +1883,7 @@ svg text{font-family:var(--body)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇</div>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（一）Why 人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
@@ -2306,7 +2324,7 @@ btn.addEventListener("click",async()=>{
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
-    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
@@ -2453,6 +2471,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 <\/script>
 <!-- KIDSYNC END -->
@@ -2617,7 +2638,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（二）What 傅立葉轉換篇</div>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（二）What 傅立葉轉換篇</div>
   <h1>聲音裡藏了哪些頻率？</h1>
   <p class="lead">自然課學過：聲音是物體在振動。這張學習單先認識「頻率」（每秒振動幾次），再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
 </header>
@@ -3224,7 +3245,7 @@ btn.addEventListener("click",async()=>{
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const pic=async(u,w)=>{const [iw,ih]=await imgSize(u);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(u),transformation:{width:w,height:Math.round(w*ih/iw)}})]})};
     const B=[];
-    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（二）What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（二）What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音裡藏了哪些頻率？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
@@ -3361,6 +3382,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 <\/script>
 <!-- KIDSYNC END -->
@@ -3493,7 +3517,7 @@ td.no{color:var(--b);font-weight:700}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（三）Where 聲源定位篇</div>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（三）Where 聲源定位篇</div>
   <h1>聲音從哪裡來？路口要幾支麥克風？</h1>
   <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這張學習單先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
 </header>
@@ -4172,7 +4196,7 @@ btn.addEventListener("click",async()=>{
     const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const B=[];
-    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（三）Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（三）Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音從哪裡來？路口要幾支麥克風？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("先想一想"));B.push(P("戴上耳塞後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
@@ -4304,6 +4328,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 <\/script>
 <!-- KIDSYNC END -->
@@ -4418,7 +4445,7 @@ svg text{font-family:var(--body)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」開道、平安駕到　校內科學展覽（初審）</div>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　校內科學展覽（初審）</div>
   <h1>校內科學展覽作品說明（初審）</h1>
   <p class="lead">照學校「附件 2」的格式，把三張學習單做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
 </header>
@@ -4459,7 +4486,7 @@ let S={kinds:[],procPics:[],resPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
 /* 作品名稱跟網站最上面的大標題連動（同一台電腦、全隊共用） */
-const SHARED={title:["wwt-title","智「where」開道、平安駕到"],subtitle:["wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"],motive:["wwt-motive","能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？"]};
+const SHARED={title:["wwt-title","智「where」開道、平安駕到"],subtitle:["wwt-subtitle","導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道"],motive:["wwt-motive","能不能用科技幫忙長出靈敏的耳朵，判斷警笛聲來源？"],goal:["wwt-goal","1. 了解人坐在車裡（關窗、開窗）聽警笛聲時，判斷方向的誤差有多大、反應要多久。（Why）\n2. 了解警笛聲「長」什麼樣子，用傅立葉轉換找出它和一般汽車引擎聲有什麼不同。（What）\n3. 了解用 2 支麥克風模仿人的耳朵，判斷警笛方向夠不夠準確；比較 1～4 支麥克風的角度差和正確率。（Where）\n4. 根據實驗結果，想想怎麼讓路口紅綠燈和駕駛人一起幫救護車讓出通道。"]};
 for(const k in SHARED){const [lk,def]=SHARED[k];let v=null;try{v=localStorage.getItem(lk)}catch(e){}
   if(v===null){v=S[k]||def;try{localStorage.setItem(lk,v)}catch(e){}}S[k]=v}
 save();

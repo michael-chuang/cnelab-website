@@ -90,6 +90,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 </script>
 <!-- KIDSYNC END -->
@@ -183,7 +186,7 @@ svg text{font-family:var(--body)}
 <div class="wrap">
 <header>
 <nav style="font-size:15px"><a href="./">← 回到智慧路口情境模擬</a></nav>
-  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇</div>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（一）Why 人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
@@ -624,7 +627,7 @@ btn.addEventListener("click",async()=>{
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
-    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
