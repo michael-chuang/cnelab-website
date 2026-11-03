@@ -274,6 +274,7 @@ const BOXEND=STOP+2*(STOPOFF+40)+8; // 車頭超過這裡，車尾也離開路�
 /* ===== 紅綠燈控制 ===== */
 let light={N:"red",S:"red",E:"red",W:"red"};
 let ctl={mode:"cycle",phase:"NS",stage:"green",t:0,target:null,hold:0};
+const SIGCTL=()=>ctl; // 3D 畫面裡的 ctl 是鏡頭控制，要用這個拿到紅綠燈控制
 const G=12,Y=2,AR=1;
 function setAxis(axis,c){(axis==="NS"?["N","S"]:["E","W"]).forEach(d=>light[d]=c)}
 function updateLights(dt){
@@ -1121,7 +1122,7 @@ for(const d in SIG){const {h:[hx,hy],p:[px,py],hor}=SIG[d];const x=X(px),z=Z(py)
 }
 const LC={red:0xff3b30,yellow:0xffc21a,green:0x2ee07c};
 function updLights(){for(const d in LAMP){LAMP[d].forEach(({m,c})=>{const on=light[d]===c;m.material.color.setHex(on?LC[c]:0x2a2f33);m.material.emissive.setHex(on?LC[c]:0);m.material.emissiveIntensity=on?1.4:0});
-  const r=remain(d), lab=r==null?(ctl.mode==="priority"?(d===ctl.target?"GO":"STOP"):""):String(Math.max(0,Math.ceil(r))); const n=LAMP[d].num;
+  const r=remain(d), sc=SIGCTL(), lab=r==null?(sc.mode==="priority"?(d===sc.target?"GO":"STOP"):""):String(Math.max(0,Math.ceil(r))); const n=LAMP[d].num;
   const key=lab+light[d]+(shortened&&shortened.d===d&&shortened.t<3?"!":"");
   if(n.last!==key){n.last=key;const g=n.c.getContext("2d");g.clearRect(0,0,128,64);if(lab){g.fillStyle=key.endsWith("!")?"#ffc21a":"#111416";g.fillRect(4,6,120,52);g.fillStyle=key.endsWith("!")?"#111416":(light[d]==="green"?"#2ee07c":light[d]==="yellow"?"#ffc21a":"#ff4545");
     g.font=`bold ${lab.length>2?34:42}px monospace`;g.textAlign="center";g.textBaseline="middle";g.fillText(lab,64,34)}n.t.needsUpdate=true}}}
