@@ -3978,16 +3978,15 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   if(step>=1&&th!==0){E("text",{x:near.x+(near===Rr?18:-18),y:near.y+58,"text-anchor":"middle","font-size":13,"font-weight":700,fill:acc},top,"（先聽到）")}
   // 可以拖曳的喇叭＋聲波
   {const hx=HC.x+s.x*HR,hy=HC.y+s.y*HR,g=E("g",{transform:`translate(${hx},${hy}) rotate(${th})`,style:"cursor:grab"},top);
-   // 聲波的「面」：一道一道平平的波前，從喇叭往頭走，最後碰到虛線（近的耳朵先聽到）
-   {const WV="#3f74c9",hw=Math.abs(L.x-HC.x)*Math.abs(Math.cos(a))+14,d0=HR-22,dist=Math.max(0,d0-dN),dur=1.8;
-    for(let k=0;k<3;k++){const c={x:HC.x+s.x*d0,y:HC.y+s.y*d0},wg=E("g",{opacity:0},top);
-      E("line",{x1:c.x-tx*hw,y1:c.y-ty*hw,x2:c.x+tx*hw,y2:c.y+ty*hw,stroke:WV,"stroke-width":4,"stroke-linecap":"round"},wg);
-      const b=(k*dur/3).toFixed(2)+"s";
-      E("animateTransform",{attributeName:"transform",type:"translate",from:"0 0",to:`${(-s.x*dist).toFixed(1)} ${(-s.y*dist).toFixed(1)}`,dur:dur+"s",begin:b,repeatCount:"indefinite"},wg);
-      E("animate",{attributeName:"opacity",values:"0;0.95;0.95;0",keyTimes:"0;0.15;0.8;1",dur:dur+"s",begin:b,repeatCount:"indefinite"},wg)}
-    E("text",{x:hx+(th>=0?20:-20),y:hy+6,"text-anchor":th>=0?"start":"end","font-size":12.5,"font-weight":700,fill:WV},top,"藍線＝一面一面的聲波")}
+   // 聲波的「面」：平平的波前（不動），從喇叭走過來，先碰到近的耳朵（虛線），再碰到遠的耳朵
+   {const WV="#3f74c9",hw=Math.abs(L.x-HC.x)*Math.abs(Math.cos(a))+14,d0=HR-22,ds=[d0];
+    if(d0-dN>34)ds.push((d0+dN)/2);ds.push(dN);if(dN>4)ds.push(-dN);
+    ds.forEach((d,i)=>{const c={x:HC.x+s.x*d,y:HC.y+s.y*d};
+      E("line",{x1:c.x-tx*hw,y1:c.y-ty*hw,x2:c.x+tx*hw,y2:c.y+ty*hw,stroke:WV,"stroke-width":d===dN||d===-dN?4:3,"stroke-linecap":"round",opacity:d===d0?0.45:0.9},top)});
+    const nn=near===Rr?"右耳":"左耳",fn=near===Rr?"左耳":"右耳";
+    E("text",{x:14,y:250,"text-anchor":"start","font-size":12.5,"font-weight":700,fill:WV},top,th===0?"藍線＝聲波（同時到兩耳）":`藍線＝聲波（先到${nn}，再到${fn}）`)}
    E("rect",{x:-15,y:-13,width:30,height:24,rx:5,fill:"#3a4148",stroke:paper,"stroke-width":2},g);E("circle",{cx:0,cy:2,r:7,fill:"#15181b",stroke:"#9aa3aa","stroke-width":2},g);
-   E("text",{x:hx+(th>=0?20:-20),y:hy-14,"text-anchor":th>=0?"start":"end","font-size":14,"font-weight":700,fill:ink},top,`聲音：${angTxt()}`)}
+   E("text",{x:th>=0?Math.min(hx+20,440):Math.max(hx-20,200),y:hy-14,"text-anchor":th>=0?"start":"end","font-size":14,"font-weight":700,fill:ink},top,`聲音：${angTxt()}`)}
   E("text",{x:626,y:250,"text-anchor":"end","font-size":12.5,fill:mut},top,"拖曳喇叭，換聲音的方向");
   // 多走的路（從遠的耳朵沿 s 方向到浪線）＋三角形（跟下面量角器的三角形一模一樣）
   const seg=k=>({x1:far.x,y1:far.y,x2:far.x+s.x*dpx*k,y2:far.y+s.y*dpx*k});
