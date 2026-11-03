@@ -103,7 +103,7 @@ host.insertBefore(renderer.domElement,host.firstChild);
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(42,1,1,5000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.49; ctl.minDistance=20; ctl.maxDistance=400;
-addPanPad(host,cam,ctl,"mr",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"實驗模型");
+addPanPad(host,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"實驗模型");
 ctl.autoRotate=false; ctl.autoRotateSpeed=0.5;
 function resize(){const r=host.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(host); resize();

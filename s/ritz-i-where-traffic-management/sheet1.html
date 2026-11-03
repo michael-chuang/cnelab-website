@@ -99,7 +99,11 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
 /* 題目跟網站最上面的大標題一樣（唯讀顯示） */
-function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v})}
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v});
+  document.querySelectorAll("[data-sync-rw]").forEach(e=>{const v=LS.getItem(e.dataset.syncRw);   // 和研究架構雙向同步（全隊共用）
+    if(v!==null&&e.value!==v){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    else if(v===null&&!e.value&&e.dataset.def){e.value=e.dataset.def;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    if(!e.__rw){e.__rw=1;e.addEventListener("input",ev=>{if(ev.isTrusted)LS.setItem(e.dataset.syncRw,e.value)})}})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
 })();
 </script>
@@ -114,7 +118,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 :root{
   --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
   --a:#2a6fb8;        /* 未遮蔽 */
-  --b:#d9532c;        /* 有遮蔽（戴耳塞） */
+  --b:#d9532c;        /* 有遮蔽（戴耳機） */
   --accent:#1f7a5a;   /* 真實方向、按鈕 */
   --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
@@ -145,7 +149,7 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -153,6 +157,10 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
 .views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
 .views button.on{background:#18232b;color:#fff}
+.gear{position:absolute;bottom:10px;right:10px;display:flex;gap:6px;z-index:5}
+.gear button{font-size:15px;padding:6px 14px;background:rgba(255,255,255,.9);color:#18232b;border:2px solid rgba(24,35,43,.25);border-radius:999px}
+.gear button.on{background:#18232b;color:#fff;border-color:#18232b}
+.gear #gEar.on{background:var(--b);border-color:var(--b)}
 .result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
 .ctrl{display:flex;flex-direction:column;gap:14px}
 .grp{display:flex;flex-direction:column;gap:6px}
@@ -196,7 +204,7 @@ svg text{font-family:var(--body)}
 <nav style="font-size:15px"><a href="./">← 回到智慧路口情境模擬</a></nav>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（一）Why 人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
-  <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
+  <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳機，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
 
 <section>
@@ -205,60 +213,48 @@ svg text{font-family:var(--body)}
     <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
     <div class="stage" id="stage">
       <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
+      <div class="gear" id="gearBar"><button id="gMask" class="on" aria-pressed="true">🙈 眼罩</button><button id="gEar" aria-pressed="false">🎧 耳機</button></div>
     </div>
-    <div class="result" id="result">拉動滑桿讓播音員走到某個位置，按「播放警笛」。戴耳機聽會更像真的。</div>
+    <div class="result" id="result">在地板上點一下，播音員就走過去，播放警笛。</div>
     </div>
-    <div class="ctrl card">
-      <div class="grp"><h3>1　播音員走到哪裡？</h3>
-        <div class="row" style="align-items:center"><input type="range" id="angR" min="0" max="359" step="1" value="40" style="flex:1;min-width:140px" aria-label="播音員的位置"><span class="fill" id="angV">40°</span></div>
-        <div class="row"><button id="rand">隨便走一個位置</button></div>
-        <p class="note">0°＝正前方，順時針一圈 360°。真正實驗時，播音員自己選位置走過去。</p></div>
-      <div class="grp"><h3>2　受試者的耳朵</h3>
-        <div class="row" id="ears"><button data-e="a" class="seg-a on">未遮蔽</button><button data-e="b" class="seg-b">戴耳塞</button></div></div>
-      <div class="grp"><button class="go" id="play">▶ 播放警笛（2 秒）</button>
-        <p class="note">受試者聽完會用手指方向。綠色繩子＝拉到播音員（真實角度），彩色繩子＝沿著手指拉（指的角度）。這裡的手指方向是電腦模擬的，真正的數據要在實驗中量。</p></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>科學小百科：耳朵怎麼聽方向？</h3>
-    <ul>
-      <li>聲音從右邊來，右耳比左耳早一點點（約 0.0006 秒）聽到，也比較大聲。大腦就靠這兩個差別判斷方向。</li>
-      <li>戴上耳塞，聲音變小、變悶，左右耳的差別變得不明顯，方向就可能指不準。按「戴耳塞」再播一次，聽聽看聲音有什麼不一樣。</li>
-    </ul>
   </div>
 </section>
 
 <section>
-  <h2>實驗步驟</h2>
+  <h2>實驗方法</h2>
   <div class="two">
     <div class="card"><h3>器材</h3><ul>
       <li>大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）</li>
-      <li>藍牙喇叭＋救護車警笛聲、分貝計（建議用 NIOSH SLM app，美國國家職業安全衛生研究所的免費 App）</li>
-      <li>遮光眼罩、隔音耳塞</li></ul></div>
+      <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
+      <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
     <div class="card"><h3>研究問題與假設</h3>
-      <p>耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？</p>
-      <label for="hyp" class="note">我的假設：</label><textarea id="hyp" rows="2"></textarea></div>
+      <p data-sync-ro="wwt-fw-h1q">在車內判斷警笛聲來源的誤差有多大？</p>
+      <label for="hyp" class="note">假設：</label><textarea id="hyp" rows="2" data-sync-rw="wwt-fw-h1" data-def="假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。"></textarea></div>
   </div>
-  <ol class="card" style="padding-left:2.2em">
-    <li>把大型量角器放在地上，圓心對準受試者坐的位置，量角器的正前方對準受試者的臉。</li>
-    <li>受試者坐在圓心，戴上眼罩，頭不能轉。</li>
-    <li>播音員自己選一個位置，安靜走過去（離受試者約 2 公尺），<b>正面面對受試者</b>，喇叭朝向受試者，播 2 秒救護車警笛（每次音量一樣，約 75 dB）。</li>
-    <li>受試者用手指出聲音的方向，手先不要放下。</li>
-    <li><b>綠繩</b>：從量角器圓心拉到播音員腳下，讀出量角器上的刻度＝<b>真實角度</b>。<b>彩繩</b>：從圓心沿著受試者的手拉直，讀出刻度＝<b>指的角度</b>。</li>
-    <li>角度差＝兩條繩子的刻度相減（大減小，都是正的）。</li>
-    <li><b style="color:var(--a)">A 未遮蔽</b>做 5 次，每次換一個位置；<b style="color:var(--b)">B 戴上耳塞</b>後再做 5 次。</li>
-  </ol>
+  <div class="card"><h3>實驗步驟</h3><ol style="padding-left:1.6em;margin:0;display:grid;gap:6px">
+    <li><b>準備場地</b>：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者坐的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
+    <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
+    <li>受試者坐在圓心的椅子上，<b>戴上眼罩</b>，頭不能轉、身體不能動。</li>
+    <li>播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。<b>正面面對受試者</b>，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。</li>
+    <li>記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。</li>
+    <li><b>受試者聽完會用手指方向</b>：用右手指出他覺得聲音來的方向，手先不要放下。</li>
+    <li><b>綠色繩子＝拉到播音員（真實角度）</b>：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。</li>
+    <li><b>彩色繩子＝沿著手指拉（指的角度）</b>：從圓心沿著受試者的手指拉直，讀出刻度。</li>
+    <li>記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。</li>
+    <li><b style="color:var(--a)">A 未遮蔽</b>做 5 次，每次換不同位置（前、後、左、右都要有）；<b style="color:var(--b)">B 戴上耳機</b>（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。</li>
+    <li>換下一位受試者，重複第 3～10 步。</li>
+  </ol></div>
 </section>
 
 <section>
   <h2>表 1-1　一位受試者的紀錄</h2>
   <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who"><span class="note">輸入兩條繩子讀到的刻度，角度差和平均會自動算好。</span></div>
   <div class="tbl"><table id="t1">
-    <thead><tr><th>第幾次</th><th class="a">A 未遮蔽<br>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳塞<br>真實角度</th><th class="b">B 戴耳塞<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
+    <thead><tr><th>第幾次</th><th class="a">A 未遮蔽<br>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳機<br>真實角度</th><th class="b">B 戴耳機<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
     <tbody></tbody></table></div>
   <div class="card" style="display:flex;flex-direction:column;gap:6px;max-width:680px;width:100%;align-self:center">
-    <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：左邊未遮蔽、右邊戴耳塞"></svg>
-    <p class="cap">圖 1-1　角度差幾度，就在幾度的地方點一個點（點旁的數字是第幾次）。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳塞</b>。點越靠近中間的 0°，指得越準。</p>
+    <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：左邊未遮蔽、右邊戴耳機"></svg>
+    <p class="cap">圖 1-1　角度差幾度，就在幾度的地方點一個點（點旁的數字是第幾次）。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳機</b>。點越靠近中間的 0°，指得越準。</p>
   </div>
   <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="demo">填入範例數據看看</button></div>
   <p class="note" id="addMsg" aria-live="polite"></p>
@@ -268,10 +264,10 @@ svg text{font-family:var(--body)}
   <h2>表 1-2　全組整理</h2>
   <div class="two">
     <div class="tbl"><table id="t2">
-      <thead><tr><th>受試者</th><th class="a">A 未遮蔽<br>平均角度差</th><th class="b">B 戴耳塞<br>平均角度差</th><th>多了幾度<br>（B－A）</th><th></th></tr></thead>
+      <thead><tr><th>受試者</th><th class="a">A 未遮蔽<br>平均角度差</th><th class="b">B 戴耳機<br>平均角度差</th><th>多了幾度<br>（B－A）</th><th></th></tr></thead>
       <tbody></tbody><tfoot></tfoot></table></div>
     <div class="card" style="display:flex;flex-direction:column;gap:6px">
-      <svg id="bar" viewBox="0 0 420 300" role="img" aria-label="長條圖：未遮蔽和戴耳塞的平均角度差"></svg>
+      <svg id="bar" viewBox="0 0 420 300" role="img" aria-label="長條圖：未遮蔽和戴耳機的平均角度差"></svg>
       <p class="cap">圖 1-2　表 1-2 的「全部平均」</p>
     </div>
   </div>
@@ -281,8 +277,8 @@ svg text{font-family:var(--body)}
 <section>
   <h2>結果與結論</h2>
   <div class="card qa"><ol>
-    <li>未遮蔽時平均差 <span class="fill" id="qa">　</span> 度，戴耳塞時平均差 <span class="fill" id="qb">　</span> 度，多了 <span class="fill" id="qd">　</span> 度。</li>
-    <li>戴耳塞時，播音員站在哪裡（前面、旁邊、後面）最容易指錯？ <input type="text" id="q2" style="max-width:10em"></li>
+    <li>未遮蔽時平均差 <span class="fill" id="qa">　</span> 度，戴耳機時平均差 <span class="fill" id="qb">　</span> 度，多了 <span class="fill" id="qd">　</span> 度。</li>
+    <li>戴耳機時，播音員站在哪裡（前面、旁邊、後面）最容易指錯？ <input type="text" id="q2" style="max-width:10em"></li>
     <li>看圖 1-1：左右兩邊的點比起來，哪一邊離中間的 0° 比較遠？ <input type="text" id="q3" style="max-width:10em"></li>
     <li>如果駕駛在關緊車窗的車裡，會不會聽不出救護車在哪裡？寫下你的結論：
       <textarea id="concl" rows="3"></textarea></li>
@@ -327,7 +323,7 @@ function t1Avg(k,T1=S.t1){return avg(T1[k].map(dRow))}
 function calcT1(){for(let i=0;i<N;i++)for(const k of ["a","b"])$(k+"d"+i).textContent=f1(dRow(S.t1[k][i]));
   $("ma").textContent=f1(t1Avg("a"));$("mb").textContent=f1(t1Avg("b"));drawProt()}
 
-/* 圖 1-1：量角器點圖（左＝未遮蔽，右＝戴耳塞，中間垂直線＝0°） */
+/* 圖 1-1：量角器點圖（左＝未遮蔽，右＝戴耳機，中間垂直線＝0°） */
 const SVGNS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;parent.appendChild(e);return e}
 function pal(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();return {ink:g("--ink"),muted:g("--muted"),a:g("--a"),b:g("--b"),line:g("--line")}}
@@ -343,7 +339,7 @@ function drawProt(s=$("prot"),T1=S.t1,P=pal()){s.innerHTML="";const cx=300,cy=30
   el("line",{x1:cx,y1:cy,x2:cx,y2:cy-R-14,stroke:ink,"stroke-width":2},s);
   el("text",{x:cx,y:cy-R-20,"text-anchor":"middle","font-size":14,"font-weight":700,fill:ink},s,"0°（完全指對）");
   el("text",{x:cx-R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:ca},s,"← 未遮蔽的角度差");
-  el("text",{x:cx+R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:cb},s,"戴耳塞的角度差 →");
+  el("text",{x:cx+R/2,y:cy+30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:cb},s,"戴耳機的角度差 →");
   let n=0;
   for(const [k,side,col] of [["a",-1,ca],["b",1,cb]]) T1[k].forEach((x,i)=>{const d0=dRow(x);if(d0===null)return;n++;
     const d=Math.min(90,d0),a=d*Math.PI/180,r=R-70-i*24;
@@ -369,7 +365,7 @@ function drawBar(A,B,s=$("bar"),P=pal()){s.innerHTML="";
   const top=Math.max(30,Math.ceil(Math.max(A||0,B||0)/10)*10),x0=56,y0=250,H=210;
   for(let v=0;v<=top;v+=top>60?20:10){const y=y0-v/top*H;el("line",{x1:x0,x2:400,y1:y,y2:y,stroke:line,"stroke-width":1},s);el("text",{x:x0-8,y:y+4,"text-anchor":"end","font-size":12,fill:muted},s,String(v))}
   el("text",{x:14,y:y0-H/2,"text-anchor":"middle","font-size":13,fill:muted,transform:`rotate(-90 14 ${y0-H/2})`},s,"平均角度差（度）");
-  [["未遮蔽",A,P.a,150],["戴耳塞",B,P.b,300]].forEach(([lab,v,c,x])=>{
+  [["未遮蔽",A,P.a,150],["戴耳機",B,P.b,300]].forEach(([lab,v,c,x])=>{
     if(v!==null){const h=v/top*H;el("rect",{x:x-40,y:y0-h,width:80,height:h,rx:4,fill:c},s);el("text",{x,y:y0-h-8,"text-anchor":"middle","font-size":15,"font-weight":700,fill:ink},s,f1(v)+"°")}
     el("text",{x,y:y0+22,"text-anchor":"middle","font-size":14,fill:ink},s,lab)});
   el("line",{x1:x0,x2:400,y1:y0,y2:y0,stroke:ink,"stroke-width":1.5},s);
@@ -484,7 +480,7 @@ function face(par,eyes=true){if(eyes)for(const s of [-1,1]){part(new THREE.Spher
 function headBase(par){part(new THREE.SphereGeometry(HR,40,30),skin,0,HY,0,par);part(new THREE.CylinderGeometry(4.2,4.6,8,16),skin,0,HY-HR-2,0,par);
   return [-1,1].map(s=>{part(new THREE.SphereGeometry(3.4,16,12),skin,s*(HR+0.6),HY,1,par).scale.set(0.55,1,0.8);return s})}
 
-/* ---------- 受試者：男生（灰 polo＋紅領紅袖、深藍短褲、白襪、黑球鞋、黑短髮）＋眼罩＋耳塞 ---------- */
+/* ---------- 受試者：男生（灰 polo＋紅領紅袖、深藍短褲、白襪、黑球鞋、黑短髮）＋眼罩＋耳機 ---------- */
 const kid=new THREE.Group();scene.add(kid);
 const poloM=M(0xa7abaf,{roughness:0.8}),redM=M(0xb3262e,{roughness:0.7}),navyM=M(0x1d2a4a,{roughness:0.8});
 for(const s of [-1,1]){part(new THREE.CylinderGeometry(6.4,6.8,20,16),navyM,s*6.2,52,0,kid);part(new THREE.BoxGeometry(1,19,1.2),M(0x9aa1a8),s*12.6,52,0,kid);  // 短褲＋側邊灰線
@@ -501,8 +497,15 @@ part(new THREE.SphereGeometry(HR+0.9,40,30,0,Math.PI*2,0,Math.PI*0.47),hairM,0,H
 part(new THREE.SphereGeometry(HR+0.7,40,30,0,Math.PI,Math.PI*0.4,Math.PI*0.32),hairM,0,HY,0.2,kid);           // 後腦勺
 part(new THREE.SphereGeometry(HR+1.1,32,16,0,Math.PI*2,0,Math.PI*0.3),hairM,0,HY+1.2,-1.6,kid).rotation.x=-0.42; // 瀏海
 const band=part(new THREE.CylinderGeometry(HR+0.6,HR+0.6,6,40,1,true),M(0x15181b,{side:THREE.DoubleSide}),0,HY+1,0,kid); // 眼罩
-const plugM=M(0xff8a2a,{roughness:0.5,emissive:0x5a2200});
-const plugs=[-1,1].map(s=>{const p=part(new THREE.CylinderGeometry(2.4,2.4,4,12),plugM,s*(HR+3),HY,1,kid);p.rotation.z=Math.PI/2;return p});
+// 耳罩式隔音耳機（橘色）
+const phones=new THREE.Group();kid.add(phones);
+{const pm=M(0xff7a1a,{roughness:0.45,emissive:0x4a1a00}),dm=M(0x2a2d31,{roughness:0.6});
+ const hb=part(new THREE.TorusGeometry(HR+3.2,1.4,10,32,Math.PI),pm,0,HY+1,1,phones);
+ for(const s of [-1,1]){const c=part(new THREE.CylinderGeometry(5.4,5.4,4.2,20),pm,s*(HR+2.6),HY,1,phones);c.rotation.z=Math.PI/2;
+   const pad=part(new THREE.CylinderGeometry(4.6,4.6,1.4,20),dm,s*(HR+0.6),HY,1,phones);pad.rotation.z=Math.PI/2}}
+// 沒戴眼罩時看得到眼睛
+const kidEyes=new THREE.Group();kid.add(kidEyes);
+for(const s of [-1,1]){part(new THREE.SphereGeometry(2.2,16,12),M(0x1b1515,{roughness:0.3}),s*5.4,HY+0.5,-HR*0.86,kidEyes).scale.set(1,1.15,0.55);part(new THREE.SphereGeometry(0.7,8,6),whiteM,s*5.4+0.8,HY+1.6,-HR*0.93,kidEyes)}
 // 右手（從右肩伸出，可旋轉指方向）
 const arm=new THREE.Group();arm.rotation.order="YXZ";arm.position.set(13.6,92,0);kid.add(arm);
 limb([0,0,0],[0,0,-8],4.3,redM,arm);limb([0,0,-8],[0,0,-29],2.9,skin,arm);part(new THREE.SphereGeometry(3.6,14,10),skin,0,0,-32,arm);
@@ -542,15 +545,15 @@ const fanM=new THREE.MeshBasicMaterial({color:0x2a6fb8,transparent:true,opacity:
 let fan=null, diffLabel=null;
 function setLine(g,d){g.rotation.y=-d*Math.PI/180}
 
-let angle=40, ear="a", pointing=null, busy=false;
-function placeAnn(){const p=dir(angle).multiplyScalar(215);ann.position.set(p.x,0,p.z);ann.rotation.y=Math.PI-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
-function setEar(){plugs.forEach(p=>p.visible=ear==="b")}
+let angle=40, dist=215, ear="a", mask=true, pointing=null, busy=false;
+function placeAnn(){const p=dir(angle).multiplyScalar(dist);trueLine.scale.set(1,1,dist/215);ann.position.set(p.x,0,p.z);ann.rotation.y=Math.PI-angle*Math.PI/180;waves.forEach(w=>{w.position.x=p.x;w.position.z=p.z});setLine(trueLine,angle)}
+function setEar(){phones.visible=ear==="b";band.visible=mask;kidEyes.visible=!mask;$("gEar").classList.toggle("on",ear==="b");$("gEar").setAttribute("aria-pressed",String(ear==="b"));$("gMask").classList.toggle("on",mask);$("gMask").setAttribute("aria-pressed",String(mask))}
 function clearPoint(){ptLine.visible=false;if(fan){scene.remove(fan);fan=null}if(diffLabel){scene.remove(diffLabel);diffLabel=null}armTarget=null;armUp=0}
 placeAnn();setEar();
 let armTarget=null, armAngle=0, armUp=0, armX=-1.5, bodyYaw=0, bodyTarget=0;
 const wrap=d=>((d%360)+540)%360-180;   // 換成 -180～180
 
-// 警笛聲（救護車：700／950 Hz 交替）＋左右聲道；戴耳塞＝變小聲、變悶、左右差變小
+// 警笛聲（救護車：700／950 Hz 交替）＋左右聲道；戴耳機＝變小聲、變悶、左右差變小
 let AC=null;
 function siren(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){return}
   const t0=AC.currentTime, o=AC.createOscillator(), g=AC.createGain(), lp=AC.createBiquadFilter(), pan=AC.createStereoPanner?AC.createStereoPanner():null;
@@ -560,15 +563,15 @@ function siren(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)
   o.connect(lp);lp.connect(g);
   if(pan){pan.pan.value=Math.sin(angle*Math.PI/180)*(ear==="b"?0.3:0.95);g.connect(pan);pan.connect(AC.destination)}else g.connect(AC.destination);
   o.start(t0);o.stop(t0+2.05)}
-// 模擬受試者指的方向：未遮蔽誤差小，戴耳塞誤差大（只是示範用的亂數）
+// 模擬受試者指的方向：未遮蔽誤差小，戴耳機誤差大（只是示範用的亂數）
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 S.log=[];save();   // 不記錄模擬結果
-$("play").addEventListener("click",()=>{if(busy)return;busy=true;$("play").disabled=true;clearPoint();siren();playT=performance.now();
+function play(){if(busy)return;busy=true;clearPoint();siren();playT=performance.now();
   $("result").textContent="警笛播放中……受試者在聽";
-  setTimeout(()=>{const sd=ear==="a"?7:24;let p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5; /* 前後搞混 */
+  setTimeout(()=>{let p;if(!mask)p=angle;   /* 沒戴眼罩：看得到播音員 */
+    else{const sd=ear==="a"?7:24;p=angle+gauss()*sd;const back=angle>90&&angle<270;if(Math.random()<(ear==="a"?(back?0.08:0.03):(back?0.35:0.15)))p=180-angle+gauss()*sd*0.5} /* 前後搞混 */
     p=((Math.round(p)%360)+360)%360;
-    showPoint(p);const d=Math.abs(((p-angle+540)%360)-180);
-    busy=false;$("play").disabled=false},2200)});
+    showPoint(p);busy=false},2200)}
 let playT=-1e9;
 function showPoint(p){const sgn=((p-angle+540)%360)-180,d=Math.abs(sgn);
   pointing=p;armUp=1;
@@ -578,19 +581,24 @@ function showPoint(p){const sgn=((p-angle+540)%360)-180,d=Math.abs(sgn);
     const a0=Math.min(angle,angle+sgn),a1=Math.max(angle,angle+sgn);
     if(d>0){fan=new THREE.Mesh(new THREE.CircleGeometry(PR+40,48,Math.PI/2-a1*Math.PI/180,(a1-a0)*Math.PI/180),fanM);fan.rotation.x=-Math.PI/2;fan.position.y=0.5;scene.add(fan)}
     const mid=dir((a0+a1)/2).multiplyScalar(160);diffLabel=label("差 "+d+"°",mid.x,26,mid.z,22,ear==="a"?"#2a6fb8":"#d9532c");
-    $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳塞"}）`;
+    $("result").innerHTML=`真實角度 <b>${angle}°</b>，受試者指 <b>${p}°</b>${Math.abs(((p-(180-angle))%360+540)%360-180)<30&&d>50?"（前後搞混了！）":""}，角度差 <b style="color:${ear==="a"?"#2a6fb8":"#d9532c"}">${d}°</b>（${ear==="a"?"未遮蔽":"戴耳機"}${mask?"":"、沒戴眼罩"}）`;
 }
 
-function setAngle(v){angle=((Math.round(v)%360)+360)%360;$("angR").value=angle;$("angV").textContent=angle+"°";clearPoint();placeAnn();$("result").textContent="播音員走到 "+angle+"°（綠繩）。按「播放警笛」。"}
-$("angR").addEventListener("input",e=>setAngle(+e.target.value));
-$("rand").addEventListener("click",()=>setAngle(Math.random()*360));
-$("ears").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;ear=b.dataset.e;$("ears").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));clearPoint();setEar();$("result").textContent=ear==="b"?"受試者戴上耳塞了（橘色）。按「播放警笛」。":"按「播放警笛」。"});
+// 在地板上點一下：播音員走過去（任何位置），然後播放警笛
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2();let downXY=null;
+renderer.domElement.addEventListener("pointerdown",e=>{downXY=[e.clientX,e.clientY]});
+renderer.domElement.addEventListener("pointerup",e=>{if(!downXY)return;const moved=Math.hypot(e.clientX-downXY[0],e.clientY-downXY[1]);downXY=null;if(moved>6||busy)return;
+  const r=renderer.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,cam);
+  const hit=ray.intersectObject(floor)[0];if(!hit)return;const x=hit.point.x,z=hit.point.z,R=Math.hypot(x,z);if(R<40)return;
+  angle=((Math.round(Math.atan2(x,-z)*180/Math.PI)%360)+360)%360;dist=Math.max(70,Math.min(600,R));clearPoint();placeAnn();play()});
+$("gMask").addEventListener("click",()=>{mask=!mask;clearPoint();setEar();$("result").textContent=mask?"受試者戴上眼罩了。":"受試者沒戴眼罩。"});
+$("gEar").addEventListener("click",()=>{ear=ear==="a"?"b":"a";clearPoint();setEar();$("result").textContent=ear==="b"?"受試者戴上耳機了（橘色）。":"拿掉耳機了（未遮蔽）。"});
 const VIEWS={side:[[300,420,460],[0,30,0]],top:[[0,820,1],[0,0,0]],kid:[[0,170,140],[0,80,-120]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();$("views").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v===k))}
 window.__ws1={cam,ctl,ann,kid};
 $("views").addEventListener("click",e=>{const b=e.target.closest("button");if(b)view(b.dataset.v)});
 view("side");
-showPoint(55);$("result").innerHTML="示範：女生（播音員）站在 <b>40°</b>，男生聽完舉起右手，朝向他覺得的 <b>55°</b>，差 <b>15°</b>。拉滑桿換位置，按「播放警笛」試試。";
+showPoint(55);$("result").innerHTML="示範：女生（播音員）站在 <b>40°</b>，男生聽完舉起右手，朝向他覺得的 <b>55°</b>，差 <b>15°</b>。在地板上點一下，播音員就走過去，播放警笛。";
 
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tick(now){requestAnimationFrame(tick);
@@ -639,12 +647,12 @@ btn.addEventListener("click",async()=>{
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
-    body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳塞，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
+    body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、研究問題與假設"));
-    body.push(P("問題：耳朵被遮住後，指的方向和真正方向的角度差會變大嗎？"));
-    body.push(P("我的假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
-    body.push(H("參、實驗步驟"));
-    ["把大型量角器放在地上，圓心對準受試者坐的位置。","受試者坐在圓心，戴上眼罩，頭不能轉。","播音員自己選一個位置走過去，正面面對受試者、喇叭朝向受試者，播 2 秒救護車警笛（約 75 dB）。","受試者用手指出聲音的方向。","綠繩從圓心拉到播音員，讀出真實角度；彩繩沿著受試者的手拉直，讀出指的角度。","角度差＝兩條繩子的刻度相減。","A 未遮蔽做 5 次、B 戴耳塞做 5 次，每次換位置。"].forEach(t=>body.push(P(t,{bullet:true})));
+    body.push(P("問題："+(localStorage.getItem("wwt-fw-h1q")||"在車內判斷警笛聲來源的誤差有多大？")));
+    body.push(P("假設："+(S.hyp||"＿＿＿＿＿＿＿＿")));
+    body.push(H("參、實驗方法"));
+    body.push(P("實驗步驟：",{bold:true}));["準備場地：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者坐的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者坐在圓心的椅子上，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
     body.push(H("肆、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
@@ -653,20 +661,20 @@ btn.addEventListener("click",async()=>{
       body.push(cap(`表 1-1（${i+1}）、${x.name} 的紀錄`));
       const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT);
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
-      body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳塞；越靠近 0° 越準）`));
+      body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));
     }
     body.push(H("伍、全組整理（表 1-2、圖 1-2）"));
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
     const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
     const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
-    body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳塞 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
+    body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
     body.push(cap("表 1-2、全組的平均角度差"));
     const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);
     body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bv,420,300),transformation:{width:360,height:257}})]}));
-    body.push(cap("圖 1-2、未遮蔽和戴耳塞的平均角度差"));
+    body.push(cap("圖 1-2、未遮蔽和戴耳機的平均角度差"));
     body.push(H("陸、結果與結論"));
-    body.push(P(`1. 未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳塞時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`));
-    body.push(P("2. 戴耳塞時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
+    body.push(P(`1. 未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳機時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`));
+    body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
     body.push(P("➜ 本紀錄單的成果＝科展報告「研究一：耳朵被遮蔽，會讓駕駛聽不出救護車在哪裡嗎？」",{color:"5B6872",size:20}));
