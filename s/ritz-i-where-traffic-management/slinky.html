@@ -15,12 +15,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
 <title>彩虹彈簧看頻率</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -110,7 +109,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」交通　學習單（二）傅立葉轉換篇・暖身</div>
+  <div class="eyebrow">智「where」開道、平安駕到　學習單（二）傅立葉轉換篇・暖身</div>
   <h1>聲音每秒振動幾次？</h1>
   <p class="lead">自然課學過：聲音是物體在振動。先看喇叭怎麼推空氣、麥克風怎麼記下上上下下的波形；再用彩虹彈簧數一數每秒振動幾次，這就是「頻率」。</p>
 </header>

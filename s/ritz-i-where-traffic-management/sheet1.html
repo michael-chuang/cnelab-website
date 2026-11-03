@@ -15,12 +15,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
 <!-- KIDSYNC START -->
 <script>
@@ -184,7 +183,7 @@ svg text{font-family:var(--body)}
 <div class="wrap">
 <header>
 <nav style="font-size:15px"><a href="./">← 回到智慧路口情境模擬</a></nav>
-  <div class="eyebrow">智「where」交通　科展實驗紀錄單（一）人因工程篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
@@ -625,7 +624,7 @@ btn.addEventListener("click",async()=>{
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
-    body.push(P("智「where」交通　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));

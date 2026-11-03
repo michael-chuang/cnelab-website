@@ -15,12 +15,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
 <!-- AUDIOUNLOCK START -->
 <script>
@@ -32,12 +31,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
 <!-- AUDIOUNLOCK END -->
 <title>智慧路口情境模擬</title>
@@ -131,7 +129,8 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
 <div class="wrap">
 <header style="display:flex;flex-direction:column;gap:6px">
-  <h2>智「where」交通</h2>
+  <h2>智「where」開道、平安駕到</h2>
+  <p class="subtitle" style="margin:-2px 0 4px;font-size:15px;color:var(--muted,#55636d)">——導入空間聲學感知突破感官屏障、賦能智慧交通開設避讓通道</p>
   <h1>智慧路口情境模擬</h1>
   <p class="lead">① 路口模式：路口聽出警笛方向，讓那邊變綠燈。② 駕駛艙模式：坐在車裡，儀表板的羅盤告訴你警笛從哪裡來。③ 實驗模型：看看用紙箱、紙膠帶和玩具車怎麼擺出小路口。
   <div class="row tabs" role="tablist">
@@ -1550,12 +1549,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -1715,7 +1713,7 @@ svg text{font-family:var(--body)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」交通　科展實驗紀錄單（一）人因工程篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇</div>
   <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳塞，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
@@ -2156,7 +2154,7 @@ btn.addEventListener("click",async()=>{
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
-    body.push(P("智「where」交通　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    body.push(P("智「where」開道、平安駕到　科展實驗紀錄單（一）人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
@@ -2228,12 +2226,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -2468,7 +2465,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」交通　科展實驗紀錄單（二）傅立葉轉換篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（二）傅立葉轉換篇</div>
   <h1>聲音裡藏了哪些頻率？</h1>
   <p class="lead">自然課學過：聲音是物體在振動。這張學習單先認識「頻率」（每秒振動幾次），再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
 </header>
@@ -3075,7 +3072,7 @@ btn.addEventListener("click",async()=>{
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const pic=async(u,w)=>{const [iw,ih]=await imgSize(u);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(u),transformation:{width:w,height:Math.round(w*ih/iw)}})]})};
     const B=[];
-    B.push(P("智「where」交通　科展實驗紀錄單（二）傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（二）傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音裡藏了哪些頻率？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
@@ -3137,12 +3134,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -3345,7 +3341,7 @@ td.no{color:var(--b);font-weight:700}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」交通　科展實驗紀錄單（三）聲源定位篇</div>
+  <div class="eyebrow">智「where」開道、平安駕到　科展實驗紀錄單（三）聲源定位篇</div>
   <h1>聲音從哪裡來？路口要幾支麥克風？</h1>
   <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這張學習單先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
 </header>
@@ -4024,7 +4020,7 @@ btn.addEventListener("click",async()=>{
     const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const B=[];
-    B.push(P("智「where」交通　科展實驗紀錄單（三）聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
+    B.push(P("智「where」開道、平安駕到　科展實驗紀錄單（三）聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音從哪裡來？路口要幾支麥克風？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("先想一想"));B.push(P("戴上耳塞後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
@@ -4081,12 +4077,11 @@ function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="pla
   if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
   ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
 ["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，再讓所有聲音暫停（下次點畫面會自動恢復，可以再播） */
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
 window.__hushers=window.__hushers||[];
 window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}});
-  setTimeout(()=>ACs.forEach(c=>{if(c.state==="running")c.suspend().catch(()=>{})}),250)};})();
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
 </head><body><!-- KIDSYNC START -->
 <script>
@@ -4271,7 +4266,7 @@ svg text{font-family:var(--body)}
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">智「where」交通　校內科學展覽（初審）</div>
+  <div class="eyebrow">智「where」開道、平安駕到　校內科學展覽（初審）</div>
   <h1>校內科學展覽作品說明（初審）</h1>
   <p class="lead">照學校「附件 2」的格式，把三張學習單做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
 </header>
