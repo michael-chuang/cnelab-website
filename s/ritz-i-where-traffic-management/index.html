@@ -227,6 +227,16 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 #tab0 .fw-node .go button:hover{border-color:var(--accent);color:var(--accent)}
 #tab0 .fw-fill{flex:1;min-height:0;width:2px;background:var(--line);margin:0 auto}
 #tab0 .fw-node.sub{border-style:solid;border-width:1px}
+#tab0 .fw-v26{height:26px}
+#tab0 .fw-mob{display:none}
+#tab0 .fw-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#tab0 .fw-msplit,#tab0 .fw-mjoin{height:26px;position:relative}
+#tab0 .fw-msplit::before,#tab0 .fw-mjoin::before{content:"";position:absolute;left:calc((100% - 12px)/4 - 1px);right:calc((100% - 12px)/4 - 1px);border:2px solid var(--line)}
+#tab0 .fw-msplit::before{top:12px;height:14px;border-bottom:0;border-radius:10px 10px 0 0}
+#tab0 .fw-mjoin::before{top:0;height:12px;border-top:0;border-radius:0 0 10px 10px}
+#tab0 .fw-msplit::after,#tab0 .fw-mjoin::after{content:"";position:absolute;left:50%;width:2px;background:var(--line);transform:translateX(-1px)}
+#tab0 .fw-msplit::after{top:0;height:12px}
+#tab0 .fw-mjoin::after{top:12px;height:14px}
 /* 分岔、匯合線 */
 #tab0 .fw-split,#tab0 .fw-join{grid-column:1/3;height:26px;position:relative}
 #tab0 .fw-split::before,#tab0 .fw-join::before{content:"";position:absolute;left:calc((100% - 28px)/4 - 1px);right:calc((100% - 28px)/4 - 1px);border:2px solid var(--line)}
@@ -246,6 +256,12 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 #tab0 .fw-h .go button:hover{border-color:var(--accent);color:var(--accent)}
 #tab0 .fw-arrow{align-self:center;font-size:22px;color:var(--muted)}
 @media (max-width:760px){
+  #tab0 .fw-dsk{display:none}
+  #tab0 .fw-mob{display:block}
+  #tab0 .fw-pair{grid-template-columns:1fr;gap:0}
+  #tab0 .fw-pair .fw-node+.fw-node{margin-top:22px}
+  #tab0 .fw-pair .fw-node+.fw-node::before{content:"";position:absolute;top:-24px;left:50%;width:2px;height:22px;background:var(--line)}
+
   #tab0 .fw-tree{grid-template-columns:1fr;row-gap:0}
   #tab0 .fw-vision,#tab0 .fw-end{grid-column:1}
   #tab0 .fw-split,#tab0 .fw-join{grid-column:1;height:22px}
@@ -277,8 +293,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
       <div class="fw-node fw-vision"><div class="t">【<span data-sync="wwt-title">智「where」開道、平安駕到</span>】</div></div>
       <div class="fw-split"></div>
       <div class="fw-col fw-L">
+        <div class="fw-v fw-v26 fw-dsk"></div>
         <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c1t">阻塞原因 1：內在困境</span></div><div class="s"><span data-sync="wwt-fw-c1s">人在車室內不容易聽到外面聲音</span></div></div>
-        <div class="fw-v"></div>
+        <div class="fw-v fw-v26"></div>
         <div class="fw-node"><div class="t">【<span data-sync="wwt-fw-e1">車室駕駛者人因端</span>】</div></div>
         <div class="fw-v"></div>
         <div class="fw-node sub"><span class="q" style="background:var(--stop)">Why</span><div class="t"><span data-sync="wwt-fw-h1q">在車內判斷警笛聲來源的誤差有多大？</span></div>
@@ -287,8 +304,13 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
         <div class="fw-fill"></div>
       </div>
       <div class="fw-col fw-R">
-        <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c2t">阻塞原因 2：外在困境</span></div><div class="s"><span data-sync="wwt-fw-c2s">路口紅燈受困車陣之中</span></div></div>
-        <div class="fw-v"></div>
+        <div class="fw-msplit fw-dsk"></div>
+        <div class="fw-pair">
+          <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c2t">阻塞原因 2：外在困境</span></div><div class="s"><span data-sync="wwt-fw-c2s">路口紅燈受困車陣之中</span></div></div>
+          <div class="fw-node cause"><div class="t"><span data-sync="wwt-fw-c3t">阻塞原因 3：其他原因</span></div><div class="s"><span data-sync="wwt-fw-c3s">有人故意擋道</span></div></div>
+        </div>
+        <div class="fw-mjoin fw-dsk"></div>
+        <div class="fw-v fw-mob"></div>
         <div class="fw-node"><div class="t">【<span data-sync="wwt-fw-e2">路口紅綠燈設施端</span>】</div></div>
         <div class="fw-v"></div>
         <div class="fw-node sub"><span class="q" style="background:var(--amber)">What</span><div class="t"><span data-sync="wwt-fw-h2q">警笛聲「長」什麼樣？</span></div>
