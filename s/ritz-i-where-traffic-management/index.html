@@ -210,7 +210,19 @@ const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 let col={}; function readColors(){["--grass","--asphalt","--mark","--lane","--go","--stop","--amber","--accent","--fg","--panel","--muted"].forEach(k=>col[k]=css(k))}
 readColors();
-function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*d;ctx.setTransform(r.width*d/S,0,0,r.width*d/S,0,0)}
+let BK=1,VZ=1,VX=0,VY=0;   // 畫面縮放與平移（移動按鍵）
+function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*d;BK=r.width*d/S;applyView()}
+function applyView(){ctx.setTransform(BK*VZ,0,0,BK*VZ,BK*(C-C*VZ+VX),BK*(C-C*VZ+VY))}
+(()=>{const host=cv.parentElement,pad=document.createElement("div");pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  pad.style.cssText="position:absolute;top:50%;right:10px;transform:translateY(-50%);z-index:6;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px;grid-template-areas:'zi u zo' 'l c r' '. d .';opacity:.6;transition:opacity .2s";
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近"],["zo","－","拉遠"]];
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="grid-area:${k};width:30px;height:30px;padding:0;border-radius:8px;font-size:${k==="c"?16:13}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.75);border:1px solid rgba(255,255,255,.55);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");host.appendChild(pad);
+  function step(k){const s=18/VZ;if(k==="c"){VZ=1;VX=0;VY=0}else if(k==="zi")VZ=Math.min(3,VZ*1.06);else if(k==="zo")VZ=Math.max(0.6,VZ/1.06);
+    else if(k==="l")VX-=s;else if(k==="r")VX+=s;else if(k==="u")VY-=s;else if(k==="d")VY+=s;applyView()}
+  let tm=null;const stop=()=>{clearInterval(tm);tm=null};
+  pad.querySelectorAll("button").forEach(b=>{b.addEventListener("pointerdown",e=>{e.preventDefault();step(b.dataset.pp);if(b.dataset.pp!=="c"){stop();tm=setInterval(()=>step(b.dataset.pp),45)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop))})})();
 new ResizeObserver(resize).observe(cv);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -584,6 +596,7 @@ function loop(t){const dt=paused?0:Math.min(0.05,(t-last)/1000)*speed;last=t;
   if(document.getElementById("tab1").hidden){requestAnimationFrame(loop);return}
   updateLights(dt); updateRun(dt); track(dt); updateCars(dt); if(shortened)shortened.t+=dt;
   for(const w of waves) w.r+=360*dt; waves=waves.filter(w=>w.r<900);
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=col["--grass"];ctx.fillRect(0,0,cv.width,cv.height);ctx.restore();
   draw(); requestAnimationFrame(loop)}
 resize(); requestAnimationFrame(loop);
 </script>
