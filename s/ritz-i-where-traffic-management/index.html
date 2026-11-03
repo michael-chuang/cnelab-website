@@ -3595,7 +3595,7 @@ td.no{color:var(--b);font-weight:700}
 <section>
   <div class="two">
     <div class="card"><h3>先想一想</h3>
-      <label for="p1">學習單（一）發現：戴上耳塞後，指方向變得怎樣？</label><input type="text" id="p1" class="wide">
+      <label for="p1">學習單（一）發現：戴上耳機後，指方向變得怎樣？</label><input type="text" id="p1" class="wide">
       <label for="p2">你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？</label><input type="text" id="p2" class="wide">
       <label for="p3">我猜：路口至少要裝幾支麥克風，才分得出救護車從哪一條路來？</label>
       <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em"></div>
@@ -4275,7 +4275,7 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（三）Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P("聲音從哪裡來？路口要幾支麥克風？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    B.push(H("先想一想"));B.push(P("戴上耳塞後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
+    B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));
     B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));
