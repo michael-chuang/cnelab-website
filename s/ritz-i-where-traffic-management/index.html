@@ -4022,9 +4022,10 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   [[`① 量到時間差：${ms.toFixed(2)} 毫秒`,700],[`② 多走的路 ＝ ${ms.toFixed(2)} × 34 ≈ ${(ms*34).toFixed(1)} 公分`,400],["③ 兩耳寬 20 公分 ＝ 半圓的半徑",400],[`④ 用量角器讀出角度：${Math.abs(th)}°`,700]]
     .forEach(([t,w],i)=>E("text",{x:12,y:552+i*22,"font-size":14.5,"font-weight":w,fill:i===3?OG:ink},svg,t));
   // 公式（放在圖裡）
-  E("rect",{x:330,y:540,width:302,height:62,rx:10,fill:paper,stroke:line},svg);
-  E("text",{x:342,y:565,"font-size":14.5,"font-weight":700,fill:ink},svg,"多走的路（公分）＝ 時間差（毫秒）× 34");
-  E("text",{x:342,y:588,"font-size":12.5,fill:mut},svg,"聲音每 1 毫秒（0.001 秒）大約走 34 公分");}
+  E("rect",{x:330,y:522,width:302,height:116,rx:10,fill:paper,stroke:line},svg);
+  E("text",{x:342,y:545,"font-size":14.5,"font-weight":700,fill:ink},svg,"多走的路（公分）＝ 時間差（毫秒）× 34");
+  [["為什麼是 34？",ink,700],["聲速：聲音每秒大約走 340 公尺（34000 公分）",mut,400],["1 秒 ＝ 1000 毫秒",mut,400],["34000 ÷ 1000 ＝ 每 1 毫秒大約走 34 公分",mut,400]]
+    .forEach(([s,c,w],i)=>E("text",{x:342,y:568+i*19,"font-size":12.5,"font-weight":w,fill:c},svg,s));}
 function play(){const st=performance.now();cancelAnimationFrame(anim);$("tPlay").disabled=true;
   (function f(){const t=(performance.now()-st)/1000;if(t>=T0[T0.length-1]){draw(null);$("tPlay").disabled=false;anim=null;return}draw(t);anim=requestAnimationFrame(f)})()}
 /* 拖曳：在上面的圖裡按住、拖動，喇叭就跟著換方向（只在前半圈：左 90°～右 90°） */
@@ -4250,6 +4251,7 @@ btn.addEventListener("click",async()=>{
     B.push(H("一、兩隻耳朵的時間差"));
     B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));
     B.push(H("二、不用三角函數，也能從時間差找出角度"));
+    B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
     B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));B.push(cap("表 3-2、從時間差找出角度"));
     B.push(H("三、路口要幾支麥克風？"));
