@@ -1006,33 +1006,50 @@ function scene(){
   const items=[]; const lO=travel%30, tO=travel%24;
   for(let z=-lO+6;z<ZF;z+=30) items.push({z,kind:"lamp",x:6.4});
   for(let z=-tO+14;z<200;z+=24) items.push({z,kind:"tree",x:8.2});
-  const LOT=12;
+  const LOT=9;   // 歐式彩色街屋（一棟一棟窄窄的）
   for(let i=Math.floor((travel-20)/LOT);i<=Math.floor((travel+260)/LOT);i++) for(const side of [1,-1]){
     const hsh=(n)=>{const v=Math.sin(n*127.1+(side>0?311.7:74.7))*43758.5453;return v-Math.floor(v)};
-    const z0=i*LOT-travel; items.push({z:z0,kind:"bld",side,z1:z0+LOT-0.4,h:11+Math.floor(hsh(i)*7)*3.2,c:["#e9dcc7","#d9e4ea","#efd9c4","#d8d2c6","#c9d6cf","#e6d3d3"][Math.floor(hsh(i+7)*6)],
-      sign:["#e8483f","#f2b134","#2c8f5a","#7b4a2a","#2f6fd6","#c72c48"][Math.floor(hsh(i+3)*6)],sign2:hsh(i+9)>0.4})}
+    const fl=2+Math.floor(hsh(i)*3), z0=i*LOT-travel;
+    items.push({z:z0,kind:"bld",side,z1:z0+LOT-0.15,fl,h:3.6+fl*3.1,
+      c:["#f2cd5c","#f1e6cc","#e9d0e2","#5fb0d3","#f4dcc0","#86bde6","#efb8a2","#cfe3c9"][Math.floor(hsh(i+7)*8)],
+      shop:["#2f6f73","#3c7f9a","#355e7d","#2e6a5f"][Math.floor(hsh(i+3)*4)],awn:hsh(i+9)>0.35,roof:hsh(i+5)>0.5?"#7a88a6":"#c4674a",dorm:hsh(i+11)>0.3,chim:hsh(i+13)})}
   return items;
 }
 function drawItem(it){
   if(it.z<ZN+0.2) return;
   if(it.kind==="tree"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.fillStyle="#6b4f35"; g.fillRect(x-0.15*s,y-2*s,0.3*s,2*s); g.fillStyle="#4e7d48"; g.beginPath(); g.arc(x,y-2.8*s,1.4*s,0,7); g.fill(); g.fillStyle="#5f9157"; g.beginPath(); g.arc(x-0.4*s,y-3.1*s,0.8*s,0,7); g.fill() }
   else if(it.kind==="lamp"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.strokeStyle="#3a3f43"; g.lineWidth=Math.max(1,0.15*s); g.beginPath(); g.moveTo(x,y); g.lineTo(x,y-7*s); g.lineTo(x-1.4*s,y-7.2*s); g.stroke(); g.fillStyle="#f6f1c8"; g.fillRect(x-1.7*s,y-7.3*s,0.6*s,0.25*s) }
-  else { // 騎樓公寓：面向馬路的立面＋靠近我們的那一面
-    if(it.z1<ZN+0.2) return; const xf=it.side>0?9:-14, xb=it.side>0?21:-26, z0=Math.max(ZN+0.2,it.z), z1=it.z1, H=it.h;
-    if(it.z>ZN+0.2) quad([P(xf,it.z,H),P(xb,it.z,H),P(xb,it.z),P(xf,it.z)],shade(it.c));        // 側面（朝我們）
-    quad([P(xf,z0,H),P(xf,z1,H),P(xf,z1),P(xf,z0)],it.c);                                         // 正面（朝馬路）
-    quad([P(xf,z0,3.4),P(xf,z1,3.4),P(xf,z1),P(xf,z0)],"#4a4038");                                 // 騎樓（暗）
-    for(let k=0;k<4;k++){const zc=it.z+0.6+k*(it.z1-it.z-1.2)/3; if(zc>ZN+0.3) quad([P(xf,zc,3.4),P(xf,zc+0.6,3.4),P(xf,zc+0.6),P(xf,zc)],"#e9dcc5")}
-    for(let y=4.4;y<H-2;y+=3.2) for(let k=0;k<3;k++){ const za=it.z+1+k*3.6, zb=za+2.4; if(zb<ZN+0.3) continue;
-      quad([P(xf,Math.max(za,ZN+0.3),y+2),P(xf,zb,y+2),P(xf,zb,y),P(xf,Math.max(za,ZN+0.3),y)],"#7fa6c2");
-      g.strokeStyle="rgba(60,64,70,.55)"; g.lineWidth=1; const [ax,ay]=P(xf,Math.max(za,ZN+0.3),y), [bx,by]=P(xf,zb,y+2); g.strokeRect(Math.min(ax,bx),Math.min(ay,by),Math.abs(bx-ax),Math.abs(by-ay)) }
-    // 直式招牌（伸向馬路）
-    const zs=it.z+2.5; if(zs>ZN+0.4){ const xs=xf-(it.side>0?1.3:-1.3); quad([P(xf,zs,4),P(xs,zs,4),P(xs,zs,10),P(xf,zs,10)],it.sign); }
-    const zs2=it.z+7.5; if(it.sign2&&zs2>ZN+0.4){ const xs=xf-(it.side>0?1.3:-1.3); quad([P(xf,zs2,4.5),P(xs,zs2,4.5),P(xs,zs2,9.5),P(xf,zs2,9.5)],"#f6f1e4"); }
-    // 頂樓水塔
-    if(it.z>ZN+1){const [tx,ty]=P(xf+(it.side>0?2.5:-2.5),it.z+4,H), s2=F/(it.z+4); g.fillStyle="#9fb0bc"; g.fillRect(tx-0.9*s2,ty-1.6*s2,1.8*s2,1.6*s2)}
+  else { // 歐式街屋：彩色立面、白框窗、條紋遮陽棚、斜屋頂＋老虎窗＋煙囪
+    if(it.z1<ZN+0.2) return; const s=it.side, xf=s>0?9:-14, xb=s>0?19:-24, z0=Math.max(ZN+0.2,it.z), z1=it.z1, H=it.h;
+    const Q=(pts,c)=>quad(pts,c);
+    const face=(za,zb,ya,yb,c)=>{za=Math.max(za,ZN+0.25);if(zb<=za)return;Q([P(xf,za,yb),P(xf,zb,yb),P(xf,zb,ya),P(xf,za,ya)],c)};
+    if(it.z>ZN+0.2) Q([P(xf,it.z,H),P(xb,it.z,H),P(xb,it.z),P(xf,it.z)],shade(it.c));     // 側面（朝我們）
+    face(it.z,z1,0,H,it.c);                                                                  // 立面
+    // 一樓：店面
+    face(it.z+0.2,z1-0.2,0,3.4,it.shop);
+    for(let k=0;k<2;k++){const za=it.z+0.7+k*(LOTW(it)/2), zb=za+LOTW(it)/2-1.0; face(za,zb,0.5,2.8,"#cfe6ea"); face(za+0.08,zb-0.08,0.6,2.7,"#7fa3b2")}
+    face(it.z+0.2,z1-0.2,3.4,3.75,"#f6f1e6");                                                // 白色腰線
+    // 條紋遮陽棚（往馬路斜出去）
+    if(it.awn){const n=8,dz=(z1-it.z-1)/n,xo=xf-(s>0?1.1:-1.1);for(let k=0;k<n;k++){const za=it.z+0.5+k*dz, zb=za+dz; if(zb<ZN+0.3) continue;
+      Q([P(xf,Math.max(za,ZN+0.3),3.35),P(xf,zb,3.35),P(xo,zb,2.7),P(xo,Math.max(za,ZN+0.3),2.7)],k%2?"#f7f3ea":"#d8423a")}}
+    // 樓上的窗：白框＋深色玻璃＋窗上小眉
+    const nw=2, wz=(z1-it.z)/nw;
+    for(let f=0;f<it.fl;f++){const y=4.3+f*3.1; for(let k=0;k<nw;k++){const za=it.z+k*wz+0.85, zb=za+wz-1.7; if(zb<ZN+0.3) continue;
+      face(za-0.15,zb+0.15,y-0.15,y+2.15,"#fbf8f0"); face(za,zb,y,y+2.0,"#3e4c63"); face(za,zb,y+1.2,y+2.0,"#56698a");
+      face(za-0.3,zb+0.3,y+2.2,y+2.5,"#fbf8f0");}}
+    face(it.z,z1,H-0.45,H,"#fbf8f0");                                                       // 屋簷
+    // 斜屋頂（往屋子裡面縮）
+    const xr=xf+(s>0?1.4:-1.4), RH=2.4;
+    Q([P(xf,z0,H),P(xf,z1,H),P(xr,z1,H+RH),P(xr,z0,H+RH)],it.roof);
+    if(it.z>ZN+0.2) Q([P(xf,it.z,H),P(xr,it.z,H+RH),P(xb,it.z,H+RH),P(xb,it.z,H)],shade(it.roof));
+    // 老虎窗
+    if(it.dorm){for(let k=0;k<nw;k++){const za=it.z+k*wz+1.2, zb=za+wz-2.4; if(za<ZN+0.4) continue; const xm=xf+(s>0?0.55:-0.55);
+      Q([P(xm,za,H+0.2),P(xm,zb,H+0.2),P(xm,zb,H+1.8),P(xm,za,H+1.8)],"#fbf8f0"); Q([P(xm,za+0.25,H+0.4),P(xm,zb-0.25,H+0.4),P(xm,zb-0.25,H+1.55),P(xm,za+0.25,H+1.55)],"#3e4c63")}}
+    // 紅色煙囪
+    const zc=it.z+1+it.chim*(z1-it.z-3); if(zc>ZN+0.6){const xc=xr+(s>0?1.2:-1.2); Q([P(xc,zc,H+RH-0.2),P(xc,zc+0.9,H+RH-0.2),P(xc,zc+0.9,H+RH+1.6),P(xc,zc,H+RH+1.6)],"#c9573e")}
   }
 }
+const LOTW=it=>it.z1-it.z;
 function wheelPair(x,y,w,h){g.fillStyle="#141719";g.fillRect(x-w/2+w*0.04,y-h*0.12,w*0.16,h*0.14);g.fillRect(x+w/2-w*0.2,y-h*0.12,w*0.16,h*0.14)}
 function drawVeh(o){
   if(o.z<ZN+0.5) return; const [x,y]=P(o.x,o.z), s=F/o.z, w=o.w*s, h=o.h*s; if(w<1.5) return;
