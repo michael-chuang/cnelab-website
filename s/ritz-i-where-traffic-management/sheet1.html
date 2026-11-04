@@ -530,7 +530,8 @@ const playIcon=new THREE.Sprite(new THREE.SpriteMaterial({depthTest:false,transp
 playIcon.scale.set(11,11,1);playIcon.position.set(0,101,-30);playIcon.renderOrder=10;playIcon.visible=false;ann.add(playIcon);
 // 聲波（從喇叭擴散的圓圈）
 const circ=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
-const waves=[...Array(5)].map((_,i)=>{const l=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xe23b3b,transparent:true,opacity:0}));l.position.y=95;l.userData.ph=i/5;scene.add(l);return l});
+const ringG=new THREE.RingGeometry(0.94,1,128);ringG.rotateX(-Math.PI/2);   // 粗一點、看得清楚的聲波圈
+const waves=[...Array(6)].map((_,i)=>{const l=new THREE.Mesh(ringG,new THREE.MeshBasicMaterial({color:0xff3b30,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));l.position.y=95;l.renderOrder=5;l.userData.ph=i/6;scene.add(l);return l});
 // 真實方向（綠）與手指方向（彩色）＋差的扇形
 const greenM=M(0x22a06b,{roughness:0.9}), pointM=M(0x2a6fb8,{roughness:0.9});
 function rope(mat,y){const g=new THREE.Group();const m=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,215,8),mat);m.rotation.x=Math.PI/2;m.position.set(0,y,-107.5);m.castShadow=true;g.add(m);scene.add(g);return g}
@@ -598,7 +599,7 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tick(now){requestAnimationFrame(tick);
   const el=(now-playT)/1000, on=el>=0&&el<2;
   playIcon.visible=on;if(on){const k=1+0.12*Math.sin(el*12);playIcon.scale.set(11*k,11*k,1)}
-  waves.forEach(w=>{if(!on){w.material.opacity=0;return}const p=(el*0.9+w.userData.ph)%1,r=10+p*230;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
+  waves.forEach(w=>{if(!on){w.material.opacity=0;return}const p=(el*0.9+w.userData.ph)%1,r=10+p*230;w.scale.set(r,1,r);w.material.opacity=0.95*(1-p*0.85)});
   const k=reduce?1:0.12;   // 舉起右手：先從垂下抬到斜上方，再轉向他覺得的方向
   if(armTarget!==null){armAngle+=(armTarget-armAngle)*k;armX+=(0.12-armX)*k;bodyYaw+=wrap(bodyTarget-bodyYaw)*k}
   else{armAngle+=(0-armAngle)*k;armX+=(-1.5-armX)*k;bodyYaw+=wrap(0-bodyYaw)*k}
