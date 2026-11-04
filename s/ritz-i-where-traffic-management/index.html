@@ -2865,7 +2865,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 </section>
 
 <section>
-  <h2>二、用串珠認識「頻譜」</h2>
+  <h2>二、認識「頻譜」</h2>
   <p class="lead">一個聲音裡面混了很多種頻率，就像一把混在一起的串珠。先抓一把、拍照，用眼睛猜猜看；再把同顏色排成一排、拍照、數一數。</p>
   <div class="two">
     <div class="photo card"><h3>照片 1：抓一把（還沒排）</h3><label class="drop" for="ph1"><img id="im_ph1" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph1" accept="image/*" hidden><button class="xbtn" data-clear="ph1">移除照片</button></div>
@@ -3394,7 +3394,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
-    B.push(H("二、用串珠認識「頻譜」"));
+    B.push(H("二、認識「頻譜」"));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
     B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));B.push(cap("表 2-1、我的這一把串珠"));
