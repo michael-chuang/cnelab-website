@@ -1090,43 +1090,73 @@ function heat(cx,cy,R0,R1,lobes){ // 與路口模式相同：藍→綠→黃→�
   g.globalAlpha=1;
 }
 function dashboard(){
-  const y0=DASH;
-  // A 柱、儀表板
-  g.fillStyle="#1f2427"; g.beginPath(); g.moveTo(0,0); g.lineTo(54,0); g.lineTo(24,y0+6); g.lineTo(0,y0+16); g.fill();
+  const y0=DASH, kmh=egoV*3.6, B=css("--body"), N=css("--num");
+  // A 柱
+  g.fillStyle="#1a1d20"; g.beginPath(); g.moveTo(0,0); g.lineTo(54,0); g.lineTo(24,y0+6); g.lineTo(0,y0+16); g.fill();
   g.beginPath(); g.moveTo(W,0); g.lineTo(W-54,0); g.lineTo(W-24,y0+6); g.lineTo(W,y0+16); g.fill();
-  const dg=g.createLinearGradient(0,y0-20,0,H); dg.addColorStop(0,"#2c3236"); dg.addColorStop(1,"#15191b");
-  g.fillStyle=dg; g.beginPath(); g.moveTo(0,y0+16); g.quadraticCurveTo(W/2,y0-36,W,y0+16); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
-  // 速度表
-  const sx=175, sy=y0+96, sR=58, kmh=egoV*3.6;
-  g.fillStyle="#0e1214"; g.beginPath(); g.arc(sx,sy,sR+8,0,7); g.fill();
-  g.strokeStyle="#3b4348"; g.lineWidth=5; g.beginPath(); g.arc(sx,sy,sR,Math.PI*0.75,Math.PI*2.25); g.stroke();
-  for(let k=0;k<=8;k++){const a=Math.PI*0.75+k/8*Math.PI*1.5; g.strokeStyle="#8a949b"; g.lineWidth=2; g.beginPath(); g.moveTo(sx+Math.cos(a)*(sR-4),sy+Math.sin(a)*(sR-4)); g.lineTo(sx+Math.cos(a)*(sR-12),sy+Math.sin(a)*(sR-12)); g.stroke()}
-  const na=Math.PI*0.75+Math.min(1,kmh/80)*Math.PI*1.5; g.strokeStyle="#ff6b3d"; g.lineWidth=3; g.beginPath(); g.moveTo(sx,sy); g.lineTo(sx+Math.cos(na)*(sR-8),sy+Math.sin(na)*(sR-8)); g.stroke();
-  g.fillStyle="#e8ebe7"; g.font="bold 22px "+css("--num"); g.textAlign="center"; g.fillText(Math.round(kmh),sx,sy+4); g.font="11px "+css("--body"); g.fillText("km/h",sx,sy+20);
-  // 方向盤
-  g.strokeStyle="#0d1012"; g.lineWidth=24; g.beginPath(); g.arc(175,H+175,210,Math.PI*1.22,Math.PI*1.78); g.stroke();
-  // 聲音羅盤（熱點）
-  const cx=W/2+45, cy=y0+88, R1=66, R0=24;
-  g.fillStyle="#0e1214"; g.beginPath(); g.arc(cx,cy,R1+10,0,7); g.fill();
-  const lobes=[];
-  if(compassOn){
+  // 儀表板（深色＋紅色氣氛燈）
+  const dg=g.createLinearGradient(0,y0-20,0,H); dg.addColorStop(0,"#26292d"); dg.addColorStop(1,"#121416");
+  g.fillStyle=dg; g.beginPath(); g.moveTo(0,y0+16); g.quadraticCurveTo(W/2,y0-30,W,y0+16); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
+  const glow=g.createLinearGradient(0,0,W,0); glow.addColorStop(0,"rgba(255,70,40,0)"); glow.addColorStop(0.2,"rgba(255,70,40,.85)"); glow.addColorStop(0.8,"rgba(255,70,40,.85)"); glow.addColorStop(1,"rgba(255,70,40,0)");
+  g.strokeStyle=glow; g.lineWidth=3; g.beginPath(); g.moveTo(30,y0+58); g.quadraticCurveTo(W/2,y0+22,W-30,y0+58); g.stroke();
+  // 細長的抬頭顯示條
+  g.fillStyle="#0b0d10"; rr(110,y0+4,380,26,8); g.fill(); g.strokeStyle="#2f353b"; g.lineWidth=1; rr(110,y0+4,380,26,8); g.stroke();
+  g.textBaseline="middle"; g.textAlign="left"; g.fillStyle="#e8ebe7"; g.font="bold 15px "+N; g.fillText(Math.round(kmh)+" km/h",126,y0+17);
+  g.fillStyle="#7fd0ff"; g.font="bold 13px "+B; g.textAlign="center"; g.fillText("D",300,y0+17);
+  g.textAlign="right"; g.fillStyle=compassOn?"#6fe3a8":"#8a949b"; g.font="bold 12px "+B; g.fillText(compassOn?"聲音羅盤 開":"聲音羅盤 關",476,y0+17);
+  // 方向盤（下方平底）
+  const wx=215, wy=H+40;
+  g.strokeStyle="#0c0e10"; g.lineWidth=26; g.lineCap="round"; g.beginPath(); g.arc(wx,wy,150,Math.PI*1.13,Math.PI*1.87); g.stroke();
+  g.strokeStyle="#2a2f34"; g.lineWidth=3; g.beginPath(); g.arc(wx,wy,150,Math.PI*1.2,Math.PI*1.8); g.stroke(); g.lineCap="butt";
+  g.fillStyle="#111417"; rr(wx-48,wy-122,96,70,24); g.fill(); g.fillStyle="#22272c"; rr(wx-36,wy-112,72,48,18); g.fill();
+  // 中控大螢幕：導航畫面
+  const sx=520, sy=352, sw=362, sh=H-sy-16;   // 浮在儀表板上的大螢幕
+  g.fillStyle="#050607"; rr(sx-6,sy-6,sw+12,sh+12,16); g.fill();
+  g.save(); rr(sx,sy,sw,sh,11); g.clip();
+  const bg=g.createLinearGradient(0,sy,0,sy+sh); bg.addColorStop(0,"#2a3756"); bg.addColorStop(1,"#3a4a6e"); g.fillStyle=bg; g.fillRect(sx,sy,sw,sh);
+  const vx=sx+sw/2, vy=sy+34, cxm=sx+sw/2, cym=sy+sh-84;            // 消失點、我的車
+  const RP=(lx,dz)=>{const k=1/(1+dz/30);return [vx+lx*k*15, vy+(cym+34-vy)*k]};   // 地圖上的位置：lx＝左右公尺、dz＝前方公尺
+  // 兩邊的房子
+  for(let i=0;i<7;i++){for(const s of [-1,1]){const z1=i*22-8,z2=z1+16;const [x1,y1]=RP(s*7.5,z1),[x2,y2]=RP(s*14,z2),[x3,y3]=RP(s*7.5,z2);
+    g.fillStyle=i%2?"#4a5a82":"#425178"; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x3,y3); g.lineTo(x2,y2-18/(1+z2/40)); g.lineTo(x2+(x1-x3),y1-18/(1+z1/40)); g.closePath(); g.fill()}}
+  // 道路
+  const road=(l,r,c)=>{const [a1,b1]=RP(l,-6),[a2,b2]=RP(r,-6),[a3,b3]=RP(r,400),[a4,b4]=RP(l,400);g.fillStyle=c;g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.lineTo(a3,b3);g.lineTo(a4,b4);g.closePath();g.fill()};
+  road(-6.5,6.5,"#55688f"); road(-0.15+(-1.75-camX),0.15+(-1.75-camX),"#7d8fb5");
+  g.strokeStyle="#f2c94c"; g.lineWidth=1.5; {const [a1,b1]=RP(-3.6-camX,-6),[a2,b2]=RP(-3.6-camX,400);g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.stroke()}
+  // 導航路線（青色）
+  {const [a1,b1]=RP(0,-2),[a2,b2]=RP(0,300);const gr=g.createLinearGradient(0,b1,0,b2);gr.addColorStop(0,"rgba(80,230,255,.95)");gr.addColorStop(1,"rgba(80,230,255,.25)");
+   g.strokeStyle=gr;g.lineWidth=12;g.lineCap="round";g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.stroke();g.lineCap="butt"}
+  // 緊急車輛在地圖上的位置（羅盤開時）
+  if(compassOn&&run&&(!run.gm||run.guess)){const dz=run.v.z,lx=run.v.x-camX;if(dz>-12&&dz<300){const [mx,my]=RP(lx,Math.max(-5,dz));const on=Math.floor(performance.now()/250)%2;
+    g.fillStyle=on?"#ff3b30":"#ff8a80";g.beginPath();g.arc(mx,my,7,0,7);g.fill();g.strokeStyle="#fff";g.lineWidth=2;g.stroke()}}
+  // 我的車＋車子旁邊的圈圈＝聲音羅盤
+  const R1=62, R0=32;
+  g.save(); g.translate(cxm,cym); g.scale(1,0.5);
+  if(compassOn){const lobes=[];
     if(hornMark&&hornMark.t<2.5) lobes.push({a:bearing(hornMark.o.x-camX,hornMark.o.z),v:0.72*Math.min(1,2.5-hornMark.t)});
     if(run&&(!run.gm||run.guess)) lobes.push({a:bearing(run.v.x-camX,run.v.z),v:Math.max(0.45,Math.min(1,1-(Math.hypot(run.v.x-camX,run.v.z)-10)/160))});
-    heat(cx,cy,R0,R1,lobes);
-  } else { g.strokeStyle="#3b4348"; g.lineWidth=3; g.beginPath(); g.arc(cx,cy,R1,0,7); g.stroke() }
-  g.fillStyle="#e8ebe7"; rr(cx-8,cy-14,16,28,4); g.fill(); g.fillStyle="#3b4246"; g.fillRect(cx-6,cy-9,12,7);
-  g.fillStyle="#c7cfd4"; g.font="bold 12px "+css("--body"); g.textAlign="center"; g.textBaseline="middle";
-  [["前",0,-1],["右",1,0],["後",0,1],["左",-1,0]].forEach(([t,x,y])=>g.fillText(t,cx+x*(R1+9),cy+y*(R1+9)));
-  g.textBaseline="alphabetic";
-  // 文字
-  const tx=cx+R1+30; let ty=y0+62; g.textAlign="left";
-  g.fillStyle="#8a949b"; g.font="bold 12px "+css("--body"); g.fillText("聲音羅盤",tx,ty); ty+=26;
-  if(!compassOn){g.fillStyle="#6b757c";g.font="15px "+css("--body");g.fillText("已關閉",tx,ty);return}
-  if(run){ if(run.gm&&!run.guess){g.fillStyle="#ff8a8a";g.font="bold 17px "+css("--body");g.fillText("警笛！先用耳朵猜",tx,ty)}
-    else{const a=bearing(run.v.x-camX,run.v.z),d=Math.hypot(run.v.x-camX,run.v.z); g.fillStyle="#ff6b6b";g.font="bold 18px "+css("--body");g.fillText(`${KN[run.kind]}警笛・${word(a)}`,tx,ty);
-      g.fillStyle="#e8ebe7";g.font="14px "+css("--body");g.fillText(`約 ${Math.round(d)} 公尺　${run.v.front?(run.v.z>0?"迎面而來":"已經過去"):(run.v.z<0?"從後面靠近":"超過我們了")}`,tx,ty+22)}
-    ty+=50 }
-  if(hornMark&&hornMark.t<2.5){g.globalAlpha=Math.min(1,2.5-hornMark.t);g.fillStyle="#ffc21a";g.font="bold 16px "+css("--body");g.fillText(`喇叭・${hornMark.o.label}・${word(bearing(hornMark.o.x-camX,hornMark.o.z))}`,tx,ty);g.globalAlpha=1}
+    heat(0,0,R0,R1,lobes)}
+  else{g.strokeStyle="rgba(200,210,220,.35)";g.lineWidth=4;g.beginPath();g.arc(0,0,R1-8,0,7);g.stroke()}
+  g.restore();
+  g.fillStyle="rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(cxm,cym+6,15,6,0,0,7); g.fill();
+  g.fillStyle="#f4f6f8"; rr(cxm-11,cym-20,22,32,7); g.fill(); g.fillStyle="#9fb3cf"; rr(cxm-8,cym-15,16,9,3); g.fill(); g.fillStyle="#ff4d4d"; g.fillRect(cxm-10,cym+9,5,2); g.fillRect(cxm+5,cym+9,5,2);
+  g.font="bold 11px "+B; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle="#dfe7f2";
+  [["前",0,-1],["右",1,0],["後",0,1],["左",-1,0]].forEach(([s,x,y])=>g.fillText(s,cxm+x*(R1+10),cym+y*(R1*0.5+9)));
+  // 左上：導航指示卡
+  g.fillStyle="rgba(20,110,80,.92)"; rr(sx+10,sy+10,150,46,9); g.fill();
+  g.fillStyle="#fff"; g.font="bold 22px "+B; g.textAlign="left"; g.fillText("↑",sx+20,sy+33); g.font="bold 14px "+B; g.fillText("直行 0.3 km",sx+44,sy+26); g.font="12px "+B; g.fillStyle="#d4f3e6"; g.fillText("惠中路",sx+44,sy+44);
+  // 右上：車速
+  g.fillStyle="#fff"; g.beginPath(); g.arc(sx+sw-30,sy+32,20,0,7); g.fill(); g.strokeStyle="#d23a3a"; g.lineWidth=4; g.stroke();
+  g.fillStyle="#1b1f22"; g.font="bold 15px "+N; g.textAlign="center"; g.fillText("50",sx+sw-30,sy+33);
+  // 下方：聲音羅盤的訊息
+  g.fillStyle="rgba(10,14,22,.78)"; rr(sx+10,sy+sh-34,sw-20,26,8); g.fill(); g.textAlign="left"; g.font="bold 13px "+B;
+  let msg="聲音羅盤：沒有聽到警笛", mc="#b9c6d8";
+  if(!compassOn){msg="聲音羅盤已關閉";mc="#8a949b"}
+  else if(run){ if(run.gm&&!run.guess){msg="警笛！先用耳朵猜";mc="#ff8a8a"}
+    else{const a=bearing(run.v.x-camX,run.v.z),d=Math.hypot(run.v.x-camX,run.v.z);msg=`🚨 ${KN[run.kind]}警笛・${word(a)}・約 ${Math.round(d)} 公尺　${run.v.front?(run.v.z>0?"迎面而來":"已經過去"):(run.v.z<0?"從後面靠近":"超過我們了")}`;mc="#ff8a80"}}
+  else if(hornMark&&hornMark.t<2.5){msg=`📣 喇叭・${hornMark.o.label}・${word(bearing(hornMark.o.x-camX,hornMark.o.z))}`;mc="#ffd166"}
+  g.fillStyle=mc; g.fillText(msg,sx+20,sy+sh-20,sw-40);
+  g.restore(); g.textBaseline="alphabetic";
 }
 function draw(){
   const items=scene();
