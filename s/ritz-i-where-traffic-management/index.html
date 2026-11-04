@@ -866,7 +866,7 @@ resize(); requestAnimationFrame(loop);
       <h2>4　駕駛艙設定</h2>
       <div class="row" id="win2"><button data-w="1" class="on">車窗關上（隔音）</button><button data-w="0">車窗打開</button></div>
       <div class="row" id="cmp2"><button data-c="1" class="on">聲音羅盤：開</button><button data-c="0">羅盤：關</button></div>
-      <label class="chk"><input type="checkbox" id="guessmode2"> 先用耳朵猜警笛在前還是後，再看羅盤（建議戴耳機）</label>
+      <label class="chk" hidden><input type="checkbox" id="guessmode2"> 先用耳朵猜警笛在前還是後，再看羅盤（建議戴耳機）</label>
     </div>
     <div class="guess" id="guess2" hidden>
       <b>警笛在前面還是後面？</b>
@@ -874,7 +874,7 @@ resize(); requestAnimationFrame(loop);
     </div>
   </div>
 </div>
-<section style="display:flex;flex-direction:column;gap:10px">
+<section hidden style="display:flex;flex-direction:column;gap:10px">
   <div class="tabhead">
     <h2>駕駛艙紀錄</h2>
     <div class="row"><button id="copy2">複製表格</button><button id="clear2">清除紀錄</button></div>
