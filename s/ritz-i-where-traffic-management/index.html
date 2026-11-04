@@ -382,13 +382,13 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
       <div class="row"><button data-g="N">北</button><button data-g="E">東</button><button data-g="S">南</button><button data-g="W">西</button></div>
       <span class="summary">東西從左右耳來；北南呢？</span>
     </div>
-    <ol class="steps" id="steps">
+    <ol class="steps" id="steps" hidden>
       <li data-k="hear"><span class="n">1</span><span><b>聽到警笛</b></span></li>
       <li data-k="decide"><span class="n">2</span><span><b>判斷方向</b></span></li>
       <li data-k="light"><span class="n">3</span><span><b>改變號誌</b></span></li>
       <li data-k="pass"><span class="n">4</span><span><b>車子通過</b></span></li>
     </ol>
-    <div class="msg" id="msg">按上面的方向按鈕，讓車子出發。</div>
+    <div class="msg" id="msg" hidden>按上面的方向按鈕，讓車子出發。</div>
   </div>
 </div>
 
