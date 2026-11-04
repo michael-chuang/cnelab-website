@@ -156,7 +156,8 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -219,7 +220,7 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>先在 3D 裡做一次</h2>
-  <div class="sim">
+  <div class="sim sim1">
     <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
     <div class="stage" id="stage">
       <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>

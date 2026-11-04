@@ -1947,7 +1947,8 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -2006,7 +2007,7 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>先在 3D 裡做一次</h2>
-  <div class="sim">
+  <div class="sim sim1">
     <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
     <div class="stage" id="stage">
       <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
@@ -2649,7 +2650,8 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -2790,7 +2792,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
       <label for="n3">聲音的高低（高音、低音）跟什麼有關？</label><input type="text" id="n3" style="max-width:none;width:100%;text-align:left">
       <label for="n4">聲音的大小（大聲、小聲）跟什麼有關？</label><input type="text" id="n4" style="max-width:none;width:100%;text-align:left">
     </div>
-    <div class="card"><h3>器材</h3><ul>
+    <div class="card"><h3>器材</h3><ul id="equipList2">
       <li>彩色串珠一大盒（拆散）、手機或相機（拍照）</li>
       <li>手機安裝 Phyphox，用「Audio Spectrum」</li>
       <li>電腦或平板（播 YouTube）、喇叭</li>
@@ -2882,7 +2884,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <section>
   <h2>三、用 Phyphox 看自己的聲音</h2>
-  <ol class="card" style="padding-left:2.2em">
+  <ol class="card" id="stepList2" style="padding-left:2.2em">
     <li>打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。</li>
     <li>依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？</li>
     <li>最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。</li></ol>
@@ -3202,6 +3204,12 @@ let S={hyp:"",n1:"",n2:"",n3:"",n4:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads
 let IMG={};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 S.t25=S.t25.filter(r=>CARS.includes(r.c));
+
+/* 器材、步驟：點一下就能改（一行一項，按 Enter 換下一項），會自動存檔 */
+for(const [id,k] of [["equipList2","equipHTML"],["stepList2","stepsHTML"]]){const e=document.getElementById(id);if(!e)continue;
+  const clean=h=>h.replace(/<(?!\/?(li|b|strong|br|span)\b)[^>]*>/gi,"").replace(/\son\w+="[^"]*"/gi,"");
+  if(S[k])e.innerHTML=clean(S[k]);e.contentEditable="true";e.spellcheck=false;e.title="點一下就可以修改";e.classList.add("edlist");
+  e.addEventListener("input",()=>{if(!e.querySelector("li"))e.innerHTML="<li></li>";S[k]=clean(e.innerHTML);save()})}
 {const ord=c=>{const i=BEADS.findIndex(b=>b[1]===c);return i<0?99:i};S.beads.sort((a,b)=>ord(a.c)-ord(b.c))}
 try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -3584,7 +3592,8 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -3692,7 +3701,7 @@ td.no{color:var(--b);font-weight:700}
       <label for="p3">我猜：路口至少要裝幾支麥克風，才分得出救護車從哪一條路來？</label>
       <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em"></div>
     </div>
-    <div class="card"><h3>器材</h3><ul>
+    <div class="card"><h3>器材</h3><ul id="equipList3">
       <li>電腦或平板（用這個網頁做動畫和模擬）</li>
       <li>小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭</li>
       <li>陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」</li>
@@ -3761,7 +3770,7 @@ td.no{color:var(--b);font-weight:700}
   <h2>四、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
   <p class="lead">用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。</p>
   <div class="two">
-    <div class="card"><h3>步驟</h3><ol>
+    <div class="card"><h3>步驟</h3><ol id="stepList3">
       <li>搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。</li>
       <li>電腦打開「頻率雷達」，先照說明校正（喇叭放 0°、再放 90°）。</li>
       <li>點雷達中間的 1～4 號，選這一輪要用的麥克風（看右邊）。</li>
@@ -4281,6 +4290,12 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
+
+/* 器材、步驟：點一下就能改（一行一項，按 Enter 換下一項），會自動存檔 */
+for(const [id,k] of [["equipList3","equipHTML"],["stepList3","stepsHTML"]]){const e=document.getElementById(id);if(!e)continue;
+  const clean=h=>h.replace(/<(?!\/?(li|b|strong|br|span)\b)[^>]*>/gi,"").replace(/\son\w+="[^"]*"/gi,"");
+  if(S[k])e.innerHTML=clean(S[k]);e.contentEditable="true";e.spellcheck=false;e.title="點一下就可以修改";e.classList.add("edlist");
+  e.addEventListener("input",()=>{if(!e.querySelector("li"))e.innerHTML="<li></li>";S[k]=clean(e.innerHTML);save()})}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const num=v=>v===""||v==null||isNaN(+v)?null:+v;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -4563,7 +4578,8 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
 .tag.a{background:var(--a)} .tag.b{background:var(--b)}
 /* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
