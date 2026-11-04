@@ -164,6 +164,9 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 .views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
 .views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
 .views button.on{background:#18232b;color:#fff}
+.edlist{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s}
+.edlist:hover{background:color-mix(in srgb,var(--accent,#2a6fb8) 6%,transparent)}
+.edlist:focus{box-shadow:0 0 0 2px var(--accent,#2a6fb8);background:var(--paper,#fff)}
 .gear{position:absolute;bottom:10px;right:10px;display:flex;gap:6px;z-index:5}
 .gear button{font-size:15px;padding:6px 14px;background:rgba(255,255,255,.9);color:#18232b;border:2px solid rgba(24,35,43,.25);border-radius:999px}
 .gear button.on{background:#18232b;color:#fff;border-color:#18232b}
@@ -229,11 +232,11 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>實驗方法</h2>
-  <div class="card"><h3>器材</h3><ul>
+  <div class="card"><h3>器材</h3><ul id="equipList" class="edlist">
       <li>大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）</li>
       <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
       <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
-  <div class="card"><h3>實驗步驟</h3><ol style="padding-left:1.6em;margin:0;display:grid;gap:6px">
+  <div class="card"><h3>實驗步驟</h3><ol id="stepList" class="edlist" style="padding-left:1.6em;margin:0;display:grid;gap:6px">
     <li><b>準備場地</b>：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
     <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
     <li>受試者站在圓心，<b>戴上眼罩</b>，頭不能轉、身體不能動。</li>
@@ -379,6 +382,11 @@ $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
   S.t1={a:[["40","46"],["95","88"],["130","118"],["15","10"],["160","152"]].map(([r,p])=>({r,p})),b:[["70","92"],["20","45"],["150","126"],["100","70"],["35","20"]].map(([r,p])=>({r,p}))};save();buildT1();calcT1()});
 $("who").value=S.who;$("who").addEventListener("input",e=>{S.who=e.target.value;save()});
+/* 器材、實驗步驟：點一下就能改（一行一項，按 Enter 換下一項），會自動存檔 */
+for(const [id,k] of [["equipList","equipHTML"],["stepList","stepsHTML"]]){const e=$(id);if(!e)continue;
+  const clean=h=>h.replace(/<(?!\/?(li|b|strong|br|span)\b)[^>]*>/gi,"").replace(/\son\w+="[^"]*"/gi,"");
+  if(S[k])e.innerHTML=clean(S[k]);e.contentEditable="true";e.spellcheck=false;e.title="點一下就可以修改";
+  e.addEventListener("input",()=>{if(!e.querySelector("li"))e.innerHTML="<li></li>";S[k]=clean(e.innerHTML);save()})}
 for(const id of ["q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
 buildT1();calcT1();buildT2();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawProt();calcT2()});
@@ -651,7 +659,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
-    body.push(P("實驗步驟：",{bold:true}));["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
+    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
