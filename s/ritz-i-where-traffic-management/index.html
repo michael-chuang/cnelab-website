@@ -64,6 +64,7 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   --grass:#2c3a2c; --asphalt:#3a4044; --mark:#d9dbd5; --lane:#d9a722; color-scheme:dark }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+#tab1 .board:has(#cap:not([hidden])) > [role=group]{bottom:66px!important}   /* 說明框出現時，移動鍵往上讓開 */
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
 .wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -361,9 +362,9 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
         <button class="big" data-d="E" style="grid-area:e">東<br><small>臺灣大道</small></button>
         <button class="big" data-d="S" style="grid-area:s">南<br><small>惠中路</small></button>
       </div>
-      <label class="chk"><input type="checkbox" id="challenge"> 挑戰：戴耳機，先用耳朵猜方向</label>
+      <label class="chk" hidden><input type="checkbox" id="challenge"> 挑戰：戴耳機，先用耳朵猜方向</label>
     </div>
-    <div class="group">
+    <div class="group" hidden>   <!-- 固定用 4 支麥克風、播放警報聲 -->
       <h2>4　路口偵測系統</h2>
       <div class="row" id="systems">
         <button data-m="0">關閉（一般紅綠燈）</button><button data-m="2">2 支麥克風</button><button data-m="4" class="on">4 支麥克風</button>
@@ -371,7 +372,7 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
       <label class="chk"><input type="checkbox" id="sound" checked> 播放警報聲</label>
     </div>
     <div class="group">
-      <h2>5　動畫速度</h2>
+      <h2>4　動畫速度</h2>
       <div class="row" id="speeds">
         <button data-v="1">正常</button><button data-v="0.5" class="on">慢動作（½）</button><button data-v="0.25">超慢（¼）</button>
       </div>
@@ -391,7 +392,7 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
   </div>
 </div>
 
-<section style="display:flex;flex-direction:column;gap:10px">
+<section hidden style="display:flex;flex-direction:column;gap:10px">
   <div class="tabhead">
     <h2>我們的紀錄（可以抄進紀錄單）</h2>
     <div class="row"><button id="copy">複製表格</button><button id="clear">清除紀錄</button></div>
