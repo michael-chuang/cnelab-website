@@ -213,7 +213,7 @@ svg text{font-family:var(--body)}
 <header>
 <nav style="font-size:15px"><a href="./">← 回到智慧路口情境模擬</a></nav>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（一）Why 人因工程篇</div>
-  <h1>耳朵被遮住，還指得出救護車在哪裡嗎？</h1>
+  <h1 data-sync-ro="wwt-fw-h1q">為什麼光靠駕駛的耳朵不夠？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳機，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
 
@@ -654,7 +654,7 @@ btn.addEventListener("click",async()=>{
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
     body.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（一）Why 人因工程篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
-    body.push(P("耳朵被遮住，還指得出救護車在哪裡嗎？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
+    body.push(P(localStorage.getItem("wwt-fw-h1q")||"為什麼光靠駕駛的耳朵不夠？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     body.push(P(`實驗日期：${S.date||"＿＿＿＿"}　　記錄員：${S.rec||"＿＿＿＿"}　　播音員：${S.ann2||"＿＿＿＿"}　　受試者人數：${subs.length||S.t2.length}`));
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
