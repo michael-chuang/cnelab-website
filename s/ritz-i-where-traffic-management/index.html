@@ -2889,7 +2889,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 </section>
 
 <section>
-  <h2>三、用 Phyphox 看自己的聲音</h2>
+  <h2>三、看看自己的聲音頻譜</h2>
   <ol class="card" id="stepList2" style="padding-left:2.2em">
     <li>打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。</li>
     <li>依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？</li>
@@ -3408,7 +3408,7 @@ btn.addEventListener("click",async()=>{
     B.push(cap("圖 2-1、我的串珠頻譜（實心＝實際，虛線＝我猜）"));
     B.push(P("只用眼睛猜，準嗎？"+(S.qb1||"＿＿")));B.push(P("排好、數好以後，一眼就能看出哪一種最多嗎？"+(S.qb2||"＿＿")));
     B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
-    B.push(H("三、用 Phyphox 看自己的聲音"));
+    B.push(H("三、看看自己的聲音頻譜"));
     B.push(table(["我發出的聲音","波形規律嗎？","頻譜有尖尖的山峰嗎？","主要頻率（Hz）"],S.t23.map(r=>[r.v,r.reg,r.peak,r.hz])));B.push(cap("表 2-2、我的聲音：波形和頻譜"));
     for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
