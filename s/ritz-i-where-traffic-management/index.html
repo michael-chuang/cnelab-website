@@ -2937,11 +2937,10 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <section>
   <h2>六、結果與結論</h2>
-  <div class="card qa"><ol>
-    <li>頻率是什麼？用自己的話說：<textarea id="c1" rows="2"></textarea></li>
-    <li>串珠和頻譜哪裡很像？<textarea id="c2" rows="2"></textarea></li>
-    <li>警笛聲的主要頻率大約在 <input type="number" id="c3a" style="max-width:6em"> ～ <input type="number" id="c3b" style="max-width:6em"> Hz；跟我們說話的聲音比，比較 <select id="c3c"><option value="">選一個</option><option>高</option><option>低</option></select>。</li>
-    <li>我們量到的警笛符合法規嗎？寫下你的結論：<textarea id="c4" rows="3"></textarea></li></ol></div>
+  <div class="card" style="display:flex;flex-direction:column;gap:8px">
+    <p style="margin:0">回到我們的問題：<b data-sync-ro="wwt-fw-h2q">警笛聲「長」什麼樣？</b></p>
+    <p style="margin:0">看看表 2-3、表 2-4 和圖 2-2：救護車、消防車、警車的警笛，頻率範圍和變化方式一樣嗎？跟一般的引擎聲、說話聲比呢？如果電腦「聽」到一個聲音，可以怎麼用頻率判斷它是什麼聲音？</p>
+    <label for="cWhat" class="note">我的結論：</label><textarea id="cWhat" rows="4"></textarea></div>
 </section>
 
 <section>
@@ -3209,7 +3208,7 @@ const VOICES=["說話「你好」","長長的「啊～」","唱低音","唱高�
 const CARS=["救護車","消防車","警車"];
 let S={hyp:"",n1:"",n2:"",n3:"",n4:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads:BEADS.map(([n,c])=>({n,c,g:"",a:""})),qb1:"",qb2:"",
   t23:VOICES.map(v=>({v,reg:"",peak:"",hz:""})),qp1:"",qp2:"",sirens:"",t24:[...Array(5)].map(()=>({s:"",url:"",hz:"",lo:"",hi:"",form:""})),
-  t25:CARS.map(c=>({c,lr:"",lt:"",mr:"",mt:"",ok:""})),c1:"",c2:"",c3a:"",c3b:"",c3c:"",c4:"",date:"",names:"",cap3:"",cap4:"",cap5:"",cap6:""};
+  t25:CARS.map(c=>({c,lr:"",lt:"",mr:"",mt:"",ok:""})),cWhat:"",date:"",names:"",cap3:"",cap4:"",cap5:"",cap6:""};
 let IMG={};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 S.t25=S.t25.filter(r=>CARS.includes(r.c));
@@ -3372,8 +3371,7 @@ document.querySelectorAll("[data-clear]").forEach(b=>b.addEventListener("click",
 function alertMsg(t){$("expMsg").textContent=t}
 
 /* 其他欄位 */
-for(const id of ["n1","n2","n3","n4","qb1","qb2","qp1","qp2","sirens","c1","c2","c3a","c3b","c4","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
-for(const id of ["c3c"])bind(id,S,id,"change");
+for(const id of ["n1","n2","n3","n4","qb1","qb2","qp1","qp2","sirens","cWhat","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
 buildT22();buildT23();buildT24();buildT25();
 if(S.reveal){$("lawfig").hidden=false;drawLaw()}
 const redraw=()=>{if(S.reveal)drawLaw()};
@@ -3424,9 +3422,7 @@ btn.addEventListener("click",async()=>{
     const ls=off("0 0 640 350");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,350),transformation:{width:480,height:263}})]}));
     B.push(cap("圖 2-2、依法規畫出的三種警報聲：頻率隨時間的變化"));
     B.push(H("六、結果與結論"));
-    B.push(P("1. 頻率是什麼？"+(S.c1||"＿＿")));B.push(P("2. 串珠和頻譜哪裡很像？"+(S.c2||"＿＿")));
-    B.push(P(`3. 警笛聲的主要頻率大約在 ${S.c3a||"＿＿"}～${S.c3b||"＿＿"} Hz；跟說話的聲音比，比較 ${S.c3c||"＿"}。`));
-    B.push(P("4. 結論："+(S.c4||"＿＿＿＿")));
+    B.push(P("回到我們的問題："+(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？"),{bold:true}));B.push(P("如果電腦「聽」到一個聲音，可以怎麼用頻率判斷它是什麼聲音？"));B.push(P("我的結論："+(S.cWhat||"＿＿＿＿＿＿＿＿")));
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單二_傅立葉轉換篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
