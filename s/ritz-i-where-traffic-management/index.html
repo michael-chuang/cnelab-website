@@ -1758,7 +1758,7 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
@@ -1956,7 +1956,7 @@ svg text{font-family:var(--body)}
       <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
       <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
   <div class="card"><h3>實驗步驟</h3><ol style="padding-left:1.6em;margin:0;display:grid;gap:6px">
-    <li><b>準備場地</b>：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
+    <li><b>準備場地</b>：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
     <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
     <li>受試者站在圓心，<b>戴上眼罩</b>，頭不能轉、身體不能動。</li>
     <li>播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。<b>正面面對受試者</b>，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。</li>
@@ -2012,7 +2012,7 @@ svg text{font-family:var(--body)}
 <section>
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <p>你輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完實驗後，按下面的按鈕存成 Word 檔，裡面有基本資料、假設、每位受試者的表 1-1、表 1-2、圖 1-1、圖 1-2和結論。</p>
+    <p>輸入的內容會自動存到雲端，全隊共用一份，換電腦也看得到。做完實驗後，按下面的按鈕存成 Word 檔，裡面有基本資料、實驗方法、每位受試者的表 1-1、表 1-2、圖 1-1、圖 1-2 和結論。</p>
     <div class="row" style="align-items:center"><label for="date">實驗日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="rec">記錄員：</label><input type="text" id="rec" class="name"><label for="ann2">播音員：</label><input type="text" id="ann2" class="name"></div>
     <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
   </div>
@@ -2373,7 +2373,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
-    body.push(P("實驗步驟：",{bold:true}));["準備場地：找一間安靜的教室，把大型量角器平放在地上，用膠帶固定。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
+    body.push(P("實驗步驟：",{bold:true}));["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"].forEach((t,i)=>body.push(P(`${i+1}. ${t}`)));
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
@@ -2452,7 +2452,7 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
@@ -2860,7 +2860,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <section>
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <p>輸入的內容和照片會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見；照片會縮小再存）。做完後，按下面的按鈕存成 Word 檔。</p>
+    <p>輸入的內容和照片會自動存到雲端，全隊共用一份，換電腦也看得到（照片會縮小再存）。做完後，按下面的按鈕存成 Word 檔。</p>
     <div class="row" style="align-items:center"><label for="date">日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="names">組員：</label><input type="text" id="names" style="max-width:16em"></div>
     <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
   </div>
@@ -3384,7 +3384,7 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
@@ -3719,7 +3719,7 @@ td.no{color:var(--b);font-weight:700}
 <section>
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <p>輸入的內容會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見）。做完後，按下面的按鈕存成 Word 檔。</p>
+    <p>輸入的內容會自動存到雲端，全隊共用一份，換電腦也看得到。做完後，按下面的按鈕存成 Word 檔。</p>
     <div class="row" style="align-items:center"><label for="date">日期：</label><input type="text" id="date" style="max-width:9em" placeholder="2026/11/01"><label for="names">組員：</label><input type="text" id="names" style="max-width:16em"></div>
     <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
   </div>
@@ -4360,7 +4360,7 @@ const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.cal
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
 const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-const TEAM=!!window.KS_TEAM;   // 全隊共用一份（科展作品說明），不用選名字
+const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
@@ -4597,7 +4597,7 @@ svg text{font-family:var(--body)}
 <section>
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <p>寫的內容和照片會自動記在這台電腦的瀏覽器裡（換電腦或清除瀏覽紀錄就會不見；照片會縮小再存）。寫完按下面的按鈕存成 Word 檔，格式和學校的附件 2 一樣。</p>
+    <p>寫的內容和照片會自動存到雲端，全隊共用一份，換電腦也看得到（照片會縮小再存）。寫完按下面的按鈕存成 Word 檔，格式和學校的附件 2 一樣。</p>
     <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
   </div>
 </section>
