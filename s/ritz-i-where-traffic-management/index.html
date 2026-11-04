@@ -1006,10 +1006,15 @@ function scene(){
   const items=[]; const lO=travel%30, tO=travel%24;
   for(let z=-lO+6;z<ZF;z+=30) items.push({z,kind:"lamp",x:6.4});
   for(let z=-tO+14;z<200;z+=24) items.push({z,kind:"tree",x:8.2});
+  for(let z=-tO+2;z<200;z+=24) items.push({z,kind:"tree",x:-12.7});   // 對面人行道也種樹
   const LOT=9;   // 歐式彩色街屋（一棟一棟窄窄的）
   for(let i=Math.floor((travel-20)/LOT);i<=Math.floor((travel+260)/LOT);i++) for(const side of [1,-1]){
     const hsh=(n)=>{const v=Math.sin(n*127.1+(side>0?311.7:74.7))*43758.5453;return v-Math.floor(v)};
     const fl=2+Math.floor(hsh(i)*3), z0=i*LOT-travel;
+    if(hsh(i+17)<0.34&&hsh(i+16)>=0.34){   // 小公園：草地＋幾棵大樹（房子之間留空）
+      items.push({z:z0,kind:"park",side,z1:z0+LOT-0.15});
+      for(const [dz,dx,sz] of [[2,1.6,1.25],[6.2,3.8,1.45],[4.2,6.5,1.3]]) items.push({z:z0+dz,kind:"tree",x:side*(9+dx),sz});
+      continue}
     items.push({z:z0,kind:"bld",side,z1:z0+LOT-0.15,fl,h:3.6+fl*3.1,
       c:["#f2cd5c","#f1e6cc","#e9d0e2","#5fb0d3","#f4dcc0","#86bde6","#efb8a2","#cfe3c9"][Math.floor(hsh(i+7)*8)],
       shop:["#2f6f73","#3c7f9a","#355e7d","#2e6a5f"][Math.floor(hsh(i+3)*4)],awn:hsh(i+9)>0.35,roof:hsh(i+5)>0.5?"#7a88a6":"#c4674a",dorm:hsh(i+11)>0.3,chim:hsh(i+13)})}
@@ -1017,7 +1022,11 @@ function scene(){
 }
 function drawItem(it){
   if(it.z<ZN+0.2) return;
-  if(it.kind==="tree"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.fillStyle="#6b4f35"; g.fillRect(x-0.15*s,y-2*s,0.3*s,2*s); g.fillStyle="#4e7d48"; g.beginPath(); g.arc(x,y-2.8*s,1.4*s,0,7); g.fill(); g.fillStyle="#5f9157"; g.beginPath(); g.arc(x-0.4*s,y-3.1*s,0.8*s,0,7); g.fill() }
+  if(it.kind==="park"){ const s=it.side, xf=s>0?9:-14, xb=s>0?19:-24, z0=Math.max(ZN+0.2,it.z), z1=it.z1; if(z1<ZN+0.2) return;
+    quad([P(xf,z0),P(xf,z1),P(xb,z1),P(xb,z0)],"#8fbf74");
+    quad([P(xf,z0,0.7),P(xf,z1,0.7),P(xf,z1),P(xf,z0)],"#5f9a4f");   // 矮樹籬
+    if(it.z>ZN+0.2) quad([P(xf,it.z,0.7),P(xb,it.z,0.7),P(xb,it.z),P(xf,it.z)],"#4f8a42"); return }
+  if(it.kind==="tree"){ const [x,y]=P(it.x,it.z), s=F/it.z*(it.sz||1); g.fillStyle="#6b4f35"; g.fillRect(x-0.15*s,y-2*s,0.3*s,2*s); g.fillStyle="#4e7d48"; g.beginPath(); g.arc(x,y-2.8*s,1.4*s,0,7); g.fill(); g.fillStyle="#5f9157"; g.beginPath(); g.arc(x-0.4*s,y-3.1*s,0.8*s,0,7); g.fill() }
   else if(it.kind==="lamp"){ const [x,y]=P(it.x,it.z), s=F/it.z; g.strokeStyle="#3a3f43"; g.lineWidth=Math.max(1,0.15*s); g.beginPath(); g.moveTo(x,y); g.lineTo(x,y-7*s); g.lineTo(x-1.4*s,y-7.2*s); g.stroke(); g.fillStyle="#f6f1c8"; g.fillRect(x-1.7*s,y-7.3*s,0.6*s,0.25*s) }
   else { // 歐式街屋：彩色立面、白框窗、條紋遮陽棚、斜屋頂＋老虎窗＋煙囪
     if(it.z1<ZN+0.2) return; const s=it.side, xf=s>0?9:-14, xb=s>0?19:-24, z0=Math.max(ZN+0.2,it.z), z1=it.z1, H=it.h;
