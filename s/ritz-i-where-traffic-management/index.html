@@ -1130,7 +1130,7 @@ function dashboard(){
   // 背景（遠方是深藍色）
   const bg=g.createLinearGradient(0,sy,0,sy+sh); bg.addColorStop(0,"#3b4470"); bg.addColorStop(1,"#55608f"); g.fillStyle=bg; g.fillRect(sx,sy,sw,sh);
   // 導航用的立體投影：相機在車子後上方往前看；X＝左右公尺，Z＝前方公尺，Y＝高度
-  const cxm=sx+sw/2, HZ=sy+24, CH=40, CB=28, FL=118;
+  const cxm=sx+sw/2, HZ=sy+22, CH=40, CB=33, FL=124;
   const PJ=(X,Z,Y=0)=>{const zc=Z+CB;return [cxm+FL*X/zc, HZ+FL*(CH-Y)/zc]};
   const cym=PJ(0,0)[1];
   const poly=(pts,c)=>{g.fillStyle=c;g.beginPath();pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill()};
