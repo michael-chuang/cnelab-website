@@ -170,6 +170,7 @@ function init(){EL=[...document.querySelectorAll("[data-sync]")];
   show();pull();
   addEventListener("storage",ev=>{if(ev.key in DEF){paint(ev.key);edited()}});   // 作品說明那邊改的
   addEventListener("pagehide",()=>{if(tm)push(true)});
+  setInterval(()=>{const a=document.activeElement;if(document.visibilityState==="visible"&&!tm&&!(a&&a.isContentEditable))pull()},30000);   // 開著時每 30 秒看一次雲端
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){if(tm)push(true)}else pull()})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 </script>
@@ -1763,7 +1764,8 @@ if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
   if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
-P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
+const used=new Set();
+P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
 P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
 const dirty=new Set();let tm=null,st="",stT=0;
@@ -1781,10 +1783,16 @@ async function pull(){if(!kid||!url())return;
   try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
     for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
       const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
-      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));changed=true}}
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
       else if(lt>it.ts+1000)dirty.add(it.key)}
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
-    if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
+    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
+function reloadSoon(){const a=document.activeElement;
+  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
+const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
+setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!dirty.size)pull()});
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
 addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
@@ -1800,7 +1808,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
   if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
     document.body.appendChild(W);
-    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
@@ -1819,7 +1827,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const b=W;
   const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
   const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
-  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
@@ -2450,7 +2458,8 @@ if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
   if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
-P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
+const used=new Set();
+P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
 P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
 const dirty=new Set();let tm=null,st="",stT=0;
@@ -2468,10 +2477,16 @@ async function pull(){if(!kid||!url())return;
   try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
     for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
       const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
-      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));changed=true}}
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
       else if(lt>it.ts+1000)dirty.add(it.key)}
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
-    if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
+    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
+function reloadSoon(){const a=document.activeElement;
+  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
+const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
+setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!dirty.size)pull()});
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
 addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
@@ -2487,7 +2502,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
   if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
     document.body.appendChild(W);
-    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
@@ -2506,7 +2521,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const b=W;
   const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
   const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
-  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
@@ -3375,7 +3390,8 @@ if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
   if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
-P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
+const used=new Set();
+P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
 P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
 const dirty=new Set();let tm=null,st="",stT=0;
@@ -3393,10 +3409,16 @@ async function pull(){if(!kid||!url())return;
   try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
     for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
       const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
-      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));changed=true}}
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
       else if(lt>it.ts+1000)dirty.add(it.key)}
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
-    if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
+    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
+function reloadSoon(){const a=document.activeElement;
+  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
+const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
+setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!dirty.size)pull()});
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
 addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
@@ -3412,7 +3434,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
   if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
     document.body.appendChild(W);
-    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
@@ -3431,7 +3453,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const b=W;
   const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
   const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
-  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
@@ -4344,7 +4366,8 @@ if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&
   let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
   if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
 const nk=k=>kid?k+"@"+kid:k;
-P.getItem=function(k){return this===LS&&isWS(k)?oG.call(this,nk(k)):oG.call(this,k)};
+const used=new Set();
+P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
 P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
 P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
 const dirty=new Set();let tm=null,st="",stT=0;
@@ -4362,10 +4385,16 @@ async function pull(){if(!kid||!url())return;
   try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
     for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
       const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
-      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));changed=true}}
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
       else if(lt>it.ts+1000)dirty.add(it.key)}
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
-    if(changed){show("已從雲端拿到你最新的紀錄");setTimeout(()=>location.reload(),400);return}if(dirty.size)push()}catch(e){}}
+    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
+function reloadSoon(){const a=document.activeElement;
+  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
+const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
+setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!dirty.size)pull()});
 addEventListener("pagehide",()=>{if(dirty.size)push(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
 addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
@@ -4381,7 +4410,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
   if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
     document.body.appendChild(W);
-    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
@@ -4400,7 +4429,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   const b=W;
   const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
   const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
-  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(pull)});
   show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{bar();pull()});else{bar();pull()}
 window.__kid=()=>kid;
