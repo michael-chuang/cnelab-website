@@ -842,7 +842,7 @@ resize(); requestAnimationFrame(loop);
 <div class="game">
   <div style="display:flex;flex-direction:column;gap:10px;min-width:0"><div class="board cockpit"><canvas id="cv2" aria-label="開車時從駕駛座看出去的畫面與儀表板"></canvas></div><div class="cap" id="cap2" hidden style="position:static"><div id="capText2"></div></div></div>
   <div class="side">
-    <div class="msg" id="msg2">你正開在兩線道的左車道。按「後方」或「前方」讓緊急車輛出現，或按喇叭試試羅盤。</div>
+    <div class="msg" id="msg2" hidden>你正開在兩線道的左車道。按「後方」或「前方」讓緊急車輛出現，或按喇叭試試羅盤。</div>
     <div class="group">
       <h2>1　哪一種車？</h2>
       <div class="row" id="kinds2">
@@ -1091,9 +1091,6 @@ function heat(cx,cy,R0,R1,lobes){ // 與路口模式相同：藍→綠→黃→�
 }
 function dashboard(){
   const y0=DASH, kmh=egoV*3.6, B=css("--body"), N=css("--num");
-  // A 柱
-  g.fillStyle="#1a1d20"; g.beginPath(); g.moveTo(0,0); g.lineTo(54,0); g.lineTo(24,y0+6); g.lineTo(0,y0+16); g.fill();
-  g.beginPath(); g.moveTo(W,0); g.lineTo(W-54,0); g.lineTo(W-24,y0+6); g.lineTo(W,y0+16); g.fill();
   // 儀表板（深色＋紅色氣氛燈）
   const dg=g.createLinearGradient(0,y0-20,0,H); dg.addColorStop(0,"#26292d"); dg.addColorStop(1,"#121416");
   g.fillStyle=dg; g.beginPath(); g.moveTo(0,y0+16); g.quadraticCurveTo(W/2,y0-30,W,y0+16); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
@@ -1113,23 +1110,38 @@ function dashboard(){
   const sx=520, sy=352, sw=362, sh=H-sy-16;   // 浮在儀表板上的大螢幕
   g.fillStyle="#050607"; rr(sx-6,sy-6,sw+12,sh+12,16); g.fill();
   g.save(); rr(sx,sy,sw,sh,11); g.clip();
-  const bg=g.createLinearGradient(0,sy,0,sy+sh); bg.addColorStop(0,"#2a3756"); bg.addColorStop(1,"#3a4a6e"); g.fillStyle=bg; g.fillRect(sx,sy,sw,sh);
-  const vx=sx+sw/2, vy=sy+34, cxm=sx+sw/2, cym=sy+sh-84;            // 消失點、我的車
-  const RP=(lx,dz)=>{const k=1/(1+dz/30);return [vx+lx*k*15, vy+(cym+34-vy)*k]};   // 地圖上的位置：lx＝左右公尺、dz＝前方公尺
-  // 兩邊的房子
-  for(let i=0;i<7;i++){for(const s of [-1,1]){const z1=i*22-8,z2=z1+16;const [x1,y1]=RP(s*7.5,z1),[x2,y2]=RP(s*14,z2),[x3,y3]=RP(s*7.5,z2);
-    g.fillStyle=i%2?"#4a5a82":"#425178"; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x3,y3); g.lineTo(x2,y2-18/(1+z2/40)); g.lineTo(x2+(x1-x3),y1-18/(1+z1/40)); g.closePath(); g.fill()}}
-  // 道路
-  const road=(l,r,c)=>{const [a1,b1]=RP(l,-6),[a2,b2]=RP(r,-6),[a3,b3]=RP(r,400),[a4,b4]=RP(l,400);g.fillStyle=c;g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.lineTo(a3,b3);g.lineTo(a4,b4);g.closePath();g.fill()};
-  road(-6.5,6.5,"#55688f"); road(-0.15+(-1.75-camX),0.15+(-1.75-camX),"#7d8fb5");
-  g.strokeStyle="#f2c94c"; g.lineWidth=1.5; {const [a1,b1]=RP(-3.6-camX,-6),[a2,b2]=RP(-3.6-camX,400);g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.stroke()}
-  // 導航路線（青色）
-  {const [a1,b1]=RP(0,-2),[a2,b2]=RP(0,300);const gr=g.createLinearGradient(0,b1,0,b2);gr.addColorStop(0,"rgba(80,230,255,.95)");gr.addColorStop(1,"rgba(80,230,255,.25)");
-   g.strokeStyle=gr;g.lineWidth=12;g.lineCap="round";g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.stroke();g.lineCap="butt"}
+  // 背景（遠方是深藍色）
+  const bg=g.createLinearGradient(0,sy,0,sy+sh); bg.addColorStop(0,"#3b4470"); bg.addColorStop(1,"#55608f"); g.fillStyle=bg; g.fillRect(sx,sy,sw,sh);
+  // 導航用的立體投影：相機在車子後上方往前看；X＝左右公尺，Z＝前方公尺，Y＝高度
+  const cxm=sx+sw/2, HZ=sy+24, CH=40, CB=28, FL=118;
+  const PJ=(X,Z,Y=0)=>{const zc=Z+CB;return [cxm+FL*X/zc, HZ+FL*(CH-Y)/zc]};
+  const cym=PJ(0,0)[1];
+  const poly=(pts,c)=>{g.fillStyle=c;g.beginPath();pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill()};
+  // 地面：人行道（淺）＋馬路（深），沒有車道線
+  poly([PJ(-30,-10),PJ(30,-10),PJ(30,400),PJ(-30,400)],"#6a74a3");
+  poly([PJ(-9,-10),PJ(9,-10),PJ(9,400),PJ(-9,400)],"#4a5482");
+  // 導航路線（青色，跟著路往前）
+  {const [a1,b1]=PJ(0,-3),[a2,b2]=PJ(0,260);const gr=g.createLinearGradient(0,b1,0,b2);gr.addColorStop(0,"rgba(90,235,255,.95)");gr.addColorStop(1,"rgba(90,235,255,.15)");
+   g.strokeStyle=gr;g.lineWidth=13;g.lineCap="round";g.beginPath();g.moveTo(a1,b1);g.lineTo(a2,b2);g.stroke();g.lineCap="butt"}
+  // 兩旁的立體大樓（跟著車子往後退，有在行駛的感覺）
+  const SP=16, base=Math.floor(travel/SP), off=travel-base*SP, hs=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+  const blds=[];for(let i=-1;i<16;i++)for(const s of [-1,1]){const id=(base+i)*2+(s>0?1:0),r1=hs(id),r2=hs(id+0.37),r3=hs(id+0.71);
+    const z0=i*SP-off+r3*3, d=SP*(0.55+r2*0.35), x0=11+r1*2, w=8+r2*7, h=4+Math.floor(r1*4)*3+(r3>0.85?8:0);
+    if(z0+d>-10&&z0<250) blds.push({s,z0,z1:z0+d,x0,x1:x0+w,h,tone:r2});
+    if(r3>0.55&&z0>-6){blds.push({tree:true,s,z:z0-2.2,x:10})}}
+  blds.sort((p,q)=>(q.tree?q.z:q.z0)-(p.tree?p.z:p.z0));
+  for(const B of blds){
+    if(B.tree){const [tx,ty]=PJ(B.s*B.x,B.z,0),[,ty2]=PJ(B.s*B.x,B.z,3.2),r=Math.max(1.5,(ty-ty2)*0.6);g.fillStyle="#2f8f86";g.beginPath();g.arc(tx,ty2,r,0,7);g.fill();g.fillStyle="#46b3a5";g.beginPath();g.arc(tx-r*0.3,ty2-r*0.3,r*0.55,0,7);g.fill();continue}
+    const s=B.s, xi=s*B.x0, xo=s*B.x1, z0=Math.max(B.z0,-9), z1=B.z1, h=B.h, L=0.46+B.tone*0.1;
+    const col=k=>`hsl(230,${18+B.tone*8}%,${Math.round(L*k*100)}%)`;
+    poly([PJ(xi,z0,0),PJ(xi,z1,0),PJ(xi,z1,h),PJ(xi,z0,h)],col(0.78));            // 面向馬路的那一面
+    poly([PJ(xi,z0,0),PJ(xo,z0,0),PJ(xo,z0,h),PJ(xi,z0,h)],col(0.92));            // 正面（面向我們）
+    if(h<CH) poly([PJ(xi,z0,h),PJ(xo,z0,h),PJ(xo,z1,h),PJ(xi,z1,h)],col(1.08));   // 屋頂
+  }
   // 緊急車輛在地圖上的位置（羅盤開時）
-  if(compassOn&&run&&(!run.gm||run.guess)){const dz=run.v.z,lx=run.v.x-camX;if(dz>-12&&dz<300){const [mx,my]=RP(lx,Math.max(-5,dz));const on=Math.floor(performance.now()/250)%2;
+  if(compassOn&&run&&(!run.gm||run.guess)){const dz=run.v.z,lx=Math.max(-5,Math.min(5,run.v.x-camX));if(dz>-12&&dz<240){const [mx,my]=PJ(lx,Math.max(-9,dz));const on=Math.floor(performance.now()/250)%2;
     g.fillStyle=on?"#ff3b30":"#ff8a80";g.beginPath();g.arc(mx,my,7,0,7);g.fill();g.strokeStyle="#fff";g.lineWidth=2;g.stroke()}}
-  // 我的車＋車子旁邊的圈圈＝聲音羅盤
+  // 我的車（固定在中間）＋車子旁邊的圈圈＝聲音羅盤
   const R1=62, R0=32;
   g.save(); g.translate(cxm,cym); g.scale(1,0.5);
   if(compassOn){const lobes=[];
@@ -1138,9 +1150,14 @@ function dashboard(){
     heat(0,0,R0,R1,lobes)}
   else{g.strokeStyle="rgba(200,210,220,.35)";g.lineWidth=4;g.beginPath();g.arc(0,0,R1-8,0,7);g.stroke()}
   g.restore();
-  g.fillStyle="rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(cxm,cym+6,15,6,0,0,7); g.fill();
-  g.fillStyle="#f4f6f8"; rr(cxm-11,cym-20,22,32,7); g.fill(); g.fillStyle="#9fb3cf"; rr(cxm-8,cym-15,16,9,3); g.fill(); g.fillStyle="#ff4d4d"; g.fillRect(cxm-10,cym+9,5,2); g.fillRect(cxm+5,cym+9,5,2);
-  g.font="bold 11px "+B; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle="#dfe7f2";
+  // 白色小車（從後上方看）
+  g.fillStyle="rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(cxm,cym+5,17,6,0,0,7); g.fill();
+  g.fillStyle="#f4f6f8"; rr(cxm-13,cym-20,26,28,8); g.fill();                    // 車身
+  g.fillStyle="#d9dee5"; rr(cxm-10,cym-27,20,13,6); g.fill();                     // 車頂
+  g.fillStyle="#36425a"; rr(cxm-9,cym-18,18,7,3); g.fill();                       // 後擋風玻璃
+  g.fillStyle="#ff3b3b"; rr(cxm-12,cym-2,6,3,1.5); g.fill(); rr(cxm+6,cym-2,6,3,1.5); g.fill();   // 煞車燈
+  g.fillStyle="#2a2f36"; g.fillRect(cxm-13,cym+6,5,4); g.fillRect(cxm+8,cym+6,5,4);              // 輪胎
+  g.font="bold 11px "+B; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle="#eef2f8";
   [["前",0,-1],["右",1,0],["後",0,1],["左",-1,0]].forEach(([s,x,y])=>g.fillText(s,cxm+x*(R1+10),cym+y*(R1*0.5+9)));
   // 左上：導航指示卡
   g.fillStyle="rgba(20,110,80,.92)"; rr(sx+10,sy+10,150,46,9); g.fill();
