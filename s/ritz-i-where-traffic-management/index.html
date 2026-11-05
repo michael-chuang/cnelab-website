@@ -2774,6 +2774,11 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 .drop img[hidden]{display:none}
 .shot h3{margin:0 0 6px}
 [hidden]{display:none!important}
+
+.sent23{margin:0;font-size:16px;line-height:2}
+.sent23 select,.sent23 input{margin:0 2px}
+.chip{font-size:13px;padding:3px 10px;border-radius:999px}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .step.key{background:color-mix(in srgb,var(--accent) 12%,var(--paper));border:2px solid var(--accent)}
 .step.key p{color:var(--ink)}
 .fam-card{margin-top:2px}
@@ -2911,11 +2916,13 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
     <li>依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？</li>
     <li>最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。</li></ol>
   <p class="cap">表 2-2　我的聲音：波形和頻譜</p>
-  <div class="tbl"><table id="t23">
-    <thead><tr><th>我發出的聲音</th><th>波形規律嗎？</th><th>頻譜有尖尖的山峰嗎？</th><th>主要頻率（Hz）</th><th></th></tr></thead><tbody></tbody></table></div>
-  <div class="row"><button id="add23">＋ 加一列</button></div>
-  <p class="note" style="margin:0">表 2-2 填完一列，下面就會出現那個聲音的截圖格子（波形、頻譜各一張），圖說會自動帶入表格裡的答案。</p>
-  <div id="shots23" style="display:flex;flex-direction:column;gap:12px"></div>
+  <div class="card snd23" style="display:flex;flex-direction:column;gap:10px">
+    <div class="row" style="align-items:center;gap:8px"><label for="pick23"><b>我發出的聲音：</b></label><select id="pick23"></select>
+      <span id="new23" hidden><input type="text" id="name23" maxlength="16" placeholder="自己取名字" aria-label="自己取的聲音名字" style="max-width:10em"> <button type="button" id="ok23">好</button></span>
+      <button type="button" class="xbtn" id="del23" title="刪掉這個聲音的紀錄" hidden>🗑 刪掉這個聲音</button></div>
+    <div class="row" id="done23" style="gap:6px"></div>
+    <div id="shots23"></div>
+  </div>
   <div class="two" id="oldShots" hidden>
     <div class="photo card"><h3>截圖：<input type="text" id="cap3" class="name"> 的波形或頻譜</h3><label class="drop" for="ph3"><img id="im_ph3" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph3" accept="image/*" hidden><button class="xbtn" data-clear="ph3">移除照片</button></div>
     <div class="photo card"><h3>截圖：<input type="text" id="cap4" class="name"> 的波形或頻譜</h3><label class="drop" for="ph4"><img id="im_ph4" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph4" accept="image/*" hidden><button class="xbtn" data-clear="ph4">移除照片</button></div>
@@ -3237,7 +3244,7 @@ let S={hyp:"",n1:"",n2:"",n3:"",n4:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads
 let IMG={};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 S.t25=S.t25.filter(r=>CARS.includes(r.c));
-S.t23.forEach(r=>{if(r.v==='吹口哨（選做）')r.v='吹口哨'});if(!S.t23.length)S.t23.push({v:'',reg:'',peak:'',hz:''});
+S.t23.forEach(r=>{if(r.v==='吹口哨（選做）')r.v='吹口哨';if(r.peak==='有，很尖')r.peak='很明顯';else if(r.peak==='有一點'||r.peak==='沒有，一片')r.peak='不明顯'});S.t23=S.t23.filter(r=>r.v);
 const rid=()=>Math.random().toString(36).slice(2,8);
 
 /* 器材、步驟：點一下就能改（一行一項，按 Enter 換下一項），會自動存檔 */
@@ -3293,26 +3300,30 @@ function drawBeads(s,P=PRINT){s.innerHTML="";const x0=44,y0=250,H=220,W=500,n=S.
   if(!S.beads.some(b=>num(b.a)!==null||num(b.g)!==null))el("text",{x:x0+W/2,y:140,"text-anchor":"middle","font-size":14,fill:P.muted},s,"在表 2-1 填數字，長條會長出來")}
 
 /* 表 2-2、2-4、2-5 */
-const done23=r=>r.v&&r.reg&&r.peak&&r.hz!=="";
-const capText23=r=>`${r.v}｜波形規律嗎？${r.reg}｜頻譜有尖尖的山峰嗎？${r.peak}｜主要頻率 ${r.hz} Hz`;
-function buildT23(){const tb=$("t23").querySelector("tbody");tb.innerHTML="";
-  const sel=(id,opts,ph="選")=>`<select id="${id}"><option value="">${ph}</option>${opts.map(o=>`<option>${esc(o)}</option>`).join("")}</select>`;
-  S.t23.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${sel("vv"+i,VOICES,"選聲音")}</td><td>${sel("vr"+i,["規律","不規律"])}</td><td>${sel("vp"+i,["有，很尖","有一點","沒有，一片"])}</td><td><input type="number" id="vh${i}" min="0" step="1" inputmode="numeric" aria-label="第 ${i+1} 列 主要頻率"></td><td><button type="button" class="xbtn" data-del23="${i}" title="刪掉這一列" aria-label="刪掉第 ${i+1} 列">🗑</button></td>`;
-    tb.appendChild(tr);for(const [id,k,ev] of [["vv"+i,"v","change"],["vr"+i,"reg","change"],["vp"+i,"peak","change"],["vh"+i,"hz","input"]])bind(id,r,k,ev,buildShots)});
-  tb.querySelectorAll("[data-del23]").forEach(b=>b.addEventListener("click",()=>{const i=+b.dataset.del23,r=S.t23[i];
-    if((r.v||r.reg||r.peak||r.hz||IMG["t23w_"+r.id]||IMG["t23s_"+r.id])&&!confirm("要刪掉這一列（和它的截圖）嗎？"))return;
-    delete IMG["t23w_"+r.id];delete IMG["t23s_"+r.id];saveImg();S.t23.splice(i,1);if(!S.t23.length)S.t23.push({v:"",reg:"",peak:"",hz:"",id:rid()});save();buildT23()}));
+/* 表 2-2：一次看一個聲音。下拉選聲音（也可以自己取名）→ 下面出現一句話＋波形、頻譜兩張截圖 */
+const sent23=r=>`${r.v} 的波形${r.reg||"＿＿"}，頻譜${r.peak==="很明顯"?`有很明顯的尖尖山峰，主要頻率是 ${r.hz||"＿＿"} Hz`:r.peak==="不明顯"?"沒有明顯的尖尖山峰":"＿＿"}。`;
+let cur23=null;
+function buildT23(){const pk=$("pick23");if(!pk)return;
+  const names=[...VOICES,...S.t23.map(r=>r.v).filter(v=>!VOICES.includes(v))];
+  pk.innerHTML=`<option value="">選一個聲音</option>${names.map(n=>`<option${n===cur23?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 自己取名…</option>`;
+  $("done23").innerHTML=S.t23.length?`<span class="note">已經記錄：</span>`+S.t23.map(r=>`<button type="button" class="chip${r.v===cur23?" on":""}" data-go="${esc(r.v)}">${esc(r.v)}${IMG["t23w_"+r.id]&&IMG["t23s_"+r.id]?" ✓":""}</button>`).join(""):"";
+  $("done23").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{cur23=b.dataset.go;buildT23()}));
+  $("del23").hidden=!S.t23.some(r=>r.v===cur23);
   buildShots()}
-/* 表 2-2 填完一列，下面就出現那個聲音的截圖（波形＋頻譜），圖說自動帶入表格的答案 */
-function buildShots(){const box=$("shots23");if(!box)return;box.innerHTML="";
-  S.t23.forEach(r=>{if(!done23(r))return;const c=document.createElement("div");c.className="card shot";
-    c.innerHTML=`<h3>${esc(r.v)}</h3><div class="two">${[["w","波形"],["s","頻譜"]].map(([k,n])=>{const id="t23"+k+"_"+r.id;
-      return `<div class="photo"><label class="drop" for="f_${id}"><img id="im_${id}" alt="" hidden><span>點這裡選${n}截圖</span></label><input type="file" id="f_${id}" accept="image/*" hidden><p class="cap" style="margin:0">${esc(r.v)} 的${n}（${n==="波形"?"波形規律嗎？"+esc(r.reg):"頻譜有尖尖的山峰嗎？"+esc(r.peak)+"，主要頻率 "+esc(r.hz)+" Hz"}）</p><button class="xbtn" data-shot="${id}">移除</button></div>`}).join("")}</div>`;
-    box.appendChild(c);
-    for(const k of ["w","s"]){const id="t23"+k+"_"+r.id;showImg(id);
-      c.querySelector("#f_"+id).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[id]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(id)}catch(err){}e.target.value=""});
-      c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id)})}})}
+function pick23(v){v=(v||"").trim();if(!v)return;cur23=v;if(!S.t23.some(r=>r.v===v)){S.t23.push({id:rid(),v,reg:"",peak:"",hz:""});save()}$("new23").hidden=true;buildT23()}
+function buildShots(){const box=$("shots23");if(!box)return;box.innerHTML="";const r=S.t23.find(x=>x.v===cur23);if(!r)return;
+  const sel=(id,val,opts)=>`<select id="${id}"><option value="">選</option>${opts.map(o=>`<option${o===val?" selected":""}>${o}</option>`).join("")}</select>`;
+  const c=document.createElement("div");c.className="shot";
+  c.innerHTML=`<p class="sent23">${esc(r.v)} 的波形 ${sel("sr23",r.reg,["規律","不規律"])}，頻譜的尖尖山峰 ${sel("sp23",r.peak,["很明顯","不明顯"])}<span id="hzw23"${r.peak==="很明顯"?"":" hidden"}>，主要頻率是 <input type="number" id="sh23" min="0" step="1" inputmode="numeric" value="${esc(r.hz)}" style="max-width:6em" aria-label="主要頻率"> Hz</span>。</p>
+    <div class="two">${[["w","波形"],["s","頻譜"]].map(([k,n])=>{const id="t23"+k+"_"+r.id;
+      return `<div class="photo"><label class="drop" for="f_${id}"><img id="im_${id}" alt="" hidden><span>點這裡放${n}截圖</span></label><input type="file" id="f_${id}" accept="image/*" hidden><p class="cap" style="margin:0">${esc(r.v)} 的${n}</p><button class="xbtn" data-shot="${id}">移除</button></div>`}).join("")}</div>`;
+  box.appendChild(c);
+  c.querySelector("#sr23").addEventListener("change",e=>{r.reg=e.target.value;save()});
+  c.querySelector("#sp23").addEventListener("change",e=>{r.peak=e.target.value;if(r.peak!=="很明顯")r.hz="";save();c.querySelector("#hzw23").hidden=r.peak!=="很明顯"});
+  c.querySelector("#sh23").addEventListener("input",e=>{r.hz=e.target.value;save()});
+  for(const k of ["w","s"]){const id="t23"+k+"_"+r.id;showImg(id);
+    c.querySelector("#f_"+id).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[id]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(id);buildT23()}catch(err){}e.target.value=""});
+    c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id);buildT23()})}}
 function buildT24(){const tb=$("t24").querySelector("tbody");tb.innerHTML="";
   S.t24.forEach((r,i)=>{const tr=document.createElement("tr");
     tr.innerHTML=`<td><input type="text" id="ss${i}" class="name"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><div class="rngw"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></div></td><td><select id="sf${i}"><option value="">選</option><option>固定</option><option>高低跳</option><option>往上滑、往下滑</option><option>一片雜訊</option></select></td>`;
@@ -3418,7 +3429,10 @@ function alertMsg(t){$("expMsg").textContent=t}
 for(const id of ["n1","n2","n3","n4","qb1","qb2","qp1","qp2","sirens","cWhat","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
 buildT22();buildT23();buildT24();buildT25();
 if(IMG.ph3||IMG.ph4)$("oldShots").hidden=false;   // 以前的兩張截圖還留著
-$("add23")&&$("add23").addEventListener("click",()=>{S.t23.push({v:"",reg:"",peak:"",hz:"",id:rid()});save();buildT23()});
+$("pick23").addEventListener("change",e=>{const v=e.target.value;if(v==="__new"){$("new23").hidden=false;$("name23").value="";$("name23").focus();return}if(v)pick23(v);else{cur23=null;buildT23()}});
+$("ok23").addEventListener("click",()=>pick23($("name23").value));$("name23").addEventListener("keydown",e=>{if(e.key==="Enter")pick23($("name23").value)});
+$("del23").addEventListener("click",()=>{const i=S.t23.findIndex(r=>r.v===cur23);if(i<0)return;if(!confirm(`要刪掉「${cur23}」的紀錄和截圖嗎？`))return;const r=S.t23[i];delete IMG["t23w_"+r.id];delete IMG["t23s_"+r.id];saveImg();S.t23.splice(i,1);save();cur23=null;buildT23()});
+if(S.t23.length){cur23=S.t23[0].v;buildT23()}
 drawLaw();   // 圖 2-2 直接顯示
 const redraw=()=>{if(S.reveal)drawLaw()};
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
@@ -3456,8 +3470,8 @@ btn.addEventListener("click",async()=>{
     B.push(P("只用眼睛猜，準嗎？"+(S.qb1||"＿＿")));B.push(P("排好、數好以後，一眼就能看出哪一種最多嗎？"+(S.qb2||"＿＿")));
     B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
     B.push(H("三、看看自己的聲音頻譜"));
-    B.push(cap("表 2-2、我的聲音：波形和頻譜"));{const rows=S.t23.filter(r=>r.v);B.push(table(["我發出的聲音","波形規律嗎？","頻譜有尖尖的山峰嗎？","主要頻率（Hz）"],rows.length?rows.map(r=>[r.v,r.reg,r.peak,r.hz]):[["","","",""]]));}
-    for(const r of S.t23){if(!r.v)continue;for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t23"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.v} 的${n}（${n==="波形"?"波形規律嗎？"+(r.reg||"＿"):"頻譜有尖尖的山峰嗎？"+(r.peak||"＿")+"，主要頻率 "+(r.hz||"＿")+" Hz"}）`))}}}
+    B.push(cap("表 2-2、我的聲音：波形和頻譜"));{const rows=S.t23.filter(r=>r.v);B.push(table(["我發出的聲音","波形規律嗎？","頻譜的尖尖山峰","主要頻率（Hz）"],rows.length?rows.map(r=>[r.v,r.reg,r.peak,r.peak==="很明顯"?r.hz:"—"]):[["","","",""]]));}
+    for(const r of S.t23){if(!r.v)continue;B.push(P(sent23(r)));for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t23"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.v} 的${n}`))}}}
     for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
     B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(P("生活中的警笛或警報聲："+(S.sirens||"＿＿")));
