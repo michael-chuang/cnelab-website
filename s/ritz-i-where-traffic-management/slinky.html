@@ -349,8 +349,11 @@ function axLabel(t,x,y,z,col){const c=document.createElement("canvas");c.width=2
   const tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false}));sp.scale.set(9,2.25,1);sp.position.set(x,y,z);AX.add(sp)}
 [[[1,0,0],0xff6b6b,"#ff8a8a","x 左右",[10.5,0,0]],[[0,1,0],0x6bdc8b,"#8ae6a4","y 上下",[0,9.5,0]],[[0,0,1],0x6ba8ff,"#8ab9ff","z 前後",[0,0,10.5]]].forEach(([d,c,cs,t,lp])=>{
   AX.add(new THREE.ArrowHelper(new THREE.Vector3(...d),new THREE.Vector3(0,0,0),8,c,1.6,1));axLabel(t,...lp,cs)});
-const TRN=1200, trace=new Float32Array(TRN*3), trG=new THREE.BufferGeometry(); trG.setAttribute("position",new THREE.BufferAttribute(trace,3));
-scene.add(new THREE.Line(trG,new THREE.LineBasicMaterial({color:0xff3d6e})));
+const TRN=1200, trace=new Float32Array(TRN*3);
+// 粗一點的波形線：用一條「帶子」（每個點往上下各長出一點寬度）取代細線
+const TW=0.32, rib=new Float32Array(TRN*2*3), trG=new THREE.BufferGeometry(); trG.setAttribute("position",new THREE.BufferAttribute(rib,3));
+{const idx=[];for(let i=0;i<TRN-1;i++){const a=i*2,b=a+1,c=a+2,d=a+3;idx.push(a,b,c,b,d,c)}trG.setIndex(idx)}
+scene.add(new THREE.Mesh(trG,new THREE.MeshBasicMaterial({color:0xff3d6e,side:THREE.DoubleSide})));
 const hist=[]; const SPEED=10, TICKS=4;
 const tick=new THREE.Group();scene.add(tick);
 function mkLabel(){const c=document.createElement("canvas");c.width=320;c.height=64;const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(8,1.6,1);return {sp,c,t}}
@@ -412,7 +415,9 @@ function frame(now){requestAnimationFrame(frame);
   const wp=new THREE.Vector3();dot.getWorldPosition(wp);
   if(!paused){hist.unshift([simT,wp.y]);while(hist.length>TRN||(hist.length&&simT-hist[hist.length-1][0]>TICKS+0.5))hist.pop()}
   for(let i=0;i<hist.length;i++){trace[i*3]=X0-(simT-hist[i][0])*SPEED;trace[i*3+1]=hist[i][1];trace[i*3+2]=0}
-  trG.attributes.position.needsUpdate=true;trG.setDrawRange(0,hist.length);
+  {const n=hist.length;for(let i=0;i<n;i++){const j0=Math.max(0,i-1),j1=Math.min(n-1,i+1);let tx=trace[j1*3]-trace[j0*3],ty=trace[j1*3+1]-trace[j0*3+1];const L=Math.hypot(tx,ty)||1;const nx=-ty/L*TW,ny=tx/L*TW;
+    rib[i*6]=trace[i*3]+nx;rib[i*6+1]=trace[i*3+1]+ny;rib[i*6+2]=0;rib[i*6+3]=trace[i*3]-nx;rib[i*6+4]=trace[i*3+1]-ny;rib[i*6+5]=0}
+   trG.attributes.position.needsUpdate=true;trG.setDrawRange(0,Math.max(0,(n-1)*6))}
   tick.visible=Math.abs(cam.position.z)>25;
   if(counting&&!paused){const el=(now-counting.s)/1000;const top=wp.y>R*0.985;if(top&&!counting.lastTop)counting.n++;counting.lastTop=top;
     $("cnt").innerHTML=`已經 <b>${el.toFixed(1)}</b> 秒，數到 <b>${counting.n}</b> 圈`;
