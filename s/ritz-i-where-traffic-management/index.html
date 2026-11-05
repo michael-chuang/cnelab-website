@@ -2829,10 +2829,11 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
     <div class="card">
       <div class="grp"><h3>麥克風現在聽到</h3><div class="state" id="airState">大氣壓力：<span id="airWord">平常</span></div>
         <div class="legend"><span><i style="background:#ff5a4a"></i>擠在一起（壓縮）</span><span><i style="background:#e9edf5"></i>平常</span><span><i style="background:#3d8bff"></i>稀稀疏疏（稀疏）</span></div></div>
-      <div class="grp"><button class="go" id="airGo">▶ 讓喇叭開始振動</button><p class="note">一開始空氣是靜止的。按下去，喇叭開始前後振動，聲音一層一層往左傳出去。</p></div>
+      <div class="grp"><div class="row airctl" role="group" aria-label="喇叭"><button id="airPlay" title="播放（喇叭開始振動）" aria-label="播放">▶</button><button id="airPause" title="暫停" aria-label="暫停">❚❚</button><button id="airStop" title="停止，回到靜止" aria-label="停止">■</button></div>
+        <p class="note">一開始空氣是靜止的。按 ▶，喇叭開始前後振動，聲音一層一層往左傳出去。</p></div>
       <div class="grp"><h3>喇叭振動快慢</h3>
         <input type="range" id="airF" min="0.25" max="2" step="0.25" value="0.5" aria-label="喇叭每秒振動幾次">
-        <div class="row"><button id="airPause">暫停</button></div></div>
+</div>
       <div class="grp"><h3>看懂波形</h3>
         <p class="note">下面的波形和一般錄音軟體一樣：最新的在最右邊，越往左越久以前。<b style="color:#ff6b5b">波峰（往上）＝壓縮</b>，<b style="color:#5ea8ff">波谷（往下）＝稀疏</b>，中間的線＝平常的大氣壓力。</p></div>
     </div>
@@ -3054,8 +3055,10 @@ $("airViews").addEventListener("click",e=>{const b=e.target.closest("button");if
 cam.position.set(...VIEWS.tilt[0]);ctl.target.set(...VIEWS.tilt[1]);ctl.update();
 let f=0.5, t=0, tau=0, tauStop=null, running=false, paused=false, last=performance.now(); const hist=[]; const stW=$("airWord");
 $("airF").addEventListener("input",e=>{f=+e.target.value;$("airHz").textContent=f});
-$("airGo").addEventListener("click",()=>{if(running){tauStop=tau}else{tau=0;tauStop=null}running=!running;$("airGo").textContent=running?"■ 停下來，回到靜止":"▶ 讓喇叭開始振動";$("airGo").classList.toggle("on",running);if(running){paused=false;$("airPause").textContent="暫停";$("airPause").classList.remove("on")}});
-$("airPause").addEventListener("click",()=>{paused=!paused;$("airPause").textContent=paused?"繼續":"暫停";$("airPause").classList.toggle("on",paused)});
+function airUI(){$("airPlay").classList.toggle("on",running&&!paused);$("airPause").classList.toggle("on",running&&paused)}
+$("airPlay").addEventListener("click",()=>{if(!running){tau=0;tauStop=null;running=true}paused=false;airUI()});
+$("airStop").addEventListener("click",()=>{if(running){tauStop=tau;running=false}paused=false;airUI()});
+$("airPause").addEventListener("click",()=>{if(running)paused=!paused;airUI()});
 // 波形（示波器）：最新在右邊
 const sc=$("airScope"), g=sc.getContext("2d"), SPAN=6;
 function drawScope(){const W=sc.width,H=sc.height,x0=70,x1=W-24,mid=H/2+6,amp=H*0.36;g.clearRect(0,0,W,H);
