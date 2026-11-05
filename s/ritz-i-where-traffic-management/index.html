@@ -1287,7 +1287,7 @@ if(!window.THREE) return;
 const board=document.querySelector("#tab1 .board"), cv2d=document.getElementById("cv");
 const wrap=document.createElement("div"); wrap.style.cssText="position:absolute;inset:0;border-radius:14px;overflow:hidden"; board.insertBefore(wrap,board.firstChild);
 const sw=document.createElement("div"); sw.className="viewsw";
-sw.innerHTML='<button data-m="3d" class="on">3D</button><button data-m="2d">平面</button><span class="vgrp"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">路口特寫</button><button data-v="spin">自動旋轉：關</button></span>';
+sw.innerHTML='<button data-m="3d" class="on">3D</button><button data-m="2d">平面</button><span class="vgrp"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車內視角</button><button data-v="v4">路口特寫</button><button data-v="spin">自動旋轉：關</button></span>';
 board.appendChild(sw);
 const st=document.createElement("style"); st.textContent=".viewsw{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;z-index:5}.viewsw .vgrp{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}.viewsw button{font-size:13px;padding:4px 10px;background:rgba(255,255,255,.85);color:#10202c;border:1px solid rgba(16,32,44,.2)}.viewsw button.on{background:#2360c4;color:#fff;border-color:#2360c4}";
 document.head.appendChild(st);
@@ -1298,7 +1298,15 @@ wrap.appendChild(renderer.domElement); renderer.domElement.style.cssText="width:
 const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(40,1,1,4000);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.48; ctl.minDistance=40; ctl.maxDistance=900;
 const VIEWS={v1:[[150,210,250],[0,0,10]],v2:[[0,430,1],[0,0,0]],v3:[[-150,13,15],[10,8,15]],v4:[[55,70,75],[0,4,0]]};
-function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();RL.forEach(l=>l.visible=(k==="v1"||k==="v2"))}
+let inCar=false;   // 車內視角：坐在救護車（或消防車、警車）的駕駛座，跟著車子往前看
+const dash=document.createElement("div");dash.style.cssText="position:absolute;left:10px;top:48px;padding:4px 10px;border-radius:999px;background:rgba(16,24,32,.72);display:none;color:#fff;font:600 13px system-ui;align-items:center;pointer-events:none;z-index:4";wrap.appendChild(dash);
+function view(k){inCar=k==="v3";ctl.enabled=!inCar;dash.style.display=inCar?"flex":"none";
+  const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();RL.forEach(l=>l.visible=(k==="v1"||k==="v2"))}
+const KNAME={amb:"🚑 救護車",fire:"🚒 消防車",police:"🚓 警車",trash:"🚛 垃圾車"};
+const eyeL=new THREE.Vector3(),lookL=new THREE.Vector3();
+function carCam(){const v=cars.find(c=>c.amb),g=v&&VM.get(v);if(!g){dash.textContent="還沒有緊急車輛：按「出發」後，就會坐進車裡";return false}
+  const L=v.len*K;g.updateMatrixWorld();eyeL.set(L*0.36,8.6,0).applyMatrix4(g.matrixWorld);lookL.set(L*0.36+90,7.4,0).applyMatrix4(g.matrixWorld);
+  cam.position.copy(eyeL);cam.lookAt(lookL);dash.textContent=(KNAME[v.kind]||"緊急車輛")+" 駕駛座";return true}
 function home(){view("v1")}
 home();
 function size(){const r=board.getBoundingClientRect();renderer.setSize(r.width,r.width,false);cam.aspect=1;cam.updateProjectionMatrix()}
@@ -1313,7 +1321,7 @@ setMode("3d");
 {const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();   // 給右邊的 ▲▼◀▶＋－📷 用（3D 時動 3D 鏡頭）
  window.__ix3d={is:()=>mode==="3d",
   snap(){renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},
-  step(k,f){cam.updateMatrixWorld();
+  step(k,f){if(inCar&&k!=="c")return;cam.updateMatrixWorld();
    if(k==="c"){home();return}
    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);const L=Math.max(ctl.minDistance,Math.min(ctl.maxDistance,off.length()*Math.pow(k==="zi"?0.8:1.25,f)));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
@@ -1448,7 +1456,7 @@ const WL=[];function updWaves(){while(WL.length<waves.length){const l=new THREE.
   WL.forEach((l,i)=>{const w=waves[i];if(!w||(run&&run.hidden&&!run.guess)){l.visible=false;return}l.visible=true;const r=Math.max(0.1,w.r*K);l.scale.set(r,1,r);l.position.set(X(w.x),8,Z(w.y));l.material.opacity=Math.max(0,0.75-w.r/1100)})}
 
 function frame(){requestAnimationFrame(frame); if(mode!=="3d"||document.getElementById("tab1").hidden) return;
-  updLights(); updHeat(); updCars(); updWaves(); ctl.update(); renderer.render(scene,cam)}
+  updLights(); updHeat(); updCars(); updWaves(); if(inCar){if(!carCam()){const [p,q]=VIEWS.v3;cam.position.set(...p);cam.lookAt(...q)}}else ctl.update(); renderer.render(scene,cam)}
 frame();
 })();
 </script>
