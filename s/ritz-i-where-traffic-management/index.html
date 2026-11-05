@@ -2952,10 +2952,10 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <section>
   <h2>五、查一查：臺灣對警笛聲有規定嗎？</h2>
-  <p class="lead">到「全國法規資料庫」或「交通部主管法規查詢系統」（motclaw.motc.gov.tw），用關鍵字「警報訊號之內容及樣式」查查看，把規定寫進表 2-4，再和表 2-3 量到的比一比。</p>
-  <p class="cap">表 2-4　法規規定和實測比較</p>
+  <p class="lead">到「全國法規資料庫」或「交通部主管法規查詢系統」（motclaw.motc.gov.tw），用關鍵字「警報訊號之內容及樣式」查查看，找到「救護車、消防車、警車」各自的規定，把頻率範圍（幾 Hz 到幾 Hz）和節奏（聲音怎麼變、多久變一次）填進表 2-4。</p>
+  <p class="cap">表 2-4　法規對警報聲的規定</p>
   <div class="tbl"><table id="t25">
-    <thead><tr><th>車種</th><th>法規：頻率範圍</th><th>法規：節奏</th><th>實測：頻率範圍</th><th>實測：節奏</th><th>符合？</th></tr></thead><tbody></tbody></table></div>
+    <thead><tr><th>車種</th><th>頻率範圍（Hz）</th><th>節奏（怎麼變、多久變一次）</th></tr></thead><tbody></tbody></table></div>
   <div class="card" style="display:flex;flex-direction:column;gap:8px">
     <div id="lawfig" style="display:flex;flex-direction:column;gap:12px">
       <div class="row" id="sirenBtns"><span class="note">按一下，播放依法規合成的警報聲：</span><button data-k="amb">救護車</button><button data-k="fire">消防車</button><button data-k="police">警車</button><button data-k="">■ 停止</button></div>
@@ -3363,8 +3363,8 @@ function buildShots24(){const box=$("shots24");if(!box)return;box.innerHTML="";c
 function buildChipsOnly24(){const r=S.t24.find(x=>x.s===cur24),b=$("done24").querySelector(".chip.on");if(r&&b)b.textContent=r.s+(IMG["t24w_"+r.id]&&IMG["t24s_"+r.id]&&r.hz?" ✓":"")}
 function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
   S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name"></td><td><input type="text" id="lt${i}" class="name"></td><td><input type="text" id="mr${i}" class="name"></td><td><input type="text" id="mt${i}" class="name"></td><td><select id="lok${i}"><option value="">選</option><option>符合</option><option>不符合</option><option>不確定</option></select></td>`;
-    tb.appendChild(tr);bind("lr"+i,r,"lr");bind("lt"+i,r,"lt");bind("mr"+i,r,"mr");bind("mt"+i,r,"mt");bind("lok"+i,r,"ok","change")})}
+    tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name" placeholder="例：幾～幾"></td><td><textarea id="lt${i}" rows="2" style="min-width:14em;text-align:left" placeholder="怎麼變？多久一次？"></textarea></td>`;
+    tb.appendChild(tr);bind("lr"+i,r,"lr");bind("lt"+i,r,"lt")})}
 
 /* 圖 2-2：法規警報聲的時頻圖（按鈕打開） */
 function sirenF(kind,t){if(kind==="amb")return (t%1)<0.4?700:950;
@@ -3518,7 +3518,7 @@ btn.addEventListener("click",async()=>{
     for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t24"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.s} 的${n}`))}}}}
     for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的頻譜"))}
     B.push(H("五、臺灣對警笛聲的規定"));
-    B.push(cap("表 2-4、法規規定和實測比較"));B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));
+    B.push(cap("表 2-4、法規對警報聲的規定"));B.push(table(["車種","頻率範圍（Hz）","節奏（怎麼變、多久變一次）"],S.t25.map(r=>[r.c,r.lr,r.lt])));
     const ls=off("0 0 640 350");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,350),transformation:{width:480,height:263}})]}));
     B.push(cap("圖 2-2、依法規畫出的三種警報聲：頻率隨時間的變化"));
     B.push(H("六、結果與結論"));
