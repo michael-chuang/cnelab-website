@@ -4107,24 +4107,26 @@ const MEL=("D5 1,G4 .5,A4 .5,B4 .5,C5 .5,D5 1,G4 1,G4 1,E5 1,C5 .5,D5 .5,E5 .5,F
   "D5 1,G4 .5,A4 .5,B4 .5,C5 .5,D5 1,G4 1,G4 1,E5 1,C5 .5,D5 .5,E5 .5,F#5 .5,G5 1,G4 1,G4 1,C5 1,D5 .5,C5 .5,B4 .5,A4 .5,B4 1,C5 .5,B4 .5,A4 .5,G4 .5,A4 1,B4 .5,A4 .5,G4 .5,F#4 .5,G4 3").split(",").map(x=>{const [n,d]=x.split(" ");return [NT(n),+d]});
 const BASS=["G3","B3","C4","B3","A3","G3","D3","D3","G3","B3","C4","B3","A3","G3","D3","G2"].map(NT);
 const BEAT=0.42;let mTimer=null,mi=0,mT=0,bi=0,bT=0;
-// 每點一次換一首（都是很久以前的老歌、古典曲）。簡譜：1＝C5，'＝高八度，,＝低八度；數字後面是拍數
+// 每點一次換一首知名古典曲。簡譜：1＝C5，'＝高八度，,＝低八度；數字後面是拍數
 const DEG={1:"C",2:"D",3:"E",4:"F",5:"G",6:"A",7:"B"};
 const JP=s=>s.trim().split(/\s+/).map(x=>{const m=x.match(/^([1-7])([',]?)(?::([\d.]+))?$/);const o=m[2]==="'"?6:m[2]===","?4:5;return [NT(DEG[m[1]]+o),m[3]?+m[3]:1]});
+const JN=s=>s.trim().split(/\s+/).map(x=>{const [n,d]=x.split(":");return [NT(n),d?+d:1]});   // 音名：拍數
 var SONGS=[
   {n:"巴哈：小步舞曲",m:MEL,b:BASS,beat:0.42},
-  {n:"小星星",beat:0.38,m:JP("1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2 5 5 4 4 3 3 2:2 5 5 4 4 3 3 2:2 1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2")},
-  {n:"小蜜蜂",beat:0.34,m:JP("5 3 3:2 4 2 2:2 1 2 3 4 5 5 5:2 5 3 3:2 4 2 2:2 1 3 5 5 3:4 2 2 2 2 2 3 4:2 3 3 3 3 3 4 5:2 5 3 3:2 4 2 2:2 1 3 5 5 1:4")},
-  {n:"兩隻老虎",beat:0.36,m:JP("1 2 3 1 1 2 3 1 3 4 5:2 3 4 5:2 5:.5 6:.5 5:.5 4:.5 3 1 5:.5 6:.5 5:.5 4:.5 3 1 1 5, 1:2 1 5, 1:2")},
-  {n:"瑪莉有隻小綿羊",beat:0.36,m:JP("3 2 1 2 3 3 3:2 2 2 2:2 3 5 5:2 3 2 1 2 3 3 3 3 2 2 3 2 1:4")},
-  {n:"倫敦鐵橋垮下來",beat:0.36,m:JP("5:1.5 6:.5 5 4 3 4 5:2 2 3 4:2 3 4 5:2 5:1.5 6:.5 5 4 3 4 5:2 2:2 5:2 3 1:3")},
+  {n:"莫札特：小星星變奏曲",beat:0.38,m:JP("1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2 5 5 4 4 3 3 2:2 5 5 4 4 3 3 2:2 1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2")},
+  {n:"貝多芬：給愛麗絲",beat:0.3,m:JN("E5:.5 D#5:.5 E5:.5 D#5:.5 E5:.5 B4:.5 D5:.5 C5:.5 A4:1.5 C4:.5 E4:.5 A4:.5 B4:1.5 E4:.5 G#4:.5 B4:.5 C5:1.5 E4:.5 E5:.5 D#5:.5 E5:.5 D#5:.5 E5:.5 B4:.5 D5:.5 C5:.5 A4:1.5 C4:.5 E4:.5 A4:.5 B4:1.5 E4:.5 C5:.5 B4:.5 A4:3")},
   {n:"貝多芬：歡樂頌",beat:0.4,m:JP("3 3 4 5 5 4 3 2 1 1 2 3 3:1.5 2:.5 2:2 3 3 4 5 5 4 3 2 1 1 2 3 2:1.5 1:.5 1:2")},
-  {n:"生日快樂",beat:0.4,m:JP("5,:.75 5,:.25 6, 5, 1 7,:2 5,:.75 5,:.25 6, 5, 2 1:2 5,:.75 5,:.25 5 3 1 7, 6,:2 4:.75 4:.25 3 1 2 1:3")}];
+  {n:"莫札特：土耳其進行曲",beat:0.5,m:JN("B4:.25 A4:.25 G#4:.25 A4:.25 C5:1 D5:.25 C5:.25 B4:.25 C5:.25 E5:1 F5:.25 E5:.25 D#5:.25 E5:.25 B5:.25 A5:.25 G#5:.25 A5:.25 B5:.25 A5:.25 G#5:.25 A5:.25 C6:1 A5:.5 C6:.5 B5:.5 A5:.5 G5:.5 A5:.5 B5:.5 A5:.5 G5:.5 A5:.5 B5:.5 A5:.5 G5:.5 F#5:.5 E5:1")},
+  {n:"布拉姆斯：搖籃曲",beat:0.42,m:JN("E5:.5 E5:.5 G5:2 E5:.5 E5:.5 G5:2 E5:.5 G5:.5 C6:1 B5:1.5 A5:.5 A5:1 G5:1 D5:.5 E5:.5 F5:1 D5:1 D5:.5 E5:.5 F5:2 D5:.5 F5:.5 B5:.5 A5:.5 G5:1 B5:1 C6:3")},
+  {n:"海頓：驚愕交響曲",beat:0.36,m:JN("C5 C5 E5 E5 G5 G5 E5:2 F5 F5 D5 D5 B4 B4 G4:2 C5 C5 E5 E5 G5 G5 E5:2 F5 F5 D5 D5 B4 G4 C5:2")},
+  {n:"帕海貝爾：卡農",beat:0.36,bd:2,b:JN("D4 A3 B3 F#3 G3 D3 G3 A3").map(x=>x[0]),m:JN("F#5:2 E5:2 D5:2 C#5:2 B4:2 A4:2 B4:2 C#5:2 D5:2 C#5:2 B4:2 A4:2 G4:2 F#4:2 G4:2 E4:2 D5 C#5 D5 D4 C#4 A4 E4 F#4 D4 D5 C#5 B4 C#5 F#5 A5 B5 G5 F#5 E5 G5 F#5 E5 D5 C#5 B4 A4 G4 F#4 E4 G4 F#4 E4")},
+  {n:"韋瓦第：四季〈春〉",beat:0.42,m:JN("E5:.5 G#5:.5 G#5:.5 G#5:.5 F#5:.25 E5:.25 B5:1.5 B5:.25 A5:.25 G#5:.5 G#5:.5 G#5:.5 F#5:.25 E5:.25 B5:1.5 B5:.25 A5:.25 G#5:.5 A5:.25 B5:.25 A5:.5 G#5:.5 F#5:2 E5:.5 G#5:.5 G#5:.5 G#5:.5 F#5:.25 E5:.25 B5:1.5 B5:.25 A5:.25 G#5:.5 A5:.25 B5:.25 A5:.5 G#5:.5 F#5:1 E5:2")}];
 var song=-1,cur=SONGS[0];
 
 function pluck(f,t,dur,vol){const e=AC.createGain();e.gain.setValueAtTime(0.0001,t);e.gain.exponentialRampToValueAtTime(vol,t+0.006);e.gain.exponentialRampToValueAtTime(vol*0.35,t+0.18);e.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(0.5,dur*1.6));e.connect(bus);
   for(const [k,v] of [[1,1],[2,0.32],[3,0.14],[4,0.06]]){const o=AC.createOscillator(),g=AC.createGain();o.type=k===1?"triangle":"sine";o.frequency.value=f*k;g.gain.value=v;o.connect(g);g.connect(e);o.start(t);o.stop(t+Math.max(0.6,dur*1.7))}}
-function music(){const B=cur.beat,M=cur.m;while(mT<AC.currentTime+0.4){const [f,d]=M[mi%M.length];pluck(f,mT,d*B,0.32);mT+=d*B;mi++;if(mi%M.length===0)mT+=B}   // 唱完一遍停一拍再重來
-  if(cur.b)while(bT<AC.currentTime+0.4){pluck(cur.b[bi%cur.b.length],bT,3*B,0.16);bT+=3*B;bi++}}
+function music(){const B=cur.beat,M=cur.m;while(mT<AC.currentTime+0.4){const [f,d]=M[mi%M.length];pluck(f,mT,d*B,0.32);mT+=d*B;mi++;if(mi%M.length===0&&!cur.b)mT+=B}   // 唱完一遍停一拍再重來
+  if(cur.b){const BD=(cur.bd||3)*B;while(bT<AC.currentTime+0.4){pluck(cur.b[bi%cur.b.length],bT,BD,0.16);bT+=BD;bi++}}}
 function soundOn(){if(!audioInit())return;if(AC.state==="suspended")AC.resume();audioPos();const t=AC.currentTime;
   bus.gain.cancelScheduledValues(t);bus.gain.setValueAtTime(bus.gain.value,t);bus.gain.linearRampToValueAtTime(0.7,t+0.05);
   if(!mTimer){song=(song+1)%SONGS.length;cur=SONGS[song];mi=0;bi=0;mT=bT=t+0.08;music();mTimer=setInterval(music,100)}}
