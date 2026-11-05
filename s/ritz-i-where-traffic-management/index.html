@@ -3834,7 +3834,8 @@ td.no{color:var(--b);font-weight:700}
     <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；曲線紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到</p>
   </div>
   <p class="cap">表 3-1　喇叭在不同位置，兩隻耳朵的時間差</p>
-  <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
+  <p class="note" style="margin:0">把喇叭放到每個位置，看上面寫的「晚了幾毫秒」，填進表格。<b>毫秒</b>是一千分之 1 秒：1 毫秒＝0.001 秒，例如 0.48 毫秒＝0.00048 秒。兩隻耳朵同時聽到就填 0。</p>
+  <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（毫秒）</th></tr></thead><tbody></tbody></table></div>
 </section>
 
 <section>
@@ -4431,8 +4432,11 @@ const sel=(opts,v,attrs="")=>`<select ${attrs}>${["",...opts].map(o=>`<option${o
 
 /* 表 3-1 */
 function buildT31(){const tb=$("t31").tBodies[0];tb.innerHTML="";S.t31.forEach((r,i)=>{const tr=tb.insertRow();
-  tr.innerHTML=`<td>${esc(r.p)}</td><td>${sel(["左耳","右耳","同時"],r.first,`data-k="first" aria-label="${esc(r.p)} 哪隻耳朵先聽到"`)}</td><td>${sel(["大","小","沒有"],r.big,`data-k="big" aria-label="${esc(r.p)} 時間差"`)}</td>`;
-  tr.querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{r[s.dataset.k]=s.value;save()}))})}
+  tr.innerHTML=`<td>${esc(r.p)}</td><td>${sel(["左耳","右耳","同時"],r.first,`data-k="first" aria-label="${esc(r.p)} 哪隻耳朵先聽到"`)}</td><td><input type="number" min="0" step="0.01" inputmode="decimal" data-k="ms" value="${esc(r.ms)}" style="max-width:6em" aria-label="${esc(r.p)} 時間差（毫秒）"> 毫秒<br><span class="note" data-sec></span></td>`;
+  tr.querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{r[s.dataset.k]=s.value;save()}));
+  const ip=tr.querySelector('[data-k="ms"]'),sp=tr.querySelector("[data-sec]"),show=()=>{sp.textContent=ip.value!==""&&!isNaN(+ip.value)?"＝"+sec(ip.value)+" 秒":""};show();
+  ip.addEventListener("input",()=>{r.ms=ip.value;save();show()})})}
+const sec=v=>parseFloat((+v/1000).toPrecision(6)).toString();   // 毫秒 → 秒
 /* 表 3-2 */
 function buildT32(){const tb=$("t32").tBodies[0];tb.innerHTML="";S.t32.forEach((r,i)=>{const tr=tb.insertRow();
   tr.innerHTML=`<td class="num">${r.ms.toFixed(2)}</td><td><input type="number" step="0.1" data-k="cm" value="${esc(r.cm)}" aria-label="多走的路"></td><td><input type="number" step="1" data-k="deg" value="${esc(r.deg)}" aria-label="角度"></td><td><button class="xbtn">對答案</button> <span class="ans" aria-live="polite"></span></td>`;
@@ -4512,7 +4516,7 @@ btn.addEventListener("click",async()=>{
     B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));
-    B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));
+    B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
     B.push(H("二、不用三角函數，也能從時間差找出角度"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
@@ -4879,7 +4883,7 @@ showPics("procPics");showPics("resPics");
     if(w.n==="二"){(S.t23||[]).filter(r=>r.v).forEach(r=>L.push(`・${r.v}：波形${r.reg||"＿"}，頻譜${r.peak==="很明顯"?`有很明顯的山峰，主要頻率 ${r.hz||"＿"} Hz`:r.peak==="不明顯"?"沒有明顯的山峰":"＿"}`));
       (S.t24||[]).filter(r=>r.s&&(r.hz||r.lo||r.hi||r.form)).forEach(r=>L.push(`・${r.s}：主要頻率 ${r.hz||"＿"} Hz，範圍 ${r.lo||"＿"}～${r.hi||"＿"} Hz${r.form?"，"+r.form:""}`));
       (S.t25||[]).filter(r=>r.lr||r.lt).forEach(r=>L.push(`・法規：${r.c} ${r.lr||""} Hz${r.lt?"，"+r.lt:""}`))}
-    if(w.n==="三"){(S.t31||[]).filter(r=>r.first||r.big).forEach(r=>L.push(`・喇叭在${r.p}：${r.first||"＿"}先聽到，時間差${r.big||"＿"}`));
+    if(w.n==="三"){(S.t31||[]).filter(r=>r.first||r.ms||r.big).forEach(r=>L.push(`・喇叭在${r.p}：${r.first||"＿"}先聽到，時間差${r.ms!=null&&r.ms!==""?" "+r.ms+" 毫秒":(r.big||"＿")}`));
       for(const n of [1,2,3,4]){const R=((S.exp||{})[n]||[]);let done=0,ok=0;const er=[];
         R.forEach(r=>{const tr=r.tr===""?null:+r.tr,ra=r.nodir||r.ra===""?null:+r.ra;if(r.road&&(ra!==null||r.nodir)){done++;if(ra!==null&&"北東南西"[Math.round((((ra%360)+360)%360)/90)%4]===r.road)ok++}
           if(tr!==null&&ra!==null){const d=Math.abs(((tr-ra)%360+360)%360);er.push(Math.min(d,360-d))}});
