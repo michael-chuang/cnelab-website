@@ -3839,7 +3839,7 @@ td.no{color:var(--b);font-weight:700}
 </section>
 
 <section>
-  <h2>二、不用三角函數，也能從時間差找出角度</h2>
+  <h2>二、從時間差找出角度</h2>
   <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；再用兩耳的寬度和量角器，就能找出角度，不用三角函數。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變。</p>
   <div class="card tri-card"><div class="tri-wrap"><svg id="tri" viewBox="0 0 640 642" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg>
 </div></div>
@@ -4040,36 +4040,48 @@ for(const s of [-1,1]){add(new THREE.SphereGeometry(1.5,16,12),M(0x1b1515,{rough
   grp=onlyG;add(new THREE.SphereGeometry(1.8,16,10),M(0xffa3b5,{roughness:0.8}),s*5.6,-2.6,-7.8,1,0.6,0.35);grp=girl}            // 眼睛、腮紅
 const smile=add(new THREE.TorusGeometry(1.6,0.33,8,20,Math.PI),M(0xc0495c),0,-3.4,-9.35);smile.rotation.z=Math.PI;
 
-/* 男生：黑色中分短髮、灰色長褲、黑襪（白襯衫、領帶、襪子、皮鞋和女生一樣） */
-grp=onlyB;
-for(const s of [-1,1]){const h=add(new THREE.SphereGeometry(10.9,40,30,0,Math.PI*2,0,Math.PI*0.36),hairM,s*0.25,1.0,0.3,1.02,1.1,1.02);h.rotation.z=s*0.5}   // 中分：兩片頭髮往左右兩邊梳下來
-add(new THREE.BoxGeometry(0.45,0.3,9),M(0xd9b39a),0,12.3,-1.6).rotation.x=0.2;                               // 中分的髮線
-add(new THREE.SphereGeometry(10.85,40,30,Math.PI*0.2,Math.PI*0.6,0,Math.PI*0.62),hairM,0,0.6,0.6);         // 後腦勺（短短的）
-const navyM=M(0x5a5e65,{roughness:0.8});   // 灰色褲子
-add(new THREE.CylinderGeometry(9.3,9.8,8,28),navyM,0,-49,0);                                                 // 褲子的腰
-for(const s of [-1,1])add(new THREE.CylinderGeometry(5.2,4.6,58,16),navyM,s*4.8,-81,0);                     // 長褲的兩條褲管（到鞋子）
-grp=onlyG;
-grp=girl;
 const ears=[-1,1].map(s=>add(new THREE.SphereGeometry(2.3,20,16),M(0xf0bf9e,{emissive:0x000000}),s*EAR,0,0.6,0.5,1.2,0.85));
 add(new THREE.CylinderGeometry(3,3.4,6,16),skin,0,-12,0);
+/* 女生的身體 */
+grp=onlyG;
 add(new THREE.CylinderGeometry(8.2,9.4,31,28),shirtM,0,-30.5,0);                                           // 白襯衫
 for(const s of [-1,1])add(new THREE.BoxGeometry(5,0.6,4.2),white,s*2.6,-15.6,-6.4).rotation.set(0.25,0,-s*0.45);  // 襯衫領子
 add(new THREE.BoxGeometry(2.2,2.2,1.2),M(0x1f2f6b),0,-16.6,-7.9);                                          // 領帶結
 {const t=add(new THREE.BoxGeometry(2.8,22,0.5),M(0xffffff,{map:tieT,roughness:0.5}),0,-28.5,-8.95);t.rotation.x=-0.05}   // 紅藍條紋領帶
-{const lg=add(new THREE.PlaneGeometry(4.4,4.8),new THREE.MeshStandardMaterial({map:new THREE.TextureLoader().load(LOGO,t=>{t.encoding=THREE.sRGBEncoding}),transparent:true,alphaTest:0.4,roughness:0.6}),-4.5,-21.5,-8.75);lg.rotation.set(-0.04,Math.PI,0)} // 胸口校徽
-grp=onlyG;add(new THREE.CylinderGeometry(9.4,16,25,32),M(0xffffff,{map:plaidT,roughness:0.75}),0,-57.5,0);grp=girl;           // 深藍格子百褶裙
+const logoT3=new THREE.TextureLoader().load(LOGO,t=>{t.encoding=THREE.sRGBEncoding});
+{const lg=add(new THREE.PlaneGeometry(4.4,4.8),new THREE.MeshStandardMaterial({map:logoT3,transparent:true,alphaTest:0.4,roughness:0.6}),-4.5,-21.5,-8.75);lg.rotation.set(-0.04,Math.PI,0)} // 胸口校徽
+add(new THREE.CylinderGeometry(9.4,16,25,32),M(0xffffff,{map:plaidT,roughness:0.75}),0,-57.5,0);           // 深藍格子百褶裙
 for(const s of [-1,1]){limb([s*9.4,-17.5,0],[s*12.2,-24,-0.5],3.3,shirtM);                                  // 短袖
-  grp=onlyG;limb([s*11.6,-22,-0.4],[s*3.2,-41,-7.6],2.1,skin);                                              // 女生：雙手在前面握著
+  limb([s*11.6,-22,-0.4],[s*3.2,-41,-7.6],2.1,skin);                                                        // 雙手在前面握著
   add(new THREE.SphereGeometry(2.5,14,10),skin,s*1.6,-42,-8.2);
-  grp=onlyB;limb([s*11.6,-22,-0.4],[s*12.6,-47,0.6],2.2,skin);                                              // 男生：手自然放在身體兩旁
-  add(new THREE.SphereGeometry(2.6,14,10),skin,s*12.7,-49.2,0.6,0.9,1.15,0.9);grp=girl;
   add(new THREE.CylinderGeometry(2.6,2.4,52,12),skin,s*4.6,FLOOR+32,0);                                    // 腿
-  grp=onlyG;add(new THREE.CylinderGeometry(2.8,2.7,8,12),white,s*4.6,FLOOR+8,0);grp=onlyB;add(new THREE.CylinderGeometry(2.8,2.7,10,12),M(0x1a1a1d,{roughness:0.8}),s*4.6,FLOOR+9,0);grp=girl;   // 女生白襪、男生黑襪                                     // 白襪
+  add(new THREE.CylinderGeometry(2.8,2.7,8,12),white,s*4.6,FLOOR+8,0);                                     // 白襪
   add(new THREE.SphereGeometry(4.2,16,12),M(0x1c1c1e,{roughness:0.35}),s*4.6,FLOOR+2.4,-2,0.85,0.55,1.4)}  // 黑皮鞋
+/* 男生：和學習單（一）一樣的運動服（灰 polo＋紅領紅袖、深藍短褲、白襪、黑球鞋、黑短髮），雙手垂下。
+   座標照學習單（一）的男生（腳在 0、脖子約 97），換算到這裡的大小 */
+grp=onlyB;
+{const BS=0.7,BY=104/97,mp=([x,y,z])=>[x*BS,FLOOR+y*BY,z*BS];
+ const bp=(geo,mat,x,y,z,sx=1,sy=1,sz=1)=>add(geo,mat,x*BS,FLOOR+y*BY,z*BS,sx*BS,sy*BY,sz*BS);
+ const bl=(p,q,r,mat)=>{const P=mp(p),Q=mp(q);limb(P,Q,r*BS,mat);add(new THREE.SphereGeometry(r*BS,14,10),mat,...P);add(new THREE.SphereGeometry(r*BS,14,10),mat,...Q)};
+ const poloM=M(0xa7abaf,{roughness:0.8}),redM=M(0xb3262e,{roughness:0.7}),navyM=M(0x1d2a4a,{roughness:0.8}),blackM=M(0x1c1c1e,{roughness:0.4});
+ for(const s of [-1,1]){bp(new THREE.CylinderGeometry(6.4,6.8,20,16),navyM,s*6.2,52,0);bp(new THREE.BoxGeometry(1,19,1.2),M(0x9aa1a8),s*12.6,52,0);   // 短褲＋側邊灰線
+   bl([s*6,44,0],[s*6,10,0],4.2,skin);bp(new THREE.CylinderGeometry(4.5,4.4,9,14),white,s*6,9,0);
+   bp(new THREE.SphereGeometry(5.6,16,12),blackM,s*6,3.2,-2.5,0.95,0.6,1.5);bp(new THREE.CylinderGeometry(5.4,5.4,1.2,16),white,s*6,0.7,-2.5,1,1,1.5);   // 黑球鞋＋白鞋底
+   bp(new THREE.SphereGeometry(5,16,12),redM,s*12,93,0);                                                    // 紅色肩膀
+   bl([s*13,92,0],[s*14.4,84,0],4.3,redM);bl([s*14.4,84,0],[s*15,63,-0.5],2.9,skin);bp(new THREE.SphereGeometry(3.6,14,10),skin,s*15.1,60.2,-0.6)}   // 雙手垂下，有拳頭
+ bp(new THREE.CylinderGeometry(12,13.5,36,24),poloM,0,79,0);bp(new THREE.SphereGeometry(12,24,12,0,Math.PI*2,0,Math.PI/2),poloM,0,96.5,0,1,0.42,1);   // 灰色 polo（圓肩）
+ bp(new THREE.TorusGeometry(5.2,1.6,10,24),redM,0,97.8,0).rotation.x=Math.PI/2;                             // 紅領子
+ bp(new THREE.BoxGeometry(3,7,0.8),poloM,0,92,-12.2);for(const y of [94,91])bp(new THREE.SphereGeometry(0.6,8,6),white,0,y,-12.6);
+ {const lg=bp(new THREE.PlaneGeometry(5.6,6.1),new THREE.MeshStandardMaterial({map:logoT3,transparent:true,alphaTest:0.4,roughness:0.6}),-5.6,86,-12.6);lg.rotation.y=Math.PI}
+ // 黑短髮（照學習單（一），頭的大小換算 10/15）
+ const k=10/15;
+ add(new THREE.SphereGeometry(15.9*k,40,30,0,Math.PI*2,0,Math.PI*0.47),hairM,0,0.4*k,0.4*k);
+ add(new THREE.SphereGeometry(15.7*k,40,30,0,Math.PI,Math.PI*0.4,Math.PI*0.32),hairM,0,0,0.2*k);
+ add(new THREE.SphereGeometry(16.1*k,32,16,0,Math.PI*2,0,Math.PI*0.3),hairM,0,1.2*k,-1.6*k).rotation.x=-0.42}
 grp=girl;
-/* 切換男生／女生（記在這台電腦） */
-let isBoy=false;try{isBoy=localStorage.getItem("wwt-kid3")==="boy"}catch(e){}
-function setKid(b){isBoy=b;onlyG.visible=!b;onlyB.visible=b;const k=$("kidBtn");if(k)k.textContent=b?"👧 換成女生":"👦 換成男生";try{localStorage.setItem("wwt-kid3",b?"boy":"girl")}catch(e){}}
+/* 切換男生／女生（一打開都是女生） */
+let isBoy=false;
+function setKid(b){isBoy=b;onlyG.visible=!b;onlyB.visible=b;const k=$("kidBtn");if(k)k.textContent=b?"👧 換成女生":"👦 換成男生"}
 setKid(isBoy);$("kidBtn").addEventListener("click",()=>setKid(!isBoy));
 /* 喇叭（正面朝 +z，用 lookAt 對著小朋友） */
 const spk=new THREE.Group();scene.add(spk);
@@ -4536,7 +4548,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
-    B.push(H("二、不用三角函數，也能從時間差找出角度"));
+    B.push(H("二、從時間差找出角度"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
     B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
