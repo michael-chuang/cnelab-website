@@ -4057,7 +4057,7 @@ for(const s of [-1,1]){limb([s*9.4,-17.5,0],[s*12.2,-24,-0.5],3.3,shirtM);      
   add(new THREE.CylinderGeometry(2.6,2.4,52,12),skin,s*4.6,FLOOR+32,0);                                    // 腿
   add(new THREE.CylinderGeometry(2.8,2.7,8,12),white,s*4.6,FLOOR+8,0);                                     // 白襪
   add(new THREE.SphereGeometry(4.2,16,12),M(0x1c1c1e,{roughness:0.35}),s*4.6,FLOOR+2.4,-2,0.85,0.55,1.4)}  // 黑皮鞋
-/* 男生：和學習單（一）一樣的運動服（灰 polo＋紅領紅袖、深藍短褲、白襪、黑球鞋、黑短髮），雙手垂下。
+/* 男生：和學習單（一）一樣的運動服（灰 polo＋紅領紅袖、深藍短褲、黑襪、黑色運動鞋、黑短髮），雙手垂下。
    座標照學習單（一）的男生（腳在 0、脖子約 97），換算到這裡的大小 */
 grp=onlyB;
 {const BS=0.7,BY=104/97,mp=([x,y,z])=>[x*BS,FLOOR+y*BY,z*BS];
@@ -4065,8 +4065,9 @@ grp=onlyB;
  const bl=(p,q,r,mat)=>{const P=mp(p),Q=mp(q);limb(P,Q,r*BS,mat);add(new THREE.SphereGeometry(r*BS,14,10),mat,...P);add(new THREE.SphereGeometry(r*BS,14,10),mat,...Q)};
  const poloM=M(0xa7abaf,{roughness:0.8}),redM=M(0xb3262e,{roughness:0.7}),navyM=M(0x1d2a4a,{roughness:0.8}),blackM=M(0x1c1c1e,{roughness:0.4});
  for(const s of [-1,1]){bp(new THREE.CylinderGeometry(6.4,6.8,20,16),navyM,s*6.2,52,0);bp(new THREE.BoxGeometry(1,19,1.2),M(0x9aa1a8),s*12.6,52,0);   // 短褲＋側邊灰線
-   bl([s*6,44,0],[s*6,10,0],4.2,skin);bp(new THREE.CylinderGeometry(4.5,4.4,9,14),white,s*6,9,0);
-   bp(new THREE.SphereGeometry(5.6,16,12),blackM,s*6,3.2,-2.5,0.95,0.6,1.5);bp(new THREE.CylinderGeometry(5.4,5.4,1.2,16),white,s*6,0.7,-2.5,1,1,1.5);   // 黑球鞋＋白鞋底
+   bl([s*6,44,0],[s*6,10,0],4.2,skin);bp(new THREE.CylinderGeometry(4.5,4.4,9,14),blackM,s*6,9,0);                                         // 黑襪
+   bp(new THREE.BoxGeometry(9,5.4,11),blackM,s*6,3.6,0);bp(new THREE.SphereGeometry(4.6,16,12,0,Math.PI*2,0,Math.PI/2),blackM,s*6,1.2,-5.2,0.98,1.15,1.25);   // 黑色運動鞋（鞋身＋圓圓的鞋頭）
+   bp(new THREE.BoxGeometry(9.4,1.3,16.5),M(0x2b2d31,{roughness:0.9}),s*6,0.65,-2.6)
    bp(new THREE.SphereGeometry(5,16,12),redM,s*12,93,0);                                                    // 紅色肩膀
    bl([s*13,92,0],[s*14.4,84,0],4.3,redM);bl([s*14.4,84,0],[s*15,63,-0.5],2.9,skin);bp(new THREE.SphereGeometry(3.6,14,10),skin,s*15.1,60.2,-0.6)}   // 雙手垂下，有拳頭
  bp(new THREE.CylinderGeometry(12,13.5,36,24),poloM,0,79,0);bp(new THREE.SphereGeometry(12,24,12,0,Math.PI*2,0,Math.PI/2),poloM,0,96.5,0,1,0.42,1);   // 灰色 polo（圓肩）
