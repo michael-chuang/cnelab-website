@@ -3421,7 +3421,12 @@ function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG
   el("text",{x:x0+W/2,y:yb+20,"text-anchor":"middle","font-size":12,fill:P.muted},s,"橫軸：時間（秒）　縱軸：頻率（Hz）")}
 
 /* 互動：播放警報聲，圖上有點沿著曲線跑，顯示現在的頻率 */
-(()=>{let AC=null,osc=null,lp=null,gn=null,kind="",t0=0,raf=0;
+(()=>{let AC=null,osc=null,gn=null,kind="",t0=0,tq=0,raf=0;
+  function sched(){const f=osc.frequency,end=tq+30;let x=tq;
+    while(x<end){if(kind==="amb"){f.setValueAtTime(700,x);f.setValueAtTime(950,x+0.4);x+=1}
+      else if(kind==="fire"){f.setValueAtTime(700,x);f.linearRampToValueAtTime(1500,x+1.5);f.linearRampToValueAtTime(700,x+5);x+=5}
+      else{f.setValueAtTime(700,x);f.linearRampToValueAtTime(1500,x+0.7/3);f.linearRampToValueAtTime(700,x+1/3);x+=1/3}}
+    tq=x}
   const KI={amb:0,fire:1,police:2};
   function clearCur(){["lawCur","lawDot","lawTxt"].forEach(id=>{const e=document.getElementById(id);if(e)e.remove()});LAWK.forEach((_,i)=>{const r=document.getElementById("lawRow"+i);if(r){r.removeAttribute("stroke");r.removeAttribute("stroke-width")}})}
   function stop(){if(osc){try{gn.gain.setTargetAtTime(0,AC.currentTime,0.03);osc.stop(AC.currentTime+0.2)}catch(e){}osc=null}kind="";cancelAnimationFrame(raf);
@@ -3429,14 +3434,15 @@ function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG
     document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.remove("on"));clearCur();$("sNow").textContent="按一種車，聽聽看、看看圓點怎麼跑。"}
   function start(k){stop();if(!k)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
     if(AC.state==="suspended")AC.resume();
-    osc=AC.createOscillator();osc.type="sawtooth";lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=3500;gn=AC.createGain();gn.gain.value=0;
-    osc.connect(lp);lp.connect(gn);gn.connect(AC.destination);
-    kind=k;t0=AC.currentTime;osc.frequency.value=sirenF(k,0);osc.start();gn.gain.setTargetAtTime(0.08,AC.currentTime,0.03);
+    // 和情境2一樣的聲音：三角波，事先排好每一段頻率（不在畫面更新時一直改，聲音才乾淨）
+    osc=AC.createOscillator();osc.type="triangle";gn=AC.createGain();gn.gain.value=0;
+    osc.connect(gn);gn.connect(AC.destination);
+    kind=k;t0=AC.currentTime;tq=t0;sched();osc.start();gn.gain.setTargetAtTime(0.3,AC.currentTime,0.03);
     document.querySelectorAll("#sirenBtns button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
     const r=document.getElementById("lawRow"+KI[k]);if(r){r.setAttribute("stroke",LAWK[KI[k]][2]);r.setAttribute("stroke-width","3")}
     loop()}
   function loop(){raf=requestAnimationFrame(loop);if(!osc)return;const PER={amb:1,fire:5,police:1/3}[kind],WR=Math.floor(LG.T/PER+1e-6)*PER,t=(AC.currentTime-t0)%WR,f=sirenF(kind,t);
-    osc.frequency.linearRampToValueAtTime(sirenF(kind,(t+0.04)%WR),AC.currentTime+0.04);
+    if(tq<AC.currentTime+10)sched();
     const svg=$("law"),i=KI[kind],col=LAWK[i][2],top=LG.top0+i*(LG.h+LG.gap),x=LG.x0+t/LG.T*LG.W,y=lawY(i,f);
     let c=document.getElementById("lawCur"),d=document.getElementById("lawDot"),tx=document.getElementById("lawTxt");
     if(!c){c=document.createElementNS(SVGNS,"line");c.id="lawCur";c.setAttribute("stroke",col);c.setAttribute("stroke-width","1.5");c.setAttribute("stroke-dasharray","4 3");svg.appendChild(c);
