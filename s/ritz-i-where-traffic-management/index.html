@@ -2934,13 +2934,17 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 
 <section>
   <h2>四、警笛聲調查：YouTube＋Phyphox</h2>
-  <div class="card"><label for="sirens">先想一想：生活中有哪些警笛或警報聲？寫下來：</label><textarea id="sirens" rows="2"></textarea>
-    <p class="note">在 YouTube 找這些聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，看 Phyphox「Audio Spectrum」的「Spectrum」。記下主要頻率、頻率範圍（山峰在哪些個頻率之間移動）和變化形式。</p></div>
+  <p class="note">生活中有哪些警笛或警報聲？一次選一種（也可以自己取名），在 YouTube 找這個聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，看 Phyphox「Audio Spectrum」的「Spectrum」，把下面那句話填完、貼上頻譜截圖。做完一種，再選下一種。</p>
   <p class="cap">表 2-3　警笛聲的頻率</p>
-  <p class="note" style="margin:0">「變化形式」寫寫看：頻率是<b>高低交替</b>、<b>慢慢升高再降下</b>，還是<b>很快地上上下下</b>？大約<b>多久</b>變一次（例如 1 秒 2 次）？有沒有<b>停頓</b>？</p>
-  <div class="tbl"><table id="t24">
-    <thead><tr><th>警笛／警報聲</th><th>影片網址</th><th>主要頻率（Hz）</th><th>頻率範圍（Hz）</th><th>變化形式</th></tr></thead><tbody></tbody></table></div>
-  <div class="two">
+  <div class="card snd23" style="display:flex;flex-direction:column;gap:10px">
+    <div class="row" style="align-items:center;gap:8px"><label for="pick24"><b>警笛／警報聲：</b></label><select id="pick24"></select>
+      <span id="new24" hidden><input type="text" id="name24" maxlength="16" placeholder="自己取名字" aria-label="自己取的警笛名字" style="max-width:10em"> <button type="button" id="ok24">好</button></span>
+      <button type="button" class="xbtn" id="del24" title="刪掉這個警笛的紀錄" hidden>🗑 刪掉這個警笛</button></div>
+    <div class="row" id="done24" style="gap:6px"></div>
+    <div id="shots24"></div>
+  </div>
+  <div class="card" id="oldSirens" hidden><label for="sirens">以前寫的警笛清單：</label><textarea id="sirens" rows="2"></textarea></div>
+  <div class="two" id="oldShots24" hidden>
     <div class="photo card"><h3>截圖：<input type="text" id="cap5" class="name"> 的頻譜</h3><label class="drop" for="ph5"><img id="im_ph5" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph5" accept="image/*" hidden><button class="xbtn" data-clear="ph5">移除照片</button></div>
     <div class="photo card"><h3>截圖：<input type="text" id="cap6" class="name"> 的頻譜</h3><label class="drop" for="ph6"><img id="im_ph6" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph6" accept="image/*" hidden><button class="xbtn" data-clear="ph6">移除照片</button></div>
   </div>
@@ -3239,8 +3243,9 @@ const KEY="ws2-fourier-v1";
 const BEADS=[["紅","#cc2230"],["珊瑚紅","#f2675a"],["橘","#f7a531"],["黃綠","#b5e02c"],["橄欖綠","#6d7a2c"],["藍","#2ba3d8"],["紫","#5a2585"],["紫紅","#8e1a5c"],["桃紅","#e0479b"],["米白","#e3dfbf"],["黑","#26222a"]];
 const VOICES=["說話「你好」","長長的「啊～」","唱低音","唱高音","吹口哨","口琴","直笛"];
 const CARS=["救護車","消防車","警車"];
+const SIRENS=["救護車","消防車","警車","國家級警報（手機）","防空警報"];
 let S={hyp:"",n1:"",n2:"",n3:"",n4:"",t21:{1:"",2:"",3:""},q220:"",q880:"",beads:BEADS.map(([n,c])=>({n,c,g:"",a:""})),qb1:"",qb2:"",
-  t23:[{v:"",reg:"",peak:"",hz:""}],qp1:"",qp2:"",sirens:"",t24:[...Array(5)].map(()=>({s:"",url:"",hz:"",lo:"",hi:"",form:""})),
+  t23:[{v:"",reg:"",peak:"",hz:""}],qp1:"",qp2:"",sirens:"",t24:[],
   t25:CARS.map(c=>({c,lr:"",lt:"",mr:"",mt:"",ok:""})),cWhat:"",date:"",names:"",cap3:"",cap4:"",cap5:"",cap6:""};
 let IMG={};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
@@ -3256,6 +3261,10 @@ for(const [id,k] of [["equipList2","equipHTML"],["stepList2","stepsHTML"]]){cons
 {const ord=c=>{const i=BEADS.findIndex(b=>b[1]===c);return i<0?99:i};S.beads.sort((a,b)=>ord(a.c)-ord(b.c))}
 try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
 {let mig=false;S.t23.forEach((r,i)=>{if(!r.id){mig=true;r.id=rid();for(const k of ["w","s"]){if(IMG["t23"+k+i]){IMG["t23"+k+"_"+r.id]=IMG["t23"+k+i];delete IMG["t23"+k+i]}}}});if(mig){save();saveImg()}}   // 每一列有自己的代號，刪掉別列時照片不會跑掉
+{let ch=false;S.t24=(S.t24||[]).filter(r=>r.s||r.url||r.hz||r.lo||r.hi||r.form);S.t24.forEach((r,i)=>{if(!r.id){ch=true;r.id=rid()}if(!r.s){r.s="警笛"+(i+1);ch=true}});
+  if(!S.t24.length&&S.sirens.trim()){S.sirens.split(/[、，,；;\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,10).forEach(s=>{if(!S.t24.some(r=>r.s===s))S.t24.push({id:rid(),s,url:"",hz:"",lo:"",hi:"",form:""})});ch=true}
+  for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]){const r=IMG[k]&&S.t24.find(x=>x.s&&x.s===(S[c]||"").trim());if(r&&!IMG["t24s_"+r.id]){IMG["t24s_"+r.id]=IMG[k];delete IMG[k];ch=true}}
+  if(ch){save();saveImg()}}   // 表 2-3 改成一次一種警笛
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function saveImg(){try{localStorage.setItem(KEY+"-img",JSON.stringify(IMG));return true}catch(e){return false}}
 const num=v=>v===""||v==null||isNaN(+v)?null:+v;
@@ -3325,10 +3334,32 @@ function buildShots(){const box=$("shots23");if(!box)return;box.innerHTML="";con
   for(const k of ["w","s"]){const id="t23"+k+"_"+r.id;showImg(id);
     c.querySelector("#f_"+id).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[id]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(id);buildT23()}catch(err){}e.target.value=""});
     c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id);buildT23()})}}
-function buildT24(){const tb=$("t24").querySelector("tbody");tb.innerHTML="";
-  S.t24.forEach((r,i)=>{const tr=document.createElement("tr");
-    tr.innerHTML=`<td><input type="text" id="ss${i}" class="name"></td><td><input type="text" id="su${i}" style="max-width:14em;text-align:left" placeholder="https://"></td><td><input type="number" id="sh${i}" inputmode="numeric"></td><td class="rng"><div class="rngw"><input type="number" id="sl${i}" inputmode="numeric" aria-label="最低">～<input type="number" id="sx${i}" inputmode="numeric" aria-label="最高"></div></td><td><textarea id="sf${i}" rows="2" style="min-width:12em;text-align:left" placeholder="怎麼變？多久變一次？" aria-label="變化形式"></textarea></td>`;
-    tb.appendChild(tr);bind("ss"+i,r,"s");bind("su"+i,r,"url");bind("sh"+i,r,"hz");bind("sl"+i,r,"lo");bind("sx"+i,r,"hi");bind("sf"+i,r,"form")})}
+/* 表 2-3：一次看一種警笛。下拉選（也可以自己取名）→ 一句話＋頻譜截圖 */
+const rng24=r=>(r.lo||r.hi)?`${r.lo||"＿"}～${r.hi||"＿"}`:"";
+const sent24=r=>`${r.s}：主要頻率 ${r.hz||"＿＿"} Hz，頻率範圍 ${rng24(r)||"＿＿"} Hz；變化形式：${r.form||"＿＿"}`;
+let cur24=null;
+function buildT24(){const pk=$("pick24");if(!pk)return;
+  const names=[...SIRENS,...S.t24.map(r=>r.s).filter(v=>!SIRENS.includes(v))];
+  pk.innerHTML=`<option value="">選一種警笛</option>${names.map(n=>`<option${n===cur24?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 自己取名…</option>`;
+  $("done24").innerHTML=S.t24.length?`<span class="note">已經記錄：</span>`+S.t24.map(r=>`<button type="button" class="chip${r.s===cur24?" on":""}" data-go="${esc(r.s)}">${esc(r.s)}${IMG["t24s_"+r.id]&&r.hz?" ✓":""}</button>`).join(""):"";
+  $("done24").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{cur24=b.dataset.go;buildT24()}));
+  $("del24").hidden=!S.t24.some(r=>r.s===cur24);
+  buildShots24()}
+function pick24(v){v=(v||"").trim();if(!v)return;cur24=v;if(!S.t24.some(r=>r.s===v)){S.t24.push({id:rid(),s:v,url:"",hz:"",lo:"",hi:"",form:""});save()}$("new24").hidden=true;buildT24()}
+function buildShots24(){const box=$("shots24");if(!box)return;box.innerHTML="";const r=S.t24.find(x=>x.s===cur24);if(!r)return;
+  const n=(id,v,lab)=>`<input type="number" id="${id}" min="0" step="1" inputmode="numeric" value="${esc(v)}" style="max-width:6em" aria-label="${lab}">`;
+  const id="t24s_"+r.id,c=document.createElement("div");c.className="shot";
+  c.innerHTML=`<p class="sent23">影片網址：<input type="text" id="su24" value="${esc(r.url)}" placeholder="https://" style="max-width:22em;text-align:left" aria-label="影片網址"></p>
+    <p class="sent23">${esc(r.s)} 的主要頻率是 ${n("sh24",r.hz,"主要頻率")} Hz，頻率範圍（山峰在哪些頻率之間移動）是 ${n("sl24",r.lo,"最低")}～${n("sx24",r.hi,"最高")} Hz。</p>
+    <p class="sent23" style="line-height:1.6">變化形式：<span class="note">頻率是<b>高低交替</b>、<b>慢慢升高再降下</b>，還是<b>很快地上上下下</b>？大約<b>多久</b>變一次（例如 1 秒 2 次）？有沒有<b>停頓</b>？</span></p>
+    <textarea id="sf24" rows="2" placeholder="怎麼變？多久變一次？" aria-label="變化形式">${esc(r.form)}</textarea>
+    <div class="two"><div class="photo"><label class="drop" for="f_${id}"><img id="im_${id}" alt="" hidden><span>點這裡放頻譜截圖</span></label><input type="file" id="f_${id}" accept="image/*" hidden><p class="cap" style="margin:0">${esc(r.s)} 的頻譜</p><button class="xbtn" data-shot="${id}">移除</button></div></div>`;
+  box.appendChild(c);
+  for(const [e,k] of [["su24","url"],["sh24","hz"],["sl24","lo"],["sx24","hi"],["sf24","form"]])c.querySelector("#"+e).addEventListener("input",ev=>{r[k]=ev.target.value;save();if(k==="hz")$("done24").querySelector(".chip.on")&&buildChipsOnly24()});
+  showImg(id);
+  c.querySelector("#f_"+id).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[id]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(id);buildT24()}catch(err){}e.target.value=""});
+  c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id);buildT24()})}
+function buildChipsOnly24(){const r=S.t24.find(x=>x.s===cur24),b=$("done24").querySelector(".chip.on");if(r&&b)b.textContent=r.s+(IMG["t24s_"+r.id]&&r.hz?" ✓":"")}
 function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
   S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
     tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name"></td><td><input type="text" id="lt${i}" class="name"></td><td><input type="text" id="mr${i}" class="name"></td><td><input type="text" id="mt${i}" class="name"></td><td><select id="lok${i}"><option value="">選</option><option>符合</option><option>不符合</option><option>不確定</option></select></td>`;
@@ -3434,6 +3465,11 @@ $("pick23").addEventListener("change",e=>{const v=e.target.value;if(v==="__new")
 $("ok23").addEventListener("click",()=>pick23($("name23").value));$("name23").addEventListener("keydown",e=>{if(e.key==="Enter")pick23($("name23").value)});
 $("del23").addEventListener("click",()=>{const i=S.t23.findIndex(r=>r.v===cur23);if(i<0)return;if(!confirm(`要刪掉「${cur23}」的紀錄和截圖嗎？`))return;const r=S.t23[i];delete IMG["t23w_"+r.id];delete IMG["t23s_"+r.id];saveImg();S.t23.splice(i,1);save();cur23=null;buildT23()});
 if(S.t23.length){cur23=S.t23[0].v;buildT23()}
+$("pick24").addEventListener("change",e=>{const v=e.target.value;if(v==="__new"){$("new24").hidden=false;$("name24").value="";$("name24").focus();return}if(v)pick24(v);else{cur24=null;buildT24()}});
+$("ok24").addEventListener("click",()=>pick24($("name24").value));$("name24").addEventListener("keydown",e=>{if(e.key==="Enter")pick24($("name24").value)});
+$("del24").addEventListener("click",()=>{const i=S.t24.findIndex(r=>r.s===cur24);if(i<0)return;if(!confirm(`要刪掉「${cur24}」的紀錄和截圖嗎？`))return;delete IMG["t24s_"+S.t24[i].id];saveImg();S.t24.splice(i,1);save();cur24=null;buildT24()});
+if(S.t24.length){cur24=S.t24[0].s;buildT24()}
+if(IMG.ph5||IMG.ph6)$("oldShots24").hidden=false;
 drawLaw();   // 圖 2-2 直接顯示
 const redraw=()=>{if(S.reveal)drawLaw()};
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
@@ -3475,9 +3511,10 @@ btn.addEventListener("click",async()=>{
     for(const r of S.t23){if(!r.v)continue;B.push(P(sent23(r)));for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t23"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.v} 的${n}`))}}}
     for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
-    B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(P("生活中的警笛或警報聲："+(S.sirens||"＿＿")));
-    const sr=S.t24.filter(r=>r.s||r.hz||r.url).map(r=>[r.s,r.url,r.hz,(r.lo||r.hi)?`${r.lo}～${r.hi}`:"",r.form]);
+    B.push(H("四、警笛聲調查：YouTube＋Phyphox"));
+    {const sr=S.t24.filter(r=>r.s).map(r=>[r.s,r.url,r.hz,rng24(r),r.form]);
     B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));
+    for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));const id="t24s_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.s} 的頻譜`))}}}
     for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的頻譜"))}
     B.push(H("五、臺灣對警笛聲的規定"));
     B.push(cap("表 2-4、法規規定和實測比較"));B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));
