@@ -665,8 +665,9 @@ btn.addEventListener("click",async()=>{
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
       body.push(P(`受試者：${x.name}`,{bold:true}));
-      body.push(table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
       body.push(cap(`表 1-1（${i+1}）、${x.name} 的紀錄`));
+      body.push(table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
+
       const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT);
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
       body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));
@@ -675,8 +676,9 @@ btn.addEventListener("click",async()=>{
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
     const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
     const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
-    body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
     body.push(cap("表 1-2、全組的平均角度差"));
+      body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
+
     const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);
     body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bv,420,300),transformation:{width:360,height:257}})]}));
     body.push(cap("圖 1-2、未遮蔽和戴耳機的平均角度差"));

@@ -315,7 +315,7 @@ const scene=new THREE.Scene();
 scene.background=(()=>{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#1a2140");gr.addColorStop(1,"#0b0f1c");g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t})();
 const cam=new THREE.PerspectiveCamera(38,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=12; ctl.maxDistance=200;
-addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
+addPanPad(stage,cam,ctl,"br",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));

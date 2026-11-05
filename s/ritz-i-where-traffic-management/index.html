@@ -2461,8 +2461,9 @@ btn.addEventListener("click",async()=>{
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
       body.push(P(`受試者：${x.name}`,{bold:true}));
-      body.push(table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
       body.push(cap(`表 1-1（${i+1}）、${x.name} 的紀錄`));
+      body.push(table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
+
       const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT);
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
       body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));
@@ -2471,8 +2472,9 @@ btn.addEventListener("click",async()=>{
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
     const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
     const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
-    body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
     body.push(cap("表 1-2、全組的平均角度差"));
+      body.push(table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
+
     const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);
     body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bv,420,300),transformation:{width:360,height:257}})]}));
     body.push(cap("圖 1-2、未遮蔽和戴耳機的平均角度差"));
@@ -2903,9 +2905,9 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
     <li>打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。</li>
     <li>依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？</li>
     <li>最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。</li></ol>
+  <p class="cap">表 2-2　我的聲音：波形和頻譜</p>
   <div class="tbl"><table id="t23">
     <thead><tr><th>我發出的聲音</th><th>波形規律嗎？</th><th>頻譜有尖尖的山峰嗎？</th><th>主要頻率（Hz）</th></tr></thead><tbody></tbody></table></div>
-  <p class="cap">表 2-2　我的聲音：波形和頻譜</p>
   <div class="two">
     <div class="photo card"><h3>截圖：<input type="text" id="cap3" class="name"> 的波形或頻譜</h3><label class="drop" for="ph3"><img id="im_ph3" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph3" accept="image/*" hidden><button class="xbtn" data-clear="ph3">移除照片</button></div>
     <div class="photo card"><h3>截圖：<input type="text" id="cap4" class="name"> 的波形或頻譜</h3><label class="drop" for="ph4"><img id="im_ph4" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph4" accept="image/*" hidden><button class="xbtn" data-clear="ph4">移除照片</button></div>
@@ -2919,9 +2921,9 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
   <h2>四、警笛聲調查：YouTube＋Phyphox</h2>
   <div class="card"><label for="sirens">先想一想：生活中有哪些警笛或警報聲？寫下來：</label><textarea id="sirens" rows="2"></textarea>
     <p class="note">在 YouTube 找這些聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，看 Phyphox「Audio Spectrum」的「Spectrum」。記下主要頻率、頻率範圍（山峰在哪些個頻率之間移動）和變化形式。</p></div>
+  <p class="cap">表 2-3　警笛聲的頻率</p>
   <div class="tbl"><table id="t24">
     <thead><tr><th>警笛／警報聲</th><th>影片網址</th><th>主要頻率（Hz）</th><th>頻率範圍（Hz）</th><th>變化形式</th></tr></thead><tbody></tbody></table></div>
-  <p class="cap">表 2-3　警笛聲的頻率</p>
   <div class="two">
     <div class="photo card"><h3>截圖：<input type="text" id="cap5" class="name"> 的頻譜</h3><label class="drop" for="ph5"><img id="im_ph5" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph5" accept="image/*" hidden><button class="xbtn" data-clear="ph5">移除照片</button></div>
     <div class="photo card"><h3>截圖：<input type="text" id="cap6" class="name"> 的頻譜</h3><label class="drop" for="ph6"><img id="im_ph6" alt="" hidden><span>點這裡選截圖</span></label><input type="file" id="ph6" accept="image/*" hidden><button class="xbtn" data-clear="ph6">移除照片</button></div>
@@ -2931,12 +2933,11 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <section>
   <h2>五、查一查：臺灣對警笛聲有規定嗎？</h2>
   <p class="lead">到「全國法規資料庫」或「交通部主管法規查詢系統」（motclaw.motc.gov.tw），用關鍵字「警報訊號之內容及樣式」查查看，把規定寫進表 2-4，再和表 2-3 量到的比一比。</p>
+  <p class="cap">表 2-4　法規規定和實測比較</p>
   <div class="tbl"><table id="t25">
     <thead><tr><th>車種</th><th>法規：頻率範圍</th><th>法規：節奏</th><th>實測：頻率範圍</th><th>實測：節奏</th><th>符合？</th></tr></thead><tbody></tbody></table></div>
-  <p class="cap">表 2-4　法規規定和實測比較</p>
   <div class="card" style="display:flex;flex-direction:column;gap:8px">
-    <div class="row"><button id="reveal">查完法規了，打開圖 2-2 對照</button></div>
-    <div id="lawfig" hidden style="display:flex;flex-direction:column;gap:12px">
+    <div id="lawfig" style="display:flex;flex-direction:column;gap:12px">
       <div class="row" id="sirenBtns"><span class="note">按一下，播放依法規合成的警報聲：</span><button data-k="amb">救護車</button><button data-k="fire">消防車</button><button data-k="police">警車</button><button data-k="">■ 停止</button></div>
       <p class="note" id="sNow" aria-live="polite">按一種車，聽聽看、看看圓點怎麼跑。</p>
       <svg id="law" viewBox="0 0 640 350" role="img" aria-label="三種警報聲的頻率隨時間變化"></svg>
@@ -3100,7 +3101,7 @@ const scene=new THREE.Scene();
 scene.background=(()=>{const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#1a2140");gr.addColorStop(1,"#0b0f1c");g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t})();
 const cam=new THREE.PerspectiveCamera(38,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=12; ctl.maxDistance=200;
-addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
+addPanPad(stage,cam,ctl,"br",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.75));
@@ -3340,7 +3341,7 @@ function drawLaw(s=$("law"),P=pal()){s.innerHTML="";const {x0,W,h,gap,top0,T}=LG
     for(const f of [700,1000,1500])el("text",{x:x0-6,y:lawY(i,f)+4,"text-anchor":"end","font-size":10,fill:P.muted},s,String(f))});
   const yb=top0+LAWK.length*(h+gap)-gap+18;for(let t=0;t<=T;t++)el("text",{x:x0+t/T*W,y:yb,"text-anchor":"middle","font-size":12,fill:P.muted},s,t+" 秒");
   el("text",{x:x0+W/2,y:yb+20,"text-anchor":"middle","font-size":12,fill:P.muted},s,"橫軸：時間（秒）　縱軸：頻率（Hz）")}
-$("reveal").addEventListener("click",()=>{$("lawfig").hidden=false;S.reveal=true;save();drawLaw()});
+
 /* 互動：播放警報聲，圖上有點沿著曲線跑，顯示現在的頻率 */
 (()=>{let AC=null,osc=null,lp=null,gn=null,kind="",t0=0,raf=0;
   const KI={amb:0,fire:1,police:2};
@@ -3382,7 +3383,7 @@ function alertMsg(t){$("expMsg").textContent=t}
 /* 其他欄位 */
 for(const id of ["n1","n2","n3","n4","qb1","qb2","qp1","qp2","sirens","cWhat","date","names","cap3","cap4","cap5","cap6"])bind(id,S,id);
 buildT22();buildT23();buildT24();buildT25();
-if(S.reveal){$("lawfig").hidden=false;drawLaw()}
+drawLaw();   // 圖 2-2 直接顯示
 const redraw=()=>{if(S.reveal)drawLaw()};
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -3413,21 +3414,21 @@ btn.addEventListener("click",async()=>{
     B.push(H("二、認識「頻譜」"));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
-    B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));B.push(cap("表 2-1、我的這一把串珠"));
+    B.push(cap("表 2-1、我的這一把串珠"));B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));
     const bs=off("0 0 560 300");drawBeads(bs,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bs,560,300),transformation:{width:450,height:241}})]}));
     B.push(cap("圖 2-1、我的串珠頻譜（實心＝實際，虛線＝我猜）"));
     B.push(P("只用眼睛猜，準嗎？"+(S.qb1||"＿＿")));B.push(P("排好、數好以後，一眼就能看出哪一種最多嗎？"+(S.qb2||"＿＿")));
     B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
     B.push(H("三、看看自己的聲音頻譜"));
-    B.push(table(["我發出的聲音","波形規律嗎？","頻譜有尖尖的山峰嗎？","主要頻率（Hz）"],S.t23.map(r=>[r.v,r.reg,r.peak,r.hz])));B.push(cap("表 2-2、我的聲音：波形和頻譜"));
+    B.push(cap("表 2-2、我的聲音：波形和頻譜"));B.push(table(["我發出的聲音","波形規律嗎？","頻譜有尖尖的山峰嗎？","主要頻率（Hz）"],S.t23.map(r=>[r.v,r.reg,r.peak,r.hz])));
     for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
     B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(P("生活中的警笛或警報聲："+(S.sirens||"＿＿")));
     const sr=S.t24.filter(r=>r.s||r.hz||r.url).map(r=>[r.s,r.url,r.hz,(r.lo||r.hi)?`${r.lo}～${r.hi}`:"",r.form]);
-    B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));B.push(cap("表 2-3、警笛聲的頻率"));
+    B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));
     for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的頻譜"))}
     B.push(H("五、臺灣對警笛聲的規定"));
-    B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));B.push(cap("表 2-4、法規規定和實測比較"));
+    B.push(cap("表 2-4、法規規定和實測比較"));B.push(table(["車種","法規：頻率範圍","法規：節奏","實測：頻率範圍","實測：節奏","符合？"],S.t25.map(r=>[r.c,r.lr,r.lt,r.mr,r.mt,r.ok])));
     const ls=off("0 0 640 350");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,350),transformation:{width:480,height:263}})]}));
     B.push(cap("圖 2-2、依法規畫出的三種警報聲：頻率隨時間的變化"));
     B.push(H("六、結果與結論"));
@@ -3736,8 +3737,8 @@ td.no{color:var(--b);font-weight:700}
     <canvas id="hScope" aria-label="左耳和右耳收到的波形（紅＝壓縮、藍＝稀疏）"></canvas>
     <p class="cap">圖 3-1　兩隻耳朵收到的聲音（最新的在右邊；曲線紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到</p>
   </div>
-  <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">表 3-1　喇叭在不同位置，兩隻耳朵的時間差</p>
+  <div class="tbl"><table id="t31"><thead><tr><th>喇叭的位置</th><th>哪隻耳朵先聽到？</th><th>時間差（大／小／沒有）</th></tr></thead><tbody></tbody></table></div>
 </section>
 
 <section>
@@ -3747,11 +3748,11 @@ td.no{color:var(--b);font-weight:700}
 </div></div>
   <div class="card"><h3>換我試試：從時間差找角度</h3>
     <p class="note">兩隻耳朵相距 20 公分，所以半圓的半徑就畫 20 公分（直尺從 0 到 20）。先算多走的路，再拖曳下面半圓尺上的點，讀出角度。</p>
+    <p class="cap">表 3-2　從時間差找出角度（按「對答案」看看）</p>
     <div class="two" style="margin-top:8px">
       <div><svg id="ruler" viewBox="0 0 440 270" role="img" aria-label="可以拖曳的半圓量角尺"></svg><div class="note" id="rulerTxt" style="text-align:center"></div></div>
       <div class="tbl"><table id="t32"><thead><tr><th>時間差（毫秒）</th><th>多走的路（公分）</th><th>角度（度）</th><th></th></tr></thead><tbody></tbody></table></div>
     </div>
-    <p class="cap">表 3-2　從時間差找出角度（按「對答案」看看）</p>
   </div>
 </section>
 
@@ -3774,8 +3775,8 @@ td.no{color:var(--b);font-weight:700}
   <div class="card"><h3>試試看，記下來</h3>
     <ul class="note"><li>把兩支麥克風拉得很近、再拉得很遠，時間差有什麼變化？</li><li>救護車換到別條路，2 支麥克風還分得出來嗎？</li><li>加到 3 支、4 支，怎麼擺才分得出四條路？3 支排成一直線可以嗎？</li></ul>
   </div>
-  <div class="tbl"><table id="t33"><thead><tr><th>麥克風幾支</th><th>怎麼擺</th><th>救護車在哪條路</th><th>系統找到幾個可能的方向</th><th>分得出是哪條路嗎？</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">表 3-3　麥克風的數量和擺法</p>
+  <div class="tbl"><table id="t33"><thead><tr><th>麥克風幾支</th><th>怎麼擺</th><th>救護車在哪條路</th><th>系統找到幾個可能的方向</th><th>分得出是哪條路嗎？</th></tr></thead><tbody></tbody></table></div>
   <div class="card qa"><label for="q31">兩支麥克風要怎麼擺，時間差才會比較大？</label><input type="text" id="q31" class="wide">
     <label for="q32">為什麼 2 支麥克風有時候分不出救護車在哪條路？</label><input type="text" id="q32" class="wide"></div>
 </section>
@@ -3797,10 +3798,10 @@ td.no{color:var(--b);font-weight:700}
       <p class="note">只用 1 支時，雷達沒有時間差可以算，可能沒有方向，就在表上勾「雷達沒有方向」。</p></div>
   </div>
   <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
-  <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
   <p class="cap" id="t34cap">表 3-4　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
-  <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
+  <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
   <p class="cap">表 3-5　四種麥克風數量的比較（自動算）</p>
+  <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
   <div class="two">
     <div class="card"><svg id="cAcc" viewBox="0 0 420 300" role="img" aria-label="正確率長條圖"></svg><p class="cap">圖 3-2　選對路的正確率</p></div>
     <div class="card"><svg id="cErr" viewBox="0 0 420 300" role="img" aria-label="平均角度差長條圖"></svg><p class="cap">圖 3-3　平均角度差（越小越準）</p></div>
@@ -4399,19 +4400,19 @@ btn.addEventListener("click",async()=>{
     B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));
-    B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));
+    B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差"],S.t31.map(r=>[r.p,r.first,r.big])));
     B.push(H("二、不用三角函數，也能從時間差找出角度"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
-    B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));B.push(cap("表 3-2、從時間差找出角度"));
+    B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
     B.push(H("三、路口要幾支麥克風？"));
     const r33=S.t33.filter(r=>r.n||r.how||r.road||r.cand||r.ok).map(r=>[r.n,r.how,r.road,r.cand,r.ok]);
-    B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));B.push(cap("表 3-3、麥克風的數量和擺法"));
+    B.push(cap("表 3-3、麥克風的數量和擺法"));B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));
     B.push(P("兩支麥克風怎麼擺，時間差才會比較大？"+(S.q31||"＿＿")));B.push(P("為什麼 2 支麥克風有時候分不出在哪條路？"+(S.q32||"＿＿")));
     B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
-      B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`))}
-    B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));B.push(cap("表 3-5、四種麥克風數量的比較"));
+      B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
+    B.push(cap("表 3-5、四種麥克風數量的比較"));B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
     for(const [k,t] of [["acc","圖 3-2、選對路的正確率"],["err","圖 3-3、平均角度差（越小越準）"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);
       B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(s,420,300),transformation:{width:360,height:257}})]}));B.push(cap(t))}
     B.push(H("五、結果與結論"));
