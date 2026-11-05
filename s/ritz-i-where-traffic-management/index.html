@@ -3885,14 +3885,17 @@ td.no{color:var(--b);font-weight:700}
   <div class="two">
     <div class="card"><h3>步驟</h3><ol id="stepList3">
       <li>搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。</li>
-      <li>電腦打開「頻率雷達」，先照說明校正（喇叭放 0°、再放 90°）。</li>
-      <li>點雷達中間的 1～4 號，選這一輪要用的麥克風（看右邊）。</li>
-      <li>把綁著藍牙喇叭的救護車放在某一條路上，用量角器量「真實角度」（北路 0°、東路 90°、南路 180°、西路 270° 附近）。</li>
+      <li>電腦打開「頻率雷達」，先照說明校正。</li>
+      <li>先做「場景設定」（右邊）：記下 1～4 號麥克風各在雷達的幾度；再把救護車依序放在北、東、南、西四條路上，播警笛聲，記下雷達顯示的角度，填進去。</li>
+      <li>點雷達中間的 1～4 號，選這一輪要用的麥克風。</li>
+      <li>把綁著藍牙喇叭的救護車放在某一條路上，「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。</li>
       <li>播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。</li>
     </ol></div>
-    <div class="card"><h3>每一輪用哪幾支？</h3>
-      <div class="tbl" style="border:0"><table class="mini"><thead><tr><th>這一輪</th><th>在雷達上點選</th></tr></thead><tbody>
-        <tr><td>1 支</td><td>只留 1 號</td></tr><tr><td>2 支</td><td>1、3 號（對角）</td></tr><tr><td>3 支</td><td>1、2、3 號</td></tr><tr><td>4 支</td><td>1、2、3、4 號</td></tr></tbody></table></div>
+    <div class="card"><h3>場景設定（先做好再開始）</h3>
+      <p class="note" style="margin:0 0 6px">打開 ReSpeaker 和「頻率雷達」才知道的數字，自己量好填進來。下面「選對了嗎？」會照這裡的角度判斷：雷達角度最靠近哪一條路，就算雷達指那條路。</p>
+      <div class="tbl" style="border:0"><table class="mini" id="setRoad"><thead><tr><th>路</th><th>雷達上的角度（度）</th></tr></thead><tbody></tbody></table></div>
+      <div class="tbl" style="border:0;margin-top:8px"><table class="mini" id="setMic"><thead><tr><th>麥克風</th><th>在雷達上的角度（度）</th></tr></thead><tbody></tbody></table></div>
+      <div class="tbl" style="border:0;margin-top:8px"><table class="mini" id="setUse"><thead><tr><th>這一輪</th><th>在雷達上點選哪幾支</th></tr></thead><tbody></tbody></table></div>
       <p class="note">只用 1 支時，雷達沒有時間差可以算，可能沒有方向，就在表上勾「雷達沒有方向」。</p></div>
   </div>
   <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
@@ -4447,10 +4450,13 @@ const ROADN=["北","東","南","西"],ROADA={北:0,東:90,南:180,西:270};
 const NTR=8;
 let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRACT.map(ms=>({ms,cm:"",deg:""})),
   t33:[...Array(5)].map(()=>({n:"",how:"",road:"",cand:"",ok:""})),q31:"",q32:"",
-  exp:{1:[],2:[],3:[],4:[]},c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
+  exp:{1:[],2:[],3:[],4:[]},setup:null,c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
+const USE0={1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"};
+S.setup=Object.assign({road:{北:"",東:"",南:"",西:""},mic:{1:"",2:"",3:"",4:""},use:{...USE0}},S.setup||{});
+if(S.stepsHTML&&/北路 0°/.test(S.stepsHTML))delete S.stepsHTML;   // 舊的步驟寫死了角度，換成新的
 
 /* 器材、步驟：點一下就能改（一行一項，按 Enter 換下一項），會自動存檔 */
 for(const [id,k] of [["equipList3","equipHTML"],["stepList3","stepsHTML"]]){const e=document.getElementById(id);if(!e)continue;
@@ -4483,17 +4489,26 @@ function buildT33(){const tb=$("t33").tBodies[0];tb.innerHTML="";S.t33.forEach(r
   tr.innerHTML=`<td>${sel(["1 支","2 支","3 支","4 支"],r.n,'data-k="n" aria-label="麥克風幾支"')}</td><td><input type="text" data-k="how" class="wide" value="${esc(r.how)}" aria-label="怎麼擺"></td>
     <td>${sel(["北路","東路","南路","西路"],r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" min="0" data-k="cand" value="${esc(r.cand)}" aria-label="可能方向數"></td><td>${sel(["分得出來","分不出來"],r.ok,'data-k="ok" aria-label="分得出來嗎"')}</td>`;
   tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"?"change":"input",()=>{r[e.dataset.k]=e.value;save()}))})}
+/* 場景設定：四條路、四支麥克風在雷達上的角度，每一輪點哪幾支 */
+function buildSetup(){
+  const mk=(id,rows,lab)=>{const tb=$(id).tBodies[0];tb.innerHTML="";rows.forEach(([name,obj,k,type])=>{const tr=tb.insertRow();
+    tr.innerHTML=`<td>${name}</td><td><input type="${type}" ${type==="number"?'step="1" inputmode="numeric" style="max-width:6em"':'class="wide"'} value="${esc(obj[k])}" aria-label="${name} ${lab}"></td>`;
+    tr.querySelector("input").addEventListener("input",e=>{obj[k]=e.target.value;save();if(id!=="setUse")buildT34()})})};
+  mk("setRoad",ROADN.map(r=>[r+"路",S.setup.road,r,"number"]),"雷達上的角度");
+  mk("setMic",[1,2,3,4].map(n=>[n+" 號",S.setup.mic,n,"number"]),"在雷達上的角度");
+  mk("setUse",[1,2,3,4].map(n=>[n+" 支",S.setup.use,n,"text"]),"點選哪幾支")}
 /* 表 3-4：實驗 */
 const cdiff=(a,b)=>{const d=Math.abs(((a-b)%360+360)%360);return Math.min(d,360-d)};
-const roadOfA=a=>ROADN[Math.round(((a%360)+360)%360/90)%4];
-function rowCalc(r){const tr=num(r.tr),ra=r.nodir?null:num(r.ra);return {err:tr!==null&&ra!==null?cdiff(tr,ra):null,rr:ra!==null?roadOfA(ra):(r.nodir?"沒有方向":""),ok:r.road&&(ra!==null||r.nodir)?(ra!==null&&roadOfA(ra)===r.road):null}}
+// 雷達角度最靠近場景設定裡的哪一條路（沒填的路不算）
+function roadOfA(a){let best=null,bd=1e9;for(const r of ROADN){const v=num(S.setup.road[r]);if(v===null)continue;const d=cdiff(a,v);if(d<bd){bd=d;best=r}}return best}
+function rowCalc(r){const tr=num(r.tr),ra=r.nodir?null:num(r.ra),rr=ra!==null?roadOfA(ra):null;return {err:tr!==null&&ra!==null?cdiff(tr,ra):null,rr:ra!==null?(rr||"？"):(r.nodir?"沒有方向":""),ok:r.road&&(r.nodir||(ra!==null&&rr))?(ra!==null&&rr===r.road):null}}
 function stats(n){const R=S.exp[n].map(rowCalc),done=S.exp[n].filter((r,i)=>R[i].ok!==null).length,ok=R.filter(x=>x.ok).length,errs=R.map(x=>x.err).filter(x=>x!==null);
   return {done,ok,acc:done?ok/done*100:null,err:errs.length?errs.reduce((a,b)=>a+b,0)/errs.length:null}}
 function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
   document.querySelectorAll("#nTabs button").forEach(b=>{const on=+b.dataset.n===n;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   $("t34cap").textContent=`表 3-4　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
   S.exp[n].forEach((r,i)=>{const tr=tb.insertRow();
-    tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>x),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" aria-label="真實角度"></td>
+    tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>x),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" placeholder="${esc(S.setup.road[r.road]??"")}" aria-label="真實角度"></td>
       <td><input type="number" step="1" data-k="ra" value="${esc(r.ra)}" aria-label="雷達角度" ${r.nodir?"disabled":""}>${n===1?`<br><label class="nodir"><input type="checkbox" data-k="nodir" ${r.nodir?"checked":""}>雷達沒有方向</label>`:""}</td>
       <td class="num" data-o="err"></td><td data-o="rr"></td><td data-o="ok"></td>`;
     tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"||e.type==="checkbox"?"change":"input",()=>{r[e.dataset.k]=e.type==="checkbox"?e.checked:e.value;
@@ -4523,7 +4538,7 @@ function drawBars(s,kind,P=pal()){s.innerHTML="";const x0=56,y0=250,H=210,Wd=340
 /* 其他欄位 */
 for(const id of ["p1","p2","p4","q31","q32","c1","c2","c4","c5","date","names"])bind(id,S,id);
 for(const id of ["p3","c3a","c3b"])bind(id,S,id,"change");
-buildT31();buildT32();buildT33();buildT34();
+buildT31();buildT32();buildT33();buildSetup();buildT34();
 const redraw=()=>calcT35();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
@@ -4559,6 +4574,7 @@ btn.addEventListener("click",async()=>{
     B.push(cap("表 3-3、麥克風的數量和擺法"));B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));
     B.push(P("兩支麥克風怎麼擺，時間差才會比較大？"+(S.q31||"＿＿")));B.push(P("為什麼 2 支麥克風有時候分不出在哪條路？"+(S.q32||"＿＿")));
     B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));
+    B.push(cap("場景設定：雷達上的角度"));B.push(table(["","角度（度）／點選"],[...ROADN.map(r=>[r+"路",S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時點選`,S.setup.use[n]])]));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
       B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
     B.push(cap("表 3-5、四種麥克風數量的比較"));B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
@@ -4870,7 +4886,7 @@ svg text{font-family:var(--body)}
 
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
-const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）", "藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）", "遮光眼罩、隔音耳機（耳罩式）"], "st": ["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"]}, "2": {"eq": ["彩色串珠一大盒（拆散）、手機或相機（拍照）", "手機安裝 Phyphox，用「Audio Spectrum」", "電腦或平板（播 YouTube）、喇叭", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。", "依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？", "最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。"]}, "3": {"eq": ["電腦或平板（用這個網頁做動畫和模擬）", "小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭", "陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」", "量角器或角度墊、捲尺", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。", "電腦打開「頻率雷達」，先照說明校正（喇叭放 0°、再放 90°）。", "點雷達中間的 1～4 號，選這一輪要用的麥克風（看右邊）。", "把綁著藍牙喇叭的救護車放在某一條路上，用量角器量「真實角度」（北路 0°、東路 90°、南路 180°、西路 270° 附近）。", "播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。"]}};
+const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）", "藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）", "遮光眼罩、隔音耳機（耳罩式）"], "st": ["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"]}, "2": {"eq": ["彩色串珠一大盒（拆散）、手機或相機（拍照）", "手機安裝 Phyphox，用「Audio Spectrum」", "電腦或平板（播 YouTube）、喇叭", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。", "依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？", "最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。"]}, "3": {"eq": ["電腦或平板（用這個網頁做動畫和模擬）", "小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭", "陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」", "量角器或角度墊、捲尺", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。", "電腦打開「頻率雷達」，先照說明校正。", "先做「場景設定」（右邊）：記下 1～4 號麥克風各在雷達的幾度；再把救護車依序放在北、東、南、西四條路上，播警笛聲，記下雷達顯示的角度，填進去。", "點雷達中間的 1～4 號，選這一輪要用的麥克風。", "把綁著藍牙喇叭的救護車放在某一條路上，「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。", "播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。"]}};
 /* ================= 作品說明（初審）：資料、照片、匯出 Word（照附件 2 的表格） ================= */
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
@@ -4918,7 +4934,8 @@ showPics("procPics");showPics("resPics");
       (S.t25||[]).filter(r=>r.lr||r.lt).forEach(r=>L.push(`・法規：${r.c} ${r.lr||""} Hz${r.lt?"，"+r.lt:""}`))}
     if(w.n==="三"){(S.t31||[]).filter(r=>r.first||r.ms||r.big).forEach(r=>L.push(`・喇叭在${r.p}：${r.first||"＿"}先聽到，時間差${r.ms!=null&&r.ms!==""?" "+r.ms+" 毫秒":(r.big||"＿")}`));
       for(const n of [1,2,3,4]){const R=((S.exp||{})[n]||[]);let done=0,ok=0;const er=[];
-        R.forEach(r=>{const tr=r.tr===""?null:+r.tr,ra=r.nodir||r.ra===""?null:+r.ra;if(r.road&&(ra!==null||r.nodir)){done++;if(ra!==null&&"北東南西"[Math.round((((ra%360)+360)%360)/90)%4]===r.road)ok++}
+        R.forEach(r=>{const tr=r.tr===""?null:+r.tr,ra=r.nodir||r.ra===""?null:+r.ra;const RD=(S.setup&&S.setup.road)||{},near=a=>{let b=null,bd=1e9;for(const k of "北東南西"){const v=RD[k]===""||RD[k]==null?null:+RD[k];if(v===null||isNaN(v))continue;const d0=Math.abs(((a-v)%360+360)%360),d=Math.min(d0,360-d0);if(d<bd){bd=d;b=k}}return b},rr=ra!==null?near(ra):null;
+          if(r.road&&(r.nodir||(ra!==null&&rr))){done++;if(ra!==null&&rr===r.road)ok++}
           if(tr!==null&&ra!==null){const d=Math.abs(((tr-ra)%360+360)%360);er.push(Math.min(d,360-d))}});
         if(done)L.push(`・${n} 支麥克風：選對 ${ok}／${done} 次（${Math.round(ok/done*100)}%）${er.length?`，平均角度差 ${r1(avg(er))}°`:""}`)}}
     return L}
