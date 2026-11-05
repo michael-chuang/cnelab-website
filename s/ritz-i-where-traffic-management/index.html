@@ -4862,13 +4862,16 @@ svg text{font-family:var(--body)}
     <div class="frow"><div class="fh">年級</div><div class="fc grade"><input type="text" id="yr" class="sm" aria-label="年">年<input type="text" id="cls" class="sm" aria-label="班">班<span class="nm">姓名</span><input type="text" id="nm" class="wide" aria-label="姓名"></div></div>
     <div class="frow"><div class="fh">科別</div><div class="fc kinds" id="kinds"></div></div>
     <div class="frow"><div class="fh">作品名稱</div><div class="fc" style="display:grid;gap:6px"><input type="text" id="title" class="wide" aria-label="作品名稱（主標題）"><div style="display:flex;align-items:center;gap:6px"><span aria-hidden="true">——</span><input type="text" id="subtitle" class="wide" aria-label="作品名稱（副標題）" style="flex:1"></div></div></div>
-    <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea></div></div>
-    <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea></div></div>
-    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button></div></div>
+    <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea>
+      <div class="pics" data-k="motivePics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="motivePics" multiple hidden></label></div></div>
+    <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea>
+      <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
+    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button>
+      <div class="pics" data-k="toolsPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="toolsPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><textarea id="proc" rows="12" aria-label="研究過程"></textarea><button type="button" class="imp" data-imp="proc">📥 從學習單帶入步驟和紀錄</button>
-      <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" hidden></label></div></div>
+      <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button>
-      <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" hidden></label></div></div>
+      <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
   </div>
 </section>
@@ -4890,7 +4893,7 @@ const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
 const KINDS=["物理","化學","生物","地球科學","數學","生活與應用科學"];
 const FIELDS=["yr","cls","nm","title","subtitle","motive","goal","tools","proc","result","refs"];
-let S={kinds:[],procPics:[],resPics:[]};FIELDS.forEach(k=>S[k]="");
+let S={kinds:[],procPics:[],resPics:[],motivePics:[],goalPics:[],toolsPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
 /* 作品名稱跟網站最上面的大標題連動（同一台電腦、全隊共用） */
@@ -4913,7 +4916,7 @@ function showPics(k){const box=document.querySelector(`.pics[data-k="${k}"]`);bo
 document.querySelectorAll('input[type=file][data-k]').forEach(inp=>inp.addEventListener("change",async e=>{const k=inp.dataset.k;
   for(const f of e.target.files){try{S[k].push({src:await shrink(f),cap:""})}catch(err){}}
   if(!save()){$("expMsg").textContent="照片太多，瀏覽器存不下了；這些照片只會留到關掉頁面前，記得先匯出 Word。"}inp.value="";showPics(k)}));
-showPics("procPics");showPics("resPics");
+["motivePics","goalPics","toolsPics","procPics","resPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
 
 /* 從學習單（一）～（三）帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
@@ -4973,9 +4976,9 @@ btn.addEventListener("click",async()=>{
       row("年級",null,[para(`${S.yr||"　"} 年 ${S.cls||"　"} 班　　姓名：${S.nm||""}`)]),
       row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
       row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
-      row("研究動機","（描述為何想研究的起因）",lines(S.motive),1800),
-      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",lines(S.goal),1800),
-      row("使用器材","（此實驗所需的器材）",lines(S.tools),1400),
+      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
+      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
+      row("使用器材","（此實驗所需的器材）",[...lines(S.tools),...await pics(S.toolsPics)],1400),
       row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...lines(S.proc),...await pics(S.procPics)],2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...lines(S.result),...await pics(S.resPics)],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
