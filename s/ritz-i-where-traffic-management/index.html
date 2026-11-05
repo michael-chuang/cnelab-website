@@ -2291,8 +2291,7 @@ const kid=new THREE.Group();scene.add(kid);
 const poloM=M(0xa7abaf,{roughness:0.8}),redM=M(0xb3262e,{roughness:0.7}),navyM=M(0x1d2a4a,{roughness:0.8});
 for(const s of [-1,1]){part(new THREE.CylinderGeometry(6.4,6.8,20,16),navyM,s*6.2,52,0,kid);part(new THREE.BoxGeometry(1,19,1.2),M(0x9aa1a8),s*12.6,52,0,kid);  // 短褲＋側邊灰線
   limb([s*6,44,0],[s*6,10,0],4.2,skin,kid);part(new THREE.CylinderGeometry(4.5,4.4,9,14),blackM,s*6,9,0,kid);   // 黑襪
-  part(new THREE.BoxGeometry(9,5.4,11),blackM,s*6,3.6,0,kid);part(new THREE.SphereGeometry(4.6,16,12,0,Math.PI*2,0,Math.PI/2),blackM,s*6,1.2,-5.2,kid).scale.set(0.98,1.15,1.25);
-  part(new THREE.BoxGeometry(9.4,1.3,16.5),M(0x2b2d31,{roughness:0.9}),s*6,0.65,-2.6,kid)}  // 黑色運動鞋（鞋身＋鞋頭＋深灰薄鞋底）
+  part(new THREE.SphereGeometry(5.6,20,14),blackM,s*6,3.2,-2.5,kid).scale.set(0.95,0.6,1.5)}  // 黑色運動鞋（圓圓的）
 part(new THREE.CylinderGeometry(12,13.5,36,24),poloM,0,79,0,kid);part(new THREE.SphereGeometry(12,24,12,0,Math.PI*2,0,Math.PI/2),poloM,0,96.5,0,kid).scale.set(1,0.42,1);   // 灰色 polo（圓肩）
 part(new THREE.TorusGeometry(5.2,1.6,10,24),redM,0,97.8,0,kid).rotation.x=Math.PI/2;                            // 紅領子
 part(new THREE.BoxGeometry(3,7,0.8),poloM,0,92,-12.2,kid);for(const y of [94,91])part(new THREE.SphereGeometry(0.6,8,6),whiteM,0,y,-12.6,kid);
@@ -4070,8 +4069,7 @@ grp=onlyB;
  const poloM=M(0xa7abaf,{roughness:0.8}),redM=M(0xb3262e,{roughness:0.7}),navyM=M(0x1d2a4a,{roughness:0.8}),blackM=M(0x1c1c1e,{roughness:0.4});
  for(const s of [-1,1]){bp(new THREE.CylinderGeometry(6.4,6.8,20,16),navyM,s*6.2,52,0);bp(new THREE.BoxGeometry(1,19,1.2),M(0x9aa1a8),s*12.6,52,0);   // 短褲＋側邊灰線
    bl([s*6,44,0],[s*6,10,0],4.2,skin);bp(new THREE.CylinderGeometry(4.5,4.4,9,14),blackM,s*6,9,0);                                         // 黑襪
-   bp(new THREE.BoxGeometry(9,5.4,11),blackM,s*6,3.6,0);bp(new THREE.SphereGeometry(4.6,16,12,0,Math.PI*2,0,Math.PI/2),blackM,s*6,1.2,-5.2,0.98,1.15,1.25);   // 黑色運動鞋（鞋身＋圓圓的鞋頭）
-   bp(new THREE.BoxGeometry(9.4,1.3,16.5),M(0x2b2d31,{roughness:0.9}),s*6,0.65,-2.6)
+   bp(new THREE.SphereGeometry(5.6,20,14),blackM,s*6,3.2,-2.5,0.95,0.6,1.5)   // 黑色運動鞋（和女生的鞋子一樣圓圓的）
    bp(new THREE.SphereGeometry(5,16,12),redM,s*12,93,0);                                                    // 紅色肩膀
    bl([s*13,92,0],[s*14.4,84,0],4.3,redM);bl([s*14.4,84,0],[s*15,63,-0.5],2.9,skin);bp(new THREE.SphereGeometry(3.6,14,10),skin,s*15.1,60.2,-0.6)}   // 雙手垂下，有拳頭
  bp(new THREE.CylinderGeometry(12,13.5,36,24),poloM,0,79,0);bp(new THREE.SphereGeometry(12,24,12,0,Math.PI*2,0,Math.PI/2),poloM,0,96.5,0,1,0.42,1);   // 灰色 polo（圓肩）
