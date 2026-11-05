@@ -4769,6 +4769,8 @@ svg text{font-family:var(--body)}
 .dates ul{margin:0;padding-left:1.1em;display:grid;gap:8px}
 .dates li span{display:block;font-size:14px;color:var(--muted,#5a646b)}
 .dates li em{font-style:normal;display:inline-block;margin-top:2px;font-size:13px;font-weight:700;color:#b45309}
+
+.imp{margin-top:6px;font-size:13px;padding:4px 12px}
 </style>
 
 <div class="wrap">
@@ -4795,10 +4797,10 @@ svg text{font-family:var(--body)}
     <div class="frow"><div class="fh">作品名稱</div><div class="fc" style="display:grid;gap:6px"><input type="text" id="title" class="wide" aria-label="作品名稱（主標題）"><div style="display:flex;align-items:center;gap:6px"><span aria-hidden="true">——</span><input type="text" id="subtitle" class="wide" aria-label="作品名稱（副標題）" style="flex:1"></div></div></div>
     <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea></div></div>
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea></div></div>
-    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea></div></div>
-    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><textarea id="proc" rows="12" aria-label="研究過程"></textarea>
+    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button></div></div>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><textarea id="proc" rows="12" aria-label="研究過程"></textarea><button type="button" class="imp" data-imp="proc">📥 從學習單帶入步驟和紀錄</button>
       <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" hidden></label></div></div>
-    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea>
+    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button>
       <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" hidden></label></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
   </div>
@@ -4815,6 +4817,7 @@ svg text{font-family:var(--body)}
 
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
+const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）", "藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）", "遮光眼罩、隔音耳機（耳罩式）"], "st": ["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"]}, "2": {"eq": ["彩色串珠一大盒（拆散）、手機或相機（拍照）", "手機安裝 Phyphox，用「Audio Spectrum」", "電腦或平板（播 YouTube）、喇叭", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。", "依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？", "最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。"]}, "3": {"eq": ["電腦或平板（用這個網頁做動畫和模擬）", "小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭", "陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」", "量角器或角度墊、捲尺", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。", "電腦打開「頻率雷達」，先照說明校正（喇叭放 0°、再放 90°）。", "點雷達中間的 1～4 號，選這一輪要用的麥克風（看右邊）。", "把綁著藍牙喇叭的救護車放在某一條路上，用量角器量「真實角度」（北路 0°、東路 90°、南路 180°、西路 270° 附近）。", "播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。"]}};
 /* ================= 作品說明（初審）：資料、照片、匯出 Word（照附件 2 的表格） ================= */
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
@@ -4844,6 +4847,40 @@ document.querySelectorAll('input[type=file][data-k]').forEach(inp=>inp.addEventL
   for(const f of e.target.files){try{S[k].push({src:await shrink(f),cap:""})}catch(err){}}
   if(!save()){$("expMsg").textContent="照片太多，瀏覽器存不下了；這些照片只會留到關掉頁面前，記得先匯出 Word。"}inp.value="";showPics(k)}));
 showPics("procPics");showPics("resPics");
+
+/* 從學習單（一）～（三）帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
+(()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
+  const ls=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+  const items=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
+  const W=()=>{const a=rd("ws1-occlusion-v2"),b=rd("ws2-fourier-v1"),c=rd("ws3-doa-v1");
+    return [{n:"一",tag:"Why",q:ls("wwt-fw-h1q")||"為什麼光靠駕駛的耳朵不夠？",S:a,d:WSDEF[1]},{n:"二",tag:"What",q:ls("wwt-fw-h2q")||"警笛聲「長」什麼樣？",S:b,d:WSDEF[2]},{n:"三",tag:"Where",q:ls("wwt-fw-h3q")||"警笛聲從哪裡來？",S:c,d:WSDEF[3]}]};
+  const avg=xs=>{xs=xs.map(Number).filter(x=>x!==null&&!isNaN(x)&&x!=="");return xs.length?xs.reduce((p,q)=>p+q,0)/xs.length:null},r1=x=>Math.round(x*10)/10;
+  function rec(w){const S=w.S,L=[];
+    if(w.n==="一"){const t=(S.t2||[]).filter(r=>r.a!==""||r.b!=="");if(t.length){const A=avg(t.map(r=>r.a).filter(x=>x!=="")),B=avg(t.map(r=>r.b).filter(x=>x!==""));
+        t.forEach(r=>L.push(`・${r.name}：沒有遮住時平均差 ${r.a||"—"}°，戴耳機時平均差 ${r.b||"—"}°`));
+        if(A!==null&&B!==null)L.push(`・全組 ${t.length} 位平均：沒有遮住 ${r1(A)}°，戴耳機 ${r1(B)}°，多了 ${r1(B-A)}°`)}
+      if(S.q2)L.push(`・戴耳機時，播音員站在${S.q2}最容易指錯`);if(S.q3)L.push(`・圖 1-1 中，${S.q3}的點離 0° 比較遠`)}
+    if(w.n==="二"){(S.t23||[]).filter(r=>r.v).forEach(r=>L.push(`・${r.v}：波形${r.reg||"＿"}，頻譜${r.peak==="很明顯"?`有很明顯的山峰，主要頻率 ${r.hz||"＿"} Hz`:r.peak==="不明顯"?"沒有明顯的山峰":"＿"}`));
+      (S.t24||[]).filter(r=>r.s&&(r.hz||r.lo||r.hi||r.form)).forEach(r=>L.push(`・${r.s}：主要頻率 ${r.hz||"＿"} Hz，範圍 ${r.lo||"＿"}～${r.hi||"＿"} Hz${r.form?"，"+r.form:""}`));
+      (S.t25||[]).filter(r=>r.lr||r.lt).forEach(r=>L.push(`・法規：${r.c} ${r.lr||""} Hz${r.lt?"，"+r.lt:""}`))}
+    if(w.n==="三"){(S.t31||[]).filter(r=>r.first||r.big).forEach(r=>L.push(`・喇叭在${r.p}：${r.first||"＿"}先聽到，時間差${r.big||"＿"}`));
+      for(const n of [1,2,3,4]){const R=((S.exp||{})[n]||[]);let done=0,ok=0;const er=[];
+        R.forEach(r=>{const tr=r.tr===""?null:+r.tr,ra=r.nodir||r.ra===""?null:+r.ra;if(r.road&&(ra!==null||r.nodir)){done++;if(ra!==null&&"北東南西"[Math.round((((ra%360)+360)%360)/90)%4]===r.road)ok++}
+          if(tr!==null&&ra!==null){const d=Math.abs(((tr-ra)%360+360)%360);er.push(Math.min(d,360-d))}});
+        if(done)L.push(`・${n} 支麥克風：選對 ${ok}／${done} 次（${Math.round(ok/done*100)}%）${er.length?`，平均角度差 ${r1(avg(er))}°`:""}`)}}
+    return L}
+  const MAKE={
+    tools(){const seen=new Set(),out=[];W().forEach(w=>items(w.S.equipHTML,w.d.eq).forEach(x=>{if(!seen.has(x)){seen.add(x);out.push(x)}}));return out.map(x=>"・"+x).join("\n")},
+    proc(){return W().map(w=>{const st=items(w.S.stepsHTML,w.d.st),R=rec(w);
+      return `實驗${w.n}（${w.tag}）：${w.q}\n步驟：\n${st.map((x,i)=>`${i+1}. ${x}`).join("\n")}\n紀錄：\n${R.length?R.join("\n"):"（還沒有紀錄）"}`}).join("\n\n")},
+    result(){return W().map(w=>{const S=w.S;let c="";
+      if(w.n==="一")c=S.concl||"";if(w.n==="二")c=S.cWhat||"";
+      if(w.n==="三")c=[S.c1&&"兩隻耳朵（或兩支麥克風）靠"+S.c1+"知道聲音從哪一邊來。",S.c3a&&`麥克風越多，正確率越${S.c3a}，角度差越${S.c3b||"＿"}。`,S.c4,S.c5].filter(Boolean).join("\n");
+      return `實驗${w.n}（${w.tag}）：${w.q}\n${c||"（還沒寫結論）"}`}).join("\n\n")}};
+  document.querySelectorAll("[data-imp]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.imp,e=$(k),v=MAKE[k]();
+    if(e.value.trim()&&e.value.trim()!==v.trim()&&!confirm("這一格已經寫了東西。\n按「確定」：換成學習單的內容（原本寫的會被蓋掉）\n按「取消」：不改"))return;
+    e.value=v;S[k]=v;save();e.dispatchEvent(new Event("input"))}));
+})();
 
 /* ================= 匯出 Word ================= */
 (()=>{const btn=$("export"),msg=$("expMsg");
