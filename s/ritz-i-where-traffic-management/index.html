@@ -1862,7 +1862,7 @@ async function pull(){if(!kid||!url())return;
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
     if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
 function reloadSoon(){const a=document.activeElement;
-  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
   else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
 const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
 setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
@@ -2567,7 +2567,7 @@ async function pull(){if(!kid||!url())return;
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
     if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
 function reloadSoon(){const a=document.activeElement;
-  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
   else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
 const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
 setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
@@ -3564,7 +3564,7 @@ async function pull(){if(!kid||!url())return;
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
     if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
 function reloadSoon(){const a=document.activeElement;
-  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
   else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
 const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
 setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
@@ -4550,7 +4550,7 @@ async function pull(){if(!kid||!url())return;
     for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
     if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
 function reloadSoon(){const a=document.activeElement;
-  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
   else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
 const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
 setInterval(()=>{if(shown()&&!dirty.size)pull()},30000);
