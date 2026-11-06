@@ -1264,7 +1264,7 @@ function dashboard(){
   let msg="聲音羅盤：沒有聽到警笛", mc="#b9c6d8";
   if(!compassOn){msg="聲音羅盤已關閉";mc="#8a949b"}
   else if(run){ if(run.gm&&!run.guess){msg="警笛！先用耳朵猜";mc="#ff8a8a"}
-    else if(!run.detected){msg="🔊 聽到警笛聲…聲音羅盤偵測方向中";mc="#ffd23b"}
+    else if(!run.detected){msg="🔊 好像有聽到警笛聲…但聲音到底從哪來？";mc="#ffd23b"}
     else{const a=bearing(run.v.x-camX,run.v.z),d=Math.hypot(run.v.x-camX,run.v.z);msg=`🚨 ${KN[run.kind]}警笛・${word(a)}・約 ${Math.round(d)} 公尺　${run.v.front?(run.v.z>0?"迎面而來":"已經過去"):(run.v.z<0?"從後面靠近":"超過我們了")}`;mc="#ff8a80"}}
   else if(hornMark&&hornMark.t<2.5){msg=`📣 喇叭・${hornMark.o.label}・${word(bearing(hornMark.o.x-camX,hornMark.o.z))}`;mc="#ffd166"}
   g.fillStyle=mc; g.fillText(msg,sx+20,sy+sh-20,sw-40);
@@ -1285,7 +1285,7 @@ function hud(){ if(!run) return; let t=null, c="#ffd23b";
   if(run.gm&&!run.guess) t="聽到警笛…在前面還是後面？";
   else if(run.endT!==null){t=`${KN[run.kind]}已通過・恢復車道`;c="#7be3a5"}
   else if(run.yieldMsg) t=`自動讓道中・減速到 ${Math.round(egoV*3.6)} km/h`;
-  else if(!run.detected) t="聽到警笛聲…偵測方向中";
+  else if(!run.detected) t="好像有聽到警笛聲…但聲音到底從哪來？";
   else if(run.detected){t=`偵測到${KN[run.kind]}警笛・${word(bearing(run.v.x-camX,run.v.z))}`;c="#ff8a8a"}
   if(!t) return; g.font="bold 18px "+css("--body"); const w=g.measureText(t).width+36, x=W/2-w/2, y=MY+MH+26;
   g.fillStyle="rgba(15,20,25,.72)"; rr(x,y,w,34,10); g.fill(); g.strokeStyle=c; g.lineWidth=2; g.stroke();
