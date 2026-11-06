@@ -95,7 +95,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -146,7 +147,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -181,7 +183,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -251,7 +253,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>

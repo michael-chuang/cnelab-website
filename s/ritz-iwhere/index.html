@@ -210,7 +210,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -257,7 +258,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
 <script>
 /* 網站上可以直接改的字（data-sync="鍵"）：同一個鍵的地方一起變；和「科展作品說明」連動；全隊共用，存到雲端（kid=_team） */
 (()=>{const URL_="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec",TOKEN="ritz",KID="_team",KEY="ws0-title",TS="wwt-team#ts2";   // 換新的時間戳記：每台電腦重新以雲端為準
-const url=()=>{try{return localStorage.getItem("wwt-sync-url")||URL_}catch(e){return URL_}};
+const url=()=>{try{if(localStorage.getItem("wwt-test")==="1")return "";return localStorage.getItem("wwt-sync-url")||URL_}catch(e){return URL_}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}};
 const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const DEF={},ML={};let EL=[],tm=null;
@@ -284,11 +285,11 @@ function onRemote(k,ts){
   if(RAW.includes(k)){const lt=+get(k+"@_team#ts","0");
     if(ts>lt+1000)fb.load(k).then(r=>{if(!r||r.ts<=+get(k+"@_team#ts","0"))return;set(k+"@_team",r.data);set(k+"@_team#ts",String(r.ts));window.__onRaw&&window.__onRaw(k)}).catch(()=>{});
     else if(lt>ts+1000)window.__rawSync(k)}}
-async function gas(beacon,backup){
+async function gas(beacon,backup){if(!url())return;
   const body=JSON.stringify({token:TOKEN,op:"save",kid:KID,key:KEY,ts:+get(TS,"0")||Date.now(),data:JSON.stringify({v:payload()})});
   if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url(),body);return}
   try{const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw 0}catch(e){if(!backup)tm=setTimeout(push,15000)}}
-async function pull(){try{const r=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+KID+"&key="+KEY)).json();if(r.ok)apply(r)}catch(e){}}
+async function pull(){if(!url())return;try{const r=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+KID+"&key="+KEY)).json();if(r.ok)apply(r)}catch(e){}}
 function init(){EL=[...document.querySelectorAll("[data-sync]")];
   EL.forEach(e=>{const k=e.dataset.sync;if(!(k in DEF)){DEF[k]=e.textContent;ML[k]=e.hasAttribute("data-ml")}});
   const OLD={"wwt-fw-h1":"假設一：關窗隔音確實讓人聽不準、反應慢（實驗室駕駛艙數據）。","wwt-fw-h1q":"在車內判斷警笛聲來源的誤差有多大？"};   // 舊版預設字 → 換成新版預設
@@ -2171,7 +2172,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -2222,7 +2224,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -2257,7 +2260,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -2327,7 +2330,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -3250,7 +3253,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -3301,7 +3305,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -3336,7 +3341,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -3406,7 +3411,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -4714,7 +4719,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -4765,7 +4771,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -4800,7 +4807,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -4870,7 +4877,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -6464,7 +6471,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -6515,7 +6523,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -6550,7 +6559,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -6620,7 +6629,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -6950,7 +6959,8 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;
+    try{if(W.localStorage.getItem("wwt-test")==="1")throw new Error("測試模式：不連雲端")}catch(e){if(/測試/.test(e.message))throw e}   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -7001,7 +7011,8 @@ const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.lo
 const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
 const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
 try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TESTM=g("wwt-test")==="1";   // 老師測試模式：只存在這台電腦，不上傳
+const url=()=>TESTM?"":(SYNC_URL||g("wwt-sync-url")||"");
 const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
 let kid=TEAM?"_team":(g("wwt-kid")||"");
 if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
@@ -7036,7 +7047,7 @@ try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
 async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
@@ -7106,7 +7117,7 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+    show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
     <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
@@ -7557,6 +7568,98 @@ document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()
   window.dispatchEvent(new Event("resize"));
 }));
 </script>
+<!-- TESTDATA START -->
+<script>
+/* TESTDATA：老師測試用。按一下填入「模擬資料＋模擬照片」，測試科展作品說明能不能把三張學習單、情境截圖、討論紀錄都合併進 Word。
+   測試模式時不會連雲端（不會蓋掉全隊真的資料）；按「清掉模擬資料」就把這台電腦原本的資料放回來，再重新連雲端。 */
+(()=>{const LS=localStorage,TEST="wwt-test",BK="wwt-test-backup";
+const isTest=()=>{try{return LS.getItem(TEST)==="1"}catch(e){return false}};
+const mine=k=>/^ws\d/.test(k)||k==="wwt-hear";   // 學習單的資料（含 #ts）
+const keys=()=>{const L=[];for(let i=0;i<LS.length;i++){const k=LS.key(i);if(mine(k))L.push(k)}return L};
+/* 模擬照片：彩色背景＋大字，看得出是哪一張 */
+function photo(label,hue,w=960,h=720,icon="📷"){const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  const gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,`hsl(${hue},70%,78%)`);gr.addColorStop(1,`hsl(${(hue+40)%360},65%,58%)`);g.fillStyle=gr;g.fillRect(0,0,w,h);
+  g.fillStyle="rgba(255,255,255,.18)";for(let i=0;i<12;i++){g.beginPath();g.arc((i*173)%w,(i*97)%h,40+i*9,0,7);g.fill()}
+  g.textAlign="center";g.textBaseline="middle";g.font=`${Math.round(h*0.22)}px sans-serif`;g.fillText(icon,w/2,h*0.38);
+  g.fillStyle="#10202c";g.font=`900 ${Math.round(h*0.075)}px 'Noto Sans TC','PingFang TC',sans-serif`;g.fillText(label,w/2,h*0.68);
+  g.font=`700 ${Math.round(h*0.045)}px 'Noto Sans TC','PingFang TC',sans-serif`;g.fillStyle="rgba(16,32,44,.7)";g.fillText("🧪 測試用的模擬照片",w/2,h*0.8);
+  return c.toDataURL("image/jpeg",0.8)}
+/* 圖 1-1 的模擬圖：半圓量角器＋點 */
+function prot(a,b){const w=600,h=340,c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,w,h);
+  const cx=300,cy=300,R=250;g.strokeStyle="#334";g.lineWidth=3;g.beginPath();g.arc(cx,cy,R,Math.PI,0);g.lineTo(cx-R,cy);g.stroke();
+  g.font="16px sans-serif";g.fillStyle="#556";for(let d=0;d<=180;d+=30){const t=Math.PI-d*Math.PI/180;g.fillText(d+"°",cx+Math.cos(t)*(R+18)-12,cy-Math.sin(t)*(R+18))}
+  const dot=(d,col)=>{const t=Math.PI-Math.min(180,d)*Math.PI/180;g.fillStyle=col;g.beginPath();g.arc(cx+Math.cos(t)*R*0.8,cy-Math.sin(t)*R*0.8,9,0,7);g.fill()};
+  a.forEach(d=>dot(d,"#3557b7"));b.forEach(d=>dot(d,"#c62d2d"));g.fillStyle="#10202c";g.font="bold 18px sans-serif";g.fillText("🧪 模擬：藍＝未遮蔽、紅＝戴耳機",20,26);return c.toDataURL("image/png")}
+const rid=()=>Math.random().toString(36).slice(2,9);
+function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.stringify(o));LS.setItem(k+"@_team#ts",String(T))};
+  const eq=(L,h)=>L.map((name,i)=>({name,src:i<2?photo(name,h+i*25,640,480,"🧰"):""}));
+  /* 學習單（一） */
+  const subj=(name,ra,pa,rb,pb)=>{const t1={a:ra.map((r,i)=>({r:String(r),p:String(pa[i])})),b:rb.map((r,i)=>({r:String(r),p:String(pb[i])}))};
+    const d=(r,p)=>{let x=Math.abs(r-p);return x>180?360-x:x},A=ra.map((r,i)=>d(r,pa[i])),B=rb.map((r,i)=>d(r,pb[i])),av=L=>(L.reduce((s,x)=>s+x,0)/L.length).toFixed(1);
+    return {name,a:av(A),b:av(B),t1,pl:{a:A,b:B},img:prot(A,B),cap:name+" 的圖 1-1（模擬）"}};
+  put("ws1-occlusion-v2",{date:"2026-11-10",rec:"小華",ann2:"小美",who:"",t1:{a:[...Array(5)].map(()=>({r:"",p:""})),b:[...Array(5)].map(()=>({r:"",p:""}))},pl:null,
+    t2:[subj("小明",[0,90,180,270,45],[5,80,170,285,50],[0,90,180,270,45],[20,60,140,300,80]),subj("小美",[30,120,210,300,0],[35,115,200,310,10],[30,120,210,300,0],[60,90,250,330,40]),subj("小華",[60,150,240,330,90],[55,160,250,320,95],[60,150,240,330,90],[95,120,200,290,130])],
+    hyp:"戴上耳機以後，指的方向會差比較多。",q2:"在正後方的時候最容易指錯。",q3:"右邊的點離 0° 比較遠。",concl:"關上車窗（戴耳機）時，聽警笛判斷方向的誤差變大，所以駕駛需要別的幫忙。",
+    eq:eq(["大型量角器（放在地上）","童軍繩 2 條","手機（播警笛）","分貝計 app","遮光眼罩","隔音耳機"],200),
+    gal:{m:{src:photo("學習單一 3D 模擬截圖",210,960,540,"🧑‍🦯"),cap:"3D 模擬：蒙眼聽聲音指方向"},p:[0,1,2].map(i=>({src:photo("學習單一 實驗照片 "+(i+1),20+i*40,960,720,"📸"),cap:["受試者蒙眼站在量角器圓心","播音員在 2 公尺外播警笛","記錄員讀角度"][i]}))}});
+  /* 學習單（二） */
+  const t23=[{id:rid(),v:"說「啊——」",reg:"規律",peak:"很明顯",hz:"220"},{id:rid(),v:"吹口哨",reg:"規律",peak:"很明顯",hz:"1500"},{id:rid(),v:"拍手",reg:"不規律",peak:"不明顯",hz:""}];
+  const t24=[{id:rid(),s:"救護車",url:"https://www.youtube.com/（模擬）",hz:"750",lo:"650",hi:"1000",form:"高、低兩個音輪流"},{id:rid(),s:"消防車",url:"https://www.youtube.com/（模擬）",hz:"900",lo:"500",hi:"1300",form:"慢慢升高再降低"},{id:rid(),s:"警車",url:"https://www.youtube.com/（模擬）",hz:"1000",lo:"600",hi:"1500",form:"很快地升降"}];
+  put("ws2-fourier-v1",{date:"2026-11-12",names:"小明、小美、小華",hyp:"警笛聲的頻率會一直變。",n1:"物體振動",n2:"空氣",n3:"振動的快慢（頻率）",n4:"振動的大小（振幅）",
+    t23,qp1:"發出穩定的聲音，波形就會規律。",qp2:"唱高音時山峰在右邊（頻率高）。",t24,sirens:"",
+    t25:[{c:"救護車",lr:"650～1000",lt:"高低音每 0.5 秒輪流一次"},{c:"消防車",lr:"500～1300",lt:"每 4 秒慢慢升降一次"},{c:"警車",lr:"600～1500",lt:"每 1 秒快速升降"}],
+    cWhat:"三種警笛的頻率都在 500～1500 Hz，而且會一直變；電腦可以從頻率的變化分出是哪一種車。",
+    hear:{rows:[{n:"大象 Elephant",lo:"16",hi:"12000"},{n:"狗 Dog",lo:"67",hi:"45000"},{n:"貓 Cat",lo:"45",hi:"64000"},{n:"老鼠 Mouse",lo:"1000",hi:"91000"},{n:"海豚 Dolphin",lo:"150",hi:"150000"},{n:"蝙蝠 Bat",lo:"2000",hi:"110000"}],src:"（模擬）網路資料"}});
+  const I2={eq:eq(["手機（Phyphox）","彩虹彈簧","喇叭","串珠"],120),gal:{m:{src:"",cap:""},p:[0,1,2].map(i=>({src:photo("學習單二 實驗照片 "+(i+1),160+i*30,960,720,"🔊"),cap:"用 Phyphox 錄警笛聲（模擬）"})),
+    ms:{"喇叭推空氣":{src:photo("喇叭推空氣＋波形",230,960,600,"🔈"),cap:"喇叭前後振動，空氣一疏一密"},"彩虹彈簧：變出彈簧前":{src:photo("變出彈簧前",280,960,600,"〰️"),cap:"只有波形"},
+      "彩虹彈簧：變出彈簧後（側面）":{src:photo("變出彈簧後（側面）",300,960,600,"🌈"),cap:"波形和彈簧一起轉"},"彩虹彈簧：正面看（圓）":{src:photo("正面看（圓）",320,960,600,"⭕"),cap:"正面看是一個圓"}}}};
+  t23.forEach((r,i)=>{I2["t23w_"+r.id]=photo(r.v+" 的波形",60+i*30,960,480,"〰️");I2["t23s_"+r.id]=photo(r.v+" 的頻譜",90+i*30,960,480,"📊")});
+  t24.forEach((r,i)=>{I2["t24w_"+r.id]=photo(r.s+" 的波形",i*40,960,480,"〰️");I2["t24s_"+r.id]=photo(r.s+" 的頻譜",20+i*40,960,480,"📊")});
+  put("ws2-fourier-v1-img",I2);
+  /* 學習單（三） */
+  const exp={};for(const n of [1,2,3,4])exp[n]=["北","北","東","東","南","南","西","西"].map((road,i)=>{const tr=({北:0,東:90,南:180,西:270}[road]+(i%2?8:-6)+360)%360;const err=[60,35,15,8][n-1];
+    return n===1?{road,tr:String(tr),ra:"",nodir:true}:{road,tr:String(tr),ra:String((tr+(i%2?err:-err)+360)%360),nodir:false}});
+  put("ws3-doa-v1",{date:"2026-11-14",names:"小明、小美、小華",p1:"指的方向變得比較不準。",p2:"兩隻耳朵聽到的時間不一樣。",p3:"4 支",p4:"四個方向都要聽得到。",
+    t31:[{p:"正前方（0°）",first:"同時",ms:"0",big:""},{p:"正右方（90°）",first:"右耳",ms:"0.59",big:""},{p:"正後方（180°）",first:"同時",ms:"0",big:""},{p:"正左方（270°）",first:"左耳",ms:"0.59",big:""}],
+    t32:[{ms:0.10,cm:"3.4",deg:"10"},{ms:0.29,cm:"9.9",deg:"30"},{ms:0.50,cm:"17",deg:"58"}],
+    setup:{road:{北:"0",東:"90",南:"180",西:"270"},mic:{1:"45",2:"135",3:"225",4:"315"},use:{1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"}},exp,
+    c1:"靠聲音到兩隻耳朵（兩支麥克風）的時間差。",c2:"把多走的路畫在半圓上，用量角器量角度。",c3a:"高",c3b:"小",c4:"對，至少要 3 支，平均擺在四周。",c5:"智慧路口要裝 4 支麥克風的陣列，才能準確知道救護車從哪條路來。",
+    eq:eq(["ReSpeaker 陣列式麥克風","筆電（頻率雷達）","手機（播警笛）","救護車玩具","紙箱房子","紙膠帶道路"],40),
+    gal:{m:{src:photo("小模型路口 3D 截圖",190,960,540,"🚦"),cap:"小模型路口的 3D 模型"},p:[0,1,2].map(i=>({src:photo("學習單三 實驗照片 "+(i+1),330+i*10,960,720,"🎤"),cap:["擺好小模型路口","手機放在救護車玩具後方播警笛","看頻率雷達指的方向"][i]}))},
+    gal1:{m:{src:"",cap:""},p:[],ms:{"學習單三_兩隻耳朵":{src:photo("女孩聽音樂：右耳先聽到",100,960,540,"👧"),cap:"喇叭在 60°，右耳先聽到，左耳晚了 0.50 毫秒"}}},
+    fig31:photo("圖 3-1 兩隻耳朵收到的聲音",210,960,300,"〰️"),
+    gal2:{m:{src:"",cap:""},p:[],ms:{"學習單三_找角度：聲音從正前方來（0°）":{src:photo("聲音從正前方來（0°）",140,960,960,"⬆️"),cap:"時間差 0，多走的路 0"},
+      "學習單三_找角度：聲音從右邊 45° 來":{src:photo("聲音從右邊 45° 來",160,960,960,"↗️"),cap:"多走的路約 14 公分"},"學習單三_找角度：聲音從右邊 90° 來":{src:photo("聲音從右邊 90° 來",180,960,960,"➡️"),cap:"多走的路 20 公分"}}}});
+  /* 情境1、情境2 的說明用截圖 */
+  const sh=(t,h,ic)=>({src:photo(t,h,1280,720,ic),cap:"（模擬）"+t});
+  put("ws5-shots",{slots:{tab1:{jam:sh("緊急車輛塞在車陣中",0,"🚑"),green:sh("救護車這邊綠燈、其他紅燈",120,"🚦"),pass:sh("救護車順利通過路口",150,"🏁")},
+    tab2:{hear:sh("聽得到警笛卻不知道在哪",30,"👂"),screen:sh("車用螢幕顯示警笛方向",220,"🧭"),yield:sh("汽車自動閃避讓道",260,"↪️")}}});
+  /* 討論過程紀錄 */
+  put("ws6-talk-v1",{L:[{src:photo("第 1 次討論：決定題目",45,960,720,"💬"),date:"2026-10-20",cap:"看到救護車被擋的新聞，決定研究怎麼讓車子知道警笛從哪裡來。"},
+    {src:photo("第 2 次討論：設計遮蔽實驗",75,960,720,"📝"),date:"2026-10-27",cap:"討論用耳機模擬關窗，用量角器量指錯幾度。"},
+    {src:"",date:"2026-11-03",cap:"討論 ReSpeaker 要放幾支麥克風、要怎麼擺。（這一次沒有照片）"}]});
+  /* 科展作品說明 */
+  put("ws4-entry-v1",{mems:[{yr:"五",cls:"1",nm:"王小明（測試）"},{yr:"五",cls:"2",nm:"李小美（測試）"},{yr:"五",cls:"3",nm:"陳小華（測試）"}],kinds:["物理","生活與應用科學"],
+    motivePics:[{src:photo("研究動機：自己拍的照片",350,960,720,"🚑"),cap:"放學時看到救護車被車子擋住（模擬）"}],goalPics:[],procPics:[],resPics:[],toolsPics:[],
+    refs:"1. 教育部（模擬）：聲音的傳播。\n2. 交通部（模擬）：緊急救護車輛警報器規格。"})}
+async function ready(){if(window.__BIG&&window.__BIG.ready)await window.__BIG.ready}
+async function enter(){if(!confirm("要填入模擬資料嗎？\n\n・這台電腦原本的學習單資料會先備份起來。\n・測試的時候不會連雲端，不會蓋掉全隊真的資料。\n・測完按「清掉模擬資料」就會放回原本的資料。"))return;
+  await ready();const bk={};for(const k of keys())bk[k]=LS.getItem(k);LS.setItem(BK,JSON.stringify(bk));LS.setItem(TEST,"1");
+  for(const k of keys())LS.removeItem(k);mock();setTimeout(()=>location.reload(),600)}
+async function leave(){if(!confirm("要清掉模擬資料，放回這台電腦原本的資料嗎？"))return;
+  await ready();let bk={};try{bk=JSON.parse(LS.getItem(BK)||"{}")||{}}catch(e){}
+  for(const k of keys())LS.removeItem(k);for(const k in bk)if(bk[k]!=null)LS.setItem(k,bk[k]);LS.removeItem(BK);LS.removeItem(TEST);setTimeout(()=>location.reload(),600)}
+window.__testMode=isTest;
+function ui(){const b=document.createElement("div");
+  if(isTest()){b.setAttribute("role","status");b.style.cssText="position:fixed;left:0;right:0;top:0;z-index:9999;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 12px;background:#fff3cd;color:#5c4400;border-bottom:2px solid #e0c060;font:600 15px system-ui,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.15)";
+    b.innerHTML='🧪 測試模式：現在是模擬資料，不會上傳到雲端。<button type="button" style="font:inherit;padding:5px 14px;border-radius:999px;border:2px solid #c0392b;background:#fff;color:#c0392b;cursor:pointer">🧹 清掉模擬資料，回到真的資料</button>';
+    b.querySelector("button").addEventListener("click",leave);document.body.appendChild(b);document.body.style.paddingTop=(b.offsetHeight+4)+"px"}
+  else{b.style.cssText="text-align:center;margin:40px 0 24px;font:13px system-ui,sans-serif;color:#889";
+    b.innerHTML='<button type="button" style="font:inherit;padding:4px 12px;border-radius:999px;border:1px dashed #aab;background:transparent;color:#778;cursor:pointer">🧪 老師測試用：填入模擬資料</button>';
+    b.querySelector("button").addEventListener("click",enter);document.body.appendChild(b)}}
+if(document.body)ui();else addEventListener("DOMContentLoaded",ui)})();
+</script>
+<!-- TESTDATA END -->
 
 </body>
 </html>
