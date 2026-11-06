@@ -2904,7 +2904,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
-    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
+    if(!window.__L){body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
     body.push(...await wordGal(S.gal));
     if(window.__L)body.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
@@ -4240,7 +4240,7 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（二）What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
+    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
       if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
     B.push(...await wordGal(IMG.gal,"模型截圖"));
     if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
@@ -5868,7 +5868,7 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（三）Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P(localStorage.getItem("wwt-fw-h3q")||"警笛聲從哪裡來？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
+    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
@@ -6386,7 +6386,7 @@ async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(loca
   const WS=[["一","Why","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？",rd("ws1-occlusion-v2"),null,WSDEF[1]],["二","What","wwt-fw-h2q","警笛聲「長」什麼樣？",rd("ws2-fourier-v1"),rd("ws2-fourier-v1-img"),WSDEF[2]],["三","Where","wwt-fw-h3q","警笛聲從哪裡來？",rd("ws3-doa-v1"),null,WSDEF[3]]];
   const out=[];
   for(const [n,tag,qk,qdf,S2,IM,def] of WS){const eq=(IM&&IM.eq)||S2.eq;const L=Array.isArray(eq)?eq.filter(x=>x&&x.name&&x.name.trim()):li(S2.equipHTML,def.eq).map(name=>({name,src:""}));
-    out.push(new X.Paragraph({spacing:{before:120,after:60},children:[new X.TextRun({text:qd(qk,qdf),bold:true,size:24})]}));
+    out.push(new X.Paragraph({spacing:{before:120,after:60},children:[new X.TextRun({text:`【${tag}】${qd(qk,qdf)}`,bold:true,size:24})]}));
     L.forEach(x=>out.push(new X.Paragraph({spacing:{after:40},children:[new X.TextRun({text:"・"+x.name.trim(),size:22})]})));
     const ph=L.filter(x=>x.src);
     if(ph.length){const cells=[];for(const x of ph){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=x.src});
@@ -6405,7 +6405,7 @@ async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document
       for(let i=0;i<150;i++){try{w=f&&f.contentWindow;if(w&&w.__wsBlocks&&w.docx)break}catch(e){}await new Promise(r=>setTimeout(r,200))}
       if(!w||!w.__wsBlocks)throw "沒載入";
       const b=await w.__wsBlocks(L);let q=qd;try{q=localStorage.getItem(qk)||qd}catch(e){}
-      const hd=()=>new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:q,bold:true,size:26})]}),blk=b.slice(2),sp=blk.findIndex(x=>x&&x.__split);
+      const hd=()=>new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:`【${tag}】${q}`,bold:true,size:26})]}),blk=b.slice(2),sp=blk.findIndex(x=>x&&x.__split);
       out.proc.push(hd(),...(sp<0?blk:blk.slice(0,sp)));out.res.push(hd(),...(sp<0?[]:blk.slice(sp+1)))}
     catch(e){const m=()=>new X.Paragraph({children:[new X.TextRun({text:`（${q0} 沒有整理進來，請到那一張學習單按「匯出 Word」）`,color:"AA0000"})]});out.proc.push(m());out.res.push(m())}}
   return out}
