@@ -2134,7 +2134,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.shotslot{margin-top:10px}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
+.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
 .eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
@@ -2466,6 +2466,23 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
     el.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur();o.cap=e.target.value;set(g)});
     const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";set(g);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
+  draw();return draw}
+
+/* 同一個模型要截好幾張（例如：變出彈簧前、側面、正面）：按 📷 時用 pick() 決定放哪一格，也可以按「下一張放這格」自己指定 */
+function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
+  const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+    <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
+      ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
+      <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
+      <div class="galbtn"><button type="button" class="xbtn" data-force>${force===s.key?"✓ 下一張放這格":"下一張放這格"}</button>${o.src?'<button type="button" class="xbtn" data-del>🗑 刪掉</button>':""}</div></figure>`}).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const k=f.dataset.k;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur(k);o.cap=e.target.value;set(g)});
+      f.querySelector("[data-force]").addEventListener("click",()=>{force=force===k?null:k;draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur(k);o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const k=force||pick();force=null;const [g,o]=cur(k);o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();
+    const f=el.querySelector(`.galf[data-k="${k}"]`);if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}});
   draw();return draw}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
@@ -3026,7 +3043,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.shotslot{margin-top:10px}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
+.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
 .eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
@@ -3646,6 +3663,23 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
     const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";set(g);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
   draw();return draw}
+
+/* 同一個模型要截好幾張（例如：變出彈簧前、側面、正面）：按 📷 時用 pick() 決定放哪一格，也可以按「下一張放這格」自己指定 */
+function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
+  const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+    <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
+      ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
+      <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
+      <div class="galbtn"><button type="button" class="xbtn" data-force>${force===s.key?"✓ 下一張放這格":"下一張放這格"}</button>${o.src?'<button type="button" class="xbtn" data-del>🗑 刪掉</button>':""}</div></figure>`}).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const k=f.dataset.k;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur(k);o.cap=e.target.value;set(g)});
+      f.querySelector("[data-force]").addEventListener("click",()=>{force=force===k?null:k;draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur(k);o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const k=force||pick();force=null;const [g,o]=cur(k);o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();
+    const f=el.querySelector(`.galf[data-k="${k}"]`);if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}});
+  draw();return draw}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
@@ -3699,7 +3733,14 @@ for(const [id,k] of [["equipList2","equipHTML"],["stepList2","stepsHTML"]]){cons
 {const ord=c=>{const i=BEADS.findIndex(b=>b[1]===c);return i<0?99:i};S.beads.sort((a,b)=>ord(a.c)-ord(b.c))}
 try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
 setTimeout(()=>makeEquip($("eqPics2"),$("equipList2"),()=>IMG.eq,(L)=>{IMG.eq=L;S.equipHTML=$("equipList2").innerHTML;save();return saveImg()}),0);
-for(const [sid,nm] of [["airStage","喇叭推空氣"],["stage","彩虹彈簧"]]){const st=$(sid);makeShotSlot(st&&st.closest(".sim"),nm,nm,()=>IMG.gal,g=>{IMG.gal=g;return saveImg()})}   // 截圖格放在每個模型正下方
+{const st=$("airStage");makeShotSlot(st&&st.closest(".sim"),"喇叭推空氣","喇叭推空氣",()=>IMG.gal,g=>{IMG.gal=g;return saveImg()})}   // 截圖格放在每個模型正下方
+{if(IMG.gal&&IMG.gal.ms&&IMG.gal.ms["彩虹彈簧"]){delete IMG.gal.ms["彩虹彈簧"];saveImg()}   // 舊版只有一格，換成三格
+ const st=$("stage");makeShotSlots(st&&st.closest(".sim"),"彩虹彈簧","彩虹彈簧",[
+   {key:"before",title:"變出彈簧前",hint:"還沒按「✨ 變出彈簧」，只有波形"},
+   {key:"side",title:"變出彈簧後（側面）",hint:"按「側面看（波）」，截在彈簧忽快忽慢的時候"},
+   {key:"end",title:"正面看（圓）",hint:"最後按「正面看（圓）」"}],
+  ()=>{const rv=$("reveal"),on=rv&&/收起/.test(rv.textContent),v=(document.querySelector("#views button.on[data-v]")||{}).dataset;return !on?"before":(v&&v.v==="end"?"end":"side")},
+  ()=>IMG.gal,g=>{IMG.gal=g;return saveImg()})}
 {let mig=false;S.t23.forEach((r,i)=>{if(!r.id){mig=true;r.id=rid();for(const k of ["w","s"]){if(IMG["t23"+k+i]){IMG["t23"+k+"_"+r.id]=IMG["t23"+k+i];delete IMG["t23"+k+i]}}}});if(mig){save();saveImg()}}   // 每一列有自己的代號，刪掉別列時照片不會跑掉
 {let ch=false;S.t24=(S.t24||[]).filter(r=>r.s||r.url||r.hz||r.lo||r.hi||r.form);S.t24.forEach((r,i)=>{if(!r.id){ch=true;r.id=rid()}if(!r.s){r.s="警笛"+(i+1);ch=true}});
   if(!S.t24.length&&S.sirens.trim()){S.sirens.split(/[、，,；;\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,10).forEach(s=>{if(!S.t24.some(r=>r.s===s))S.t24.push({id:rid(),s,url:"",hz:"",lo:"",hi:"",form:""})});ch=true}
@@ -4204,7 +4245,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.shotslot{margin-top:10px}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
+.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
 .eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
@@ -5340,6 +5381,23 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
     const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";set(g);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
   draw();return draw}
+
+/* 同一個模型要截好幾張（例如：變出彈簧前、側面、正面）：按 📷 時用 pick() 決定放哪一格，也可以按「下一張放這格」自己指定 */
+function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
+  const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+    <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
+      ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
+      <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
+      <div class="galbtn"><button type="button" class="xbtn" data-force>${force===s.key?"✓ 下一張放這格":"下一張放這格"}</button>${o.src?'<button type="button" class="xbtn" data-del>🗑 刪掉</button>':""}</div></figure>`}).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const k=f.dataset.k;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur(k);o.cap=e.target.value;set(g)});
+      f.querySelector("[data-force]").addEventListener("click",()=>{force=force===k?null:k;draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur(k);o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const k=force||pick();force=null;const [g,o]=cur(k);o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();
+    const f=el.querySelector(`.galf[data-k="${k}"]`);if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}});
+  draw();return draw}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
@@ -5748,7 +5806,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.shotslot{margin-top:10px}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
+.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
 .eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
