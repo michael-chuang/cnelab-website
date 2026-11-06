@@ -2385,7 +2385,7 @@ const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
 function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
-function makeGallery(el,get,set){if(!el)return;
+function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||null;   // models：[{name:按鈕的名字,title:格子標題}]，一個模型一格
   const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
     ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
@@ -2393,18 +2393,21 @@ function makeGallery(el,get,set){if(!el)return;
     <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
     <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
   function draw(){const g=galFix(get());
-    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
-      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
-    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在${MODELS?"「模型截圖」的格子（每個模型 1 張，再按會換新的）":"第 1 格（1 張，再按會換新的）"}；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${MODELS?MODELS.map((m,i)=>slot((g.ms=g.ms||{})[m.name]||(g.ms[m.name]={src:"",cap:""}),"ms"+i,m.title,`按「${m.name}」畫面左下角的 📷`,true)).join(""):slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:id.startsWith("ms")?g.ms[MODELS[+id.slice(2)].name]:g.p[+id.slice(1)];
       f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());const src=await galShrink(e.detail.u);
+    if(MODELS){g.ms=g.ms||{};const m=MODELS.find(x=>x.name===(e.detail&&e.detail.name))||MODELS[0];g.ms[m.name]=Object.assign(g.ms[m.name]||{cap:""},{src})}else g.m.src=src;set(g);draw();
+    let ts=document.getElementById("galToast");if(!ts){ts=document.createElement("div");ts.id="galToast";ts.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99;padding:10px 18px;border-radius:999px;background:rgba(16,24,32,.88);color:#fff;font:600 14px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer";ts.addEventListener("click",()=>{el.scrollIntoView({behavior:"smooth",block:"center"});ts.style.display="none"});document.body.appendChild(ts)}
+    ts.textContent="📷 截圖已放進下面的「模型截圖」（點這裡看）";ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -3553,7 +3556,7 @@ const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
 function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
-function makeGallery(el,get,set){if(!el)return;
+function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||null;   // models：[{name:按鈕的名字,title:格子標題}]，一個模型一格
   const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
     ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
@@ -3561,18 +3564,21 @@ function makeGallery(el,get,set){if(!el)return;
     <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
     <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
   function draw(){const g=galFix(get());
-    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
-      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
-    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在${MODELS?"「模型截圖」的格子（每個模型 1 張，再按會換新的）":"第 1 格（1 張，再按會換新的）"}；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${MODELS?MODELS.map((m,i)=>slot((g.ms=g.ms||{})[m.name]||(g.ms[m.name]={src:"",cap:""}),"ms"+i,m.title,`按「${m.name}」畫面左下角的 📷`,true)).join(""):slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:id.startsWith("ms")?g.ms[MODELS[+id.slice(2)].name]:g.p[+id.slice(1)];
       f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());const src=await galShrink(e.detail.u);
+    if(MODELS){g.ms=g.ms||{};const m=MODELS.find(x=>x.name===(e.detail&&e.detail.name))||MODELS[0];g.ms[m.name]=Object.assign(g.ms[m.name]||{cap:""},{src})}else g.m.src=src;set(g);draw();
+    let ts=document.getElementById("galToast");if(!ts){ts=document.createElement("div");ts.id="galToast";ts.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99;padding:10px 18px;border-radius:999px;background:rgba(16,24,32,.88);color:#fff;font:600 14px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer";ts.addEventListener("click",()=>{el.scrollIntoView({behavior:"smooth",block:"center"});ts.style.display="none"});document.body.appendChild(ts)}
+    ts.textContent="📷 截圖已放進下面的「模型截圖」（點這裡看）";ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -3673,7 +3679,7 @@ for(const [id,k] of [["equipList2","equipHTML"],["stepList2","stepsHTML"]]){cons
 {const ord=c=>{const i=BEADS.findIndex(b=>b[1]===c);return i<0?99:i};S.beads.sort((a,b)=>ord(a.c)-ord(b.c))}
 try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
 setTimeout(()=>makeEquip($("eqPics2"),$("equipList2"),()=>IMG.eq,(L)=>{IMG.eq=L;S.equipHTML=$("equipList2").innerHTML;save();return saveImg()}),0);
-makeGallery($("gal2"),()=>IMG.gal,g=>{IMG.gal=g;return saveImg()});
+makeGallery($("gal2"),()=>IMG.gal,g=>{IMG.gal=g;return saveImg()},{models:[{name:"喇叭推空氣",title:"模型截圖：喇叭推空氣"},{name:"彩虹彈簧",title:"模型截圖：彩虹彈簧"}]});
 {let mig=false;S.t23.forEach((r,i)=>{if(!r.id){mig=true;r.id=rid();for(const k of ["w","s"]){if(IMG["t23"+k+i]){IMG["t23"+k+"_"+r.id]=IMG["t23"+k+i];delete IMG["t23"+k+i]}}}});if(mig){save();saveImg()}}   // 每一列有自己的代號，刪掉別列時照片不會跑掉
 {let ch=false;S.t24=(S.t24||[]).filter(r=>r.s||r.url||r.hz||r.lo||r.hi||r.form);S.t24.forEach((r,i)=>{if(!r.id){ch=true;r.id=rid()}if(!r.s){r.s="警笛"+(i+1);ch=true}});
   if(!S.t24.length&&S.sirens.trim()){S.sirens.split(/[、，,；;\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,10).forEach(s=>{if(!S.t24.some(r=>r.s===s))S.t24.push({id:rid(),s,url:"",hz:"",lo:"",hi:"",form:""})});ch=true}
@@ -5232,7 +5238,7 @@ const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
 function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
-function makeGallery(el,get,set){if(!el)return;
+function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||null;   // models：[{name:按鈕的名字,title:格子標題}]，一個模型一格
   const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
     ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
@@ -5240,18 +5246,21 @@ function makeGallery(el,get,set){if(!el)return;
     <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
     <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
   function draw(){const g=galFix(get());
-    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
-      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
-    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在${MODELS?"「模型截圖」的格子（每個模型 1 張，再按會換新的）":"第 1 格（1 張，再按會換新的）"}；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${MODELS?MODELS.map((m,i)=>slot((g.ms=g.ms||{})[m.name]||(g.ms[m.name]={src:"",cap:""}),"ms"+i,m.title,`按「${m.name}」畫面左下角的 📷`,true)).join(""):slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:id.startsWith("ms")?g.ms[MODELS[+id.slice(2)].name]:g.p[+id.slice(1)];
       f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());const src=await galShrink(e.detail.u);
+    if(MODELS){g.ms=g.ms||{};const m=MODELS.find(x=>x.name===(e.detail&&e.detail.name))||MODELS[0];g.ms[m.name]=Object.assign(g.ms[m.name]||{cap:""},{src})}else g.m.src=src;set(g);draw();
+    let ts=document.getElementById("galToast");if(!ts){ts=document.createElement("div");ts.id="galToast";ts.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99;padding:10px 18px;border-radius:999px;background:rgba(16,24,32,.88);color:#fff;font:600 14px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer";ts.addEventListener("click",()=>{el.scrollIntoView({behavior:"smooth",block:"center"});ts.style.display="none"});document.body.appendChild(ts)}
+    ts.textContent="📷 截圖已放進下面的「模型截圖」（點這裡看）";ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -5840,7 +5849,7 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 ["motivePics","goalPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
 /* 每一格都可以「📷 從情境截圖選」：情境1、情境2、實驗模型按 📷 截下來的圖（含孩子寫的描述） */
 (()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(e){return {}}};
-    const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
+    const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,x])=>["模型截圖："+n,x]),...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
     return [...W,...["tab1","tab2","tab3"].flatMap(t=>o[t]||[])]};
   document.querySelectorAll('label.addpic').forEach(lab=>{const k=lab.querySelector("input").dataset.k;
     const b=document.createElement("button");b.type="button";b.className="imp shotbtn";b.textContent="📷 從截圖和照片選";lab.after(b);
