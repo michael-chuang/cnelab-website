@@ -3614,7 +3614,24 @@ setTimeout(()=>{const svg=document.querySelector("svg.fam");const ui=document.ge
     ui.querySelectorAll("[data-rm]").forEach(e=>e.addEventListener("click",()=>{const r=H.rows[+e.dataset.rm];if((r.lo||r.hi)&&!confirm(`要刪掉「${r.n}」嗎？`))return;H.rows.splice(+e.dataset.rm,1);save();draw();buildUI()}));
     ui.querySelector("[data-add]").addEventListener("click",()=>{if(H.rows.length>=10)return;H.rows.push({n:"",lo:"",hi:""});save();draw();buildUI();const ins=ui.querySelectorAll("[data-n]");ins[ins.length-1].focus()});
     ui.querySelector("[data-src]").addEventListener("input",e=>{H.src=e.target.value;save()})}
-  draw();buildUI();window.__hearRedraw=()=>{H=ST.get()||H;draw();buildUI()}},0);
+  svg.setAttribute("data-noword","");   // Word 用下面重畫的乾淨版本
+  draw();buildUI();window.__hearRedraw=()=>{H=ST.get()||H;draw();buildUI()};
+  /* 給 Word 用：照孩子拉的範圍，重新畫一張乾淨的圖（沒有灰色拖曳線和提示字） */
+  window.__famPrint=()=>new Promise(ok=>{const rows=(ST.get()||H).rows.filter(r=>+r.lo>0&&+r.hi>0),W=1000,top=0,y0=250,dy=40,Ht=y0+dy*(rows.length+1)+30;
+    const ink="#18232b",mut="#5b6872",inf="#c62d2d",aud="#3557b7",ult="#e0a21c",ani="#7d878f",esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    let s=`<svg xmlns="${NS}" viewBox="0 0 ${W} ${Ht}" width="${W*2}" height="${Ht*2}" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif"><rect width="${W}" height="${Ht}" fill="#fff"/>`;
+    s+=`<line x1="40" y1="90" x2="980" y2="90" stroke="${ink}" stroke-width="2"/>`;
+    s+=`<rect x="${X(1)}" y="84" width="${X(20)-X(1)}" height="12" fill="${inf}"/><rect x="${X(20)}" y="84" width="${X(20000)-X(20)}" height="12" fill="${aud}"/><rect x="${X(20000)}" y="84" width="${X(1e6)-X(20000)}" height="12" fill="${ult}"/>`;
+    for(const [f,l] of [[1,"1 Hz"],[20,"20 Hz"],[200,"200 Hz"],[2000,"2 kHz"],[20000,"20 kHz"],[200000,"200 kHz"],[1e6,"1 MHz"]])s+=`<line x1="${X(f)}" y1="78" x2="${X(f)}" y2="102" stroke="${ink}" stroke-width="2"/><text x="${X(f)}" y="68" text-anchor="middle" font-size="18" fill="${ink}">${l}</text>`;
+    s+=`<text x="${(X(1)+X(20))/2}" y="135" text-anchor="middle" font-size="24" font-weight="700" fill="${inf}">次聲波</text><text x="${(X(1)+X(20))/2}" y="160" text-anchor="middle" font-size="16" font-style="italic" fill="${inf}">Infrasound</text>`;
+    s+=`<text x="${(X(20)+X(20000))/2}" y="135" text-anchor="middle" font-size="24" font-weight="700" fill="${aud}">可聽聲（人聽得到）</text><text x="${(X(20)+X(20000))/2}" y="160" text-anchor="middle" font-size="16" font-style="italic" fill="${aud}">Audible sound</text>`;
+    s+=`<text x="${(X(20000)+X(1e6))/2}" y="135" text-anchor="middle" font-size="24" font-weight="700" fill="${ult}">超音波</text><text x="${(X(20000)+X(1e6))/2}" y="160" text-anchor="middle" font-size="16" font-style="italic" fill="${ult}">Ultrasound</text>`;
+    s+=`<text x="60" y="${y0-50}" font-size="19" font-weight="700" fill="${ink}">誰聽得到？Hearing range</text>`;
+    for(const f of [20,20000])s+=`<line x1="${X(f)}" y1="${y0-30}" x2="${X(f)}" y2="${Ht-20}" stroke="${mut}" stroke-dasharray="4 4"/>`;
+    const bar=(lo,hi,y,col,lab,bold)=>{const a=X(Math.min(lo,hi)),b=X(Math.max(lo,hi)),right=b<760;return `<line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="${col}" stroke-width="10" stroke-linecap="round"/><text x="${right?b+12:a-12}" y="${y+6}" text-anchor="${right?"start":"end"}" font-size="17"${bold?' font-weight="700"':""} fill="${ink}">${esc(lab)}</text>`};
+    s+=bar(20,20000,y0,aud,"人 Human　20–20k Hz",true);
+    rows.forEach((r,i)=>{const lo=+r.lo,hi=+r.hi;s+=bar(lo,hi,y0+dy*(i+1),ani,`${r.n}　${fmt(Math.min(lo,hi))}–${fmt(Math.max(lo,hi))} Hz`)});
+    s+="</svg>";const im=new Image();im.onload=()=>{const c=document.createElement("canvas");c.width=W*2;c.height=Ht*2;c.getContext("2d").drawImage(im,0,0);ok({src:c.toDataURL("image/png"),rows,srcText:(ST.get()||H).src||""})};im.onerror=()=>ok(null);im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s)})},0);
 <\/script>
 <script>
 /* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
@@ -4028,7 +4045,8 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗紀錄單（二）What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
+    B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
+      if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
     B.push(...await wordGal(IMG.gal,"模型截圖"));
     B.push(H("二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[]));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
