@@ -868,6 +868,7 @@ resize(); requestAnimationFrame(loop);
       <div class="row" id="dirs2">
         <button class="big" data-d="B">後方</button><button class="big" data-d="F">前方（對向車道）</button><button class="big" data-d="X">隨機</button>
       </div>
+      <div class="row" style="margin-top:8px"><button type="button" id="uPause2" aria-pressed="false">❚❚ 暫停</button></div>
     </div>
     <div class="group">
       <h2>3　按喇叭（看羅盤找得到嗎？）</h2>
@@ -1084,8 +1085,8 @@ function drawVeh(o){
     wheelPair(x,y,w,h); g.fillStyle=body; rr(x-w/2,y-h*0.95,w,h*0.85,w*0.08); g.fill(); g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=1; g.stroke();
     g.fillStyle="rgba(35,45,55,.75)"; rr(x-w*0.36,y-h*0.86,w*0.72,h*0.26,w*0.05); g.fill();
     if(o.kind==="amb"){g.fillStyle="#e85d2a";g.fillRect(x-w/2,y-h*0.42,w,h*0.07);g.fillStyle="#d23a3a";g.fillRect(x-w*0.05,y-h*0.55,w*0.1,h*0.26);g.fillRect(x-w*0.13,y-h*0.47,w*0.26,h*0.09)}
-    if(o.kind==="police"){g.fillStyle="#1f5fbf";g.fillRect(x-w/2,y-h*0.5,w,h*0.14);g.fillStyle="#1f5fbf";g.font=`bold ${Math.max(6,w*0.16)}px sans-serif`;g.textAlign="center";g.fillText("警察",x,y-h*0.16)}   // 臺灣警車：白底藍條
-    if(o.kind==="fire"){g.fillStyle="#e6e6e0";g.fillRect(x-w/2,y-h*0.36,w,h*0.05)}
+    if(o.kind==="police"){g.fillStyle="#1f5fbf";g.fillRect(x-w/2,y-h*0.5,w,h*0.14);g.fillStyle="#1f5fbf";g.font=`bold ${Math.max(6,w*0.16)}px sans-serif`;g.textAlign="center";g.fillText(front?"警察":"POLICE",x,y-h*0.16)}   // 臺灣警車：白底藍條，車頭寫警察、車尾寫 POLICE
+    if(o.kind==="fire"){g.fillStyle="#e6e6e0";g.fillRect(x-w/2,y-h*0.36,w,h*0.05);if(!front){g.fillStyle="#fff";g.font=`bold ${Math.max(6,w*0.22)}px sans-serif`;g.textAlign="center";g.fillText("119",x,y-h*0.44)}}   // 消防車車尾寫 119
     g.fillStyle=front?"#fff8d8":"#ff3030"; g.fillRect(x-w*0.46,y-h*0.3,w*0.14,h*0.08); g.fillRect(x+w*0.32,y-h*0.3,w*0.14,h*0.08);
     g.fillStyle=on?"#ff2a2a":"#2a6bff"; g.fillRect(x-w*0.34,y-h*1.04,w*0.34,h*0.1); g.fillStyle=on?"#2a6bff":(o.kind==="fire"?"#ffd23b":"#ff2a2a"); g.fillRect(x,y-h*1.04,w*0.34,h*0.1);
     if(on){g.fillStyle="rgba(255,60,60,.18)";g.beginPath();g.arc(x-w*0.17,y-h,w*0.7,0,7);g.fill()} return }
@@ -1266,7 +1267,9 @@ function update(dt){
     else if(yf>0.2&&!run.yieldMsg){run.yieldMsg=true; if(!run.gm||run.guess) cap(v.front?`<b>自動讓道：</b>你的車自動減速；對向車道的車往路邊靠，讓${KN[run.kind]}通過。`:`<b>自動讓道：</b>你的車自動<b>減速、往左靠</b>；右車道的車往右靠，中間讓出一條路給${KN[run.kind]}。`)} }
 }
 let last=performance.now();
-function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t; if(!document.getElementById("tab2").hidden){update(dt);draw()} requestAnimationFrame(loop)}
+let uPause2=false;   // 暫停鍵：車子、警笛的位置都停住，再按一次繼續
+document.getElementById("uPause2").addEventListener("click",e=>{uPause2=!uPause2;const b=e.currentTarget;b.textContent=uPause2?"▶ 繼續":"❚❚ 暫停";b.classList.toggle("on",uPause2);b.setAttribute("aria-pressed",uPause2)});
+function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t; if(!document.getElementById("tab2").hidden){if(!uPause2)update(dt);draw()} requestAnimationFrame(loop)}
 requestAnimationFrame(loop); resize();
 
 /* ---------- 介面 ---------- */
