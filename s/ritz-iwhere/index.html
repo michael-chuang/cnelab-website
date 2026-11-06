@@ -1847,7 +1847,7 @@ function vehIcon(s,k,cx,cy){   // 卡通風格的側面小車（車頭朝右）�
 
 document.querySelectorAll("#sirens button[data-s]").forEach(b=>{const s=el("svg",{viewBox:"0 -2 64 48",width:56,height:42,"aria-hidden":"true"});vehIcon(s,b.dataset.s,32,22);
   const m=b.textContent.match(/^(.+?)（(.+)）$/);b.innerHTML="";b.classList.add("vbtn");b.appendChild(s);
-  const l=document.createElement("span");l.innerHTML=`<b>${m?m[1]:b.textContent}</b>`;   // 只寫車名，不寫聲音的樣子（後面要讓孩子自己去認識聲音）b.appendChild(l)});
+  const l=document.createElement("span");l.innerHTML=`<b>${m?m[1]:b.textContent}</b>`;/* 只寫車名，不寫聲音的樣子（後面要讓孩子自己去認識聲音） */b.appendChild(l)});
 const st=document.createElement("style");st.textContent="#sirens .vbtn{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:16px;min-width:108px}#sirens .vbtn span{display:flex;flex-direction:column;align-items:center;line-height:1.25}#sirens .vbtn small{font-size:12px;opacity:.8}#sirens .vbtn svg{display:block}#sirens .vbtn.on{outline:3px solid currentColor}";
 document.head.appendChild(st)})();
 </script>
