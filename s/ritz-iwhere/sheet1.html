@@ -273,7 +273,7 @@ svg text{font-family:var(--body)}
 
 <section>
   <h2>表 1-1　一位受試者的紀錄</h2>
-  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who"><span class="note">輸入兩條繩子讀到的刻度，再<b>自己算角度差</b>（真實角度和指的角度差幾度），平均會自動算。算好按「✓ 對答案」檢查。</span></div>
+  <div class="row" style="align-items:center"><label for="who">受試者：</label><input type="text" class="name" id="who"><span class="note">輸入兩條繩子讀到的刻度，再<b>自己算角度差</b>（真實角度和指的角度差幾度），平均會自動算。</span></div>
   <div class="tbl"><table id="t1">
     <thead><tr><th>第幾次</th><th class="a">A 未遮蔽<br>真實角度</th><th class="a">A 未遮蔽<br>指的角度</th><th class="a">A<br>角度差</th><th class="b">B 戴耳機<br>真實角度</th><th class="b">B 戴耳機<br>指的角度</th><th class="b">B<br>角度差</th></tr></thead>
     <tbody></tbody></table></div>
@@ -282,7 +282,7 @@ svg text{font-family:var(--body)}
     <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：先選要點哪一個，再點量角器上的角度" style="cursor:crosshair;touch-action:manipulation"></svg>
     <p class="cap">圖 1-1　<b>自己點點看</b>：先在上面選「未遮蔽 1」，再到量角器上它的角度差那裡點一下（左右都可以點）；點完會自動換下一個。角度差幾度，就點在幾度的地方。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳機</b>。點越靠近中間的 0°，指得越準。</p>
   </div>
-  <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="chk1" aria-pressed="false">✓ 對答案</button><button id="plClr">清除圖上的點</button><button id="demo">填入範例數據看看</button></div>
+  <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="plClr">清除圖上的點</button><button id="demo">填入範例數據看看</button></div>
   <p class="note" id="addMsg" aria-live="polite"></p>
 </section>
 
@@ -391,7 +391,6 @@ $("prot").addEventListener("click",e=>{const s=$("prot"),m=s.getScreenCTM();if(!
   const k=plSel[0],i=+plSel.slice(1);S.pl[k][i]=d;
   const order=[...[...Array(N)].map((_,j)=>"a"+j),...[...Array(N)].map((_,j)=>"b"+j)],nx=order.slice(order.indexOf(plSel)+1).concat(order).find(q=>S.pl[q[0]][+q.slice(1)]===null);
   if(nx)plSel=nx;save();buildChips();drawProt()});
-$("chk1").addEventListener("click",()=>{S.chk=!S.chk;save();const b=$("chk1");b.textContent=S.chk?"✓ 對答案中（再按一下關掉）":"✓ 對答案";b.setAttribute("aria-pressed",S.chk);calcT1()});
 $("plClr").addEventListener("click",()=>{if(!confirm("要清除圖 1-1 上的點嗎？"))return;S.pl=blankPL();plSel="a0";save();buildChips();drawProt()});
 /* 表 1-2＋圖 1-2 */
 function buildT2(){const tb=$("t2").querySelector("tbody");tb.innerHTML="";
@@ -429,7 +428,7 @@ for(const [id,k] of [["equipList","equipHTML"],["stepList","stepsHTML"]]){const 
   if(S[k])e.innerHTML=clean(S[k]);e.contentEditable="true";e.spellcheck=false;e.title="點一下就可以修改";
   e.addEventListener("input",()=>{if(!e.querySelector("li"))e.innerHTML="<li></li>";S[k]=clean(e.innerHTML);save()})}
 for(const id of ["q2","q3","concl","date","rec","ann2"]){const e=$(id);e.value=S[id]||"";e.addEventListener("input",()=>{S[id]=e.value;save()})}
-buildT1();buildChips();if(S.chk){$("chk1").textContent="✓ 對答案中（再按一下關掉）";$("chk1").setAttribute("aria-pressed","true")}calcT1();buildT2();
+buildT1();buildChips();S.chk=false;calcT1();buildT2();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawProt();calcT2()});
 new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
