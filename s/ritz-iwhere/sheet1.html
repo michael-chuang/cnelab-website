@@ -214,6 +214,8 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
+
 </style>
 </head>
 <body>
@@ -232,7 +234,7 @@ svg text{font-family:var(--body)}
   <div class="card"><h3>器材</h3><ul id="equipList" class="edlist">
       <li>大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）</li>
       <li>藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li>
-      <li>遮光眼罩、隔音耳機（耳罩式）</li></ul></div>
+      <li>遮光眼罩、隔音耳機（耳罩式）</li></ul><div id="eqPics1"></div></div>
   <div class="card"><h3>實驗步驟</h3><ol id="stepList" class="edlist" style="padding-left:1.6em;margin:0;display:grid;gap:6px">
     <li><b>準備場地</b>：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，<b>0°（正前方）</b>對準受試者的臉。</li>
     <li><b>分工</b>：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。</li>
@@ -323,6 +325,7 @@ const KEY="ws1-occlusion-v2";
 const blank=()=>({a:[...Array(N)].map(()=>({r:"",p:""})),b:[...Array(N)].map(()=>({r:"",p:""}))});
 let S={who:"",t1:blank(),t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+setTimeout(()=>makePhotos(document.getElementById("eqPics1"),()=>S.eqPics||(S.eqPics=[]),L=>{S.eqPics=L;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 setTimeout(()=>makeGallery(document.getElementById("gal1"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
@@ -439,6 +442,26 @@ async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx)
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
     out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  return out}
+
+/* 器材照片：可以拍好幾張（最多 6 張），每張寫一下是什麼 */
+function makePhotos(el,get,set,max=6){if(!el)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const uid="ph"+Math.random().toString(36).slice(2,7);
+  function draw(){const L=Array.isArray(get())?get():[];
+    el.innerHTML=`<div class="galgrid eqgrid">${L.map((o,i)=>`<figure class="galf" data-i="${i}"><img src="${o.src}" alt="器材照片 ${i+1}"><textarea rows="1" placeholder="這是什麼器材？" aria-label="器材照片 ${i+1} 的說明">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>
+      ${L.length<max?`<label class="xbtn addeq" for="${uid}">📷 拍器材照片</label><input type="file" accept="image/*" id="${uid}" multiple hidden>`:""}`;
+    el.querySelectorAll(".galf").forEach(f=>{const i=+f.dataset.i;f.querySelector("textarea").addEventListener("input",e=>{const L=get();L[i].cap=e.target.value;set(L)});
+      f.querySelector("[data-del]").addEventListener("click",()=>{if(!confirm("要刪掉這張照片嗎？"))return;const L=get();L.splice(i,1);set(L);draw()})});
+    const fi=el.querySelector("input[type=file]");if(fi)fi.addEventListener("change",async e=>{const L=Array.isArray(get())?get():[];
+      for(const file of [...e.target.files].slice(0,max-L.length)){const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});L.push({src:await galShrink(u,1000),cap:""})}
+      if(set(L)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()})}
+  draw();return draw}
+async function wordPhotos(L,title){const out=[];if(!Array.isArray(L)||!L.length)return out;const X=window.__L||window.docx;if(!X)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=X;
+  if(title)out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
+  for(const o of L){if(!o.src)continue;const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const W=240,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
+    if(o.cap)out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:160},children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]}))}
   return out}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
@@ -733,7 +756,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
-    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
+    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos(S.eqPics));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
     body.push(...await wordGal(S.gal));
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
