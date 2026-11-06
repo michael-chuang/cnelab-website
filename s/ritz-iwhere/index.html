@@ -2624,7 +2624,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const buf=async u=>new Uint8Array(await (await fetch(u)).arrayBuffer());
   const capOf=(el,host)=>{const a=(el&&el.getAttribute&&el.getAttribute("aria-label"))||"";if(a)return a.replace(/：可以.*$/,"");
     const c=(host||el).closest(".card,.stage,.sim,section"),h=c&&c.querySelector("h3");return h?h.textContent.trim():sec.querySelector("h2").textContent.trim()};
-  async function img(u,cap){if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
+  async function img(u,cap){if(window.__L)return;/* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
   const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
@@ -3945,7 +3945,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const buf=async u=>new Uint8Array(await (await fetch(u)).arrayBuffer());
   const capOf=(el,host)=>{const a=(el&&el.getAttribute&&el.getAttribute("aria-label"))||"";if(a)return a.replace(/：可以.*$/,"");
     const c=(host||el).closest(".card,.stage,.sim,section"),h=c&&c.querySelector("h3");return h?h.textContent.trim():sec.querySelector("h2").textContent.trim()};
-  async function img(u,cap){if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
+  async function img(u,cap){if(window.__L)return;/* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
   const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
@@ -5725,7 +5725,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const buf=async u=>new Uint8Array(await (await fetch(u)).arrayBuffer());
   const capOf=(el,host)=>{const a=(el&&el.getAttribute&&el.getAttribute("aria-label"))||"";if(a)return a.replace(/：可以.*$/,"");
     const c=(host||el).closest(".card,.stage,.sim,section"),h=c&&c.querySelector("h3");return h?h.textContent.trim():sec.querySelector("h2").textContent.trim()};
-  async function img(u,cap){if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
+  async function img(u,cap){if(window.__L)return;/* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
   const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
