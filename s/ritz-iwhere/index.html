@@ -5498,8 +5498,8 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
 label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋手機（播警笛）",70,22,-5,6,"#b3122e");
 label("電腦",-58,30,54,5,"#1f4fa8");
-/* 路名（和情境一一樣）：南北向是惠中路、東西向是臺灣大道；路名一直顯示 */
-const ROADLBL=[label("北・惠中路",-18,8,-80,7,"#2f6b3f"),label("南・惠中路",18,8,62,4,"#2f6b3f"),label("東・臺灣大道",66,8,-18,4.5,"#2f6b3f"),label("西・臺灣大道",-80,8,-16,6.5,"#2f6b3f")];
+/* 路名：北路、東路、南路、西路；一直顯示 */
+const ROADLBL=[label("北路",-18,8,-80,7,"#2f6b3f"),label("南路",18,8,62,4,"#2f6b3f"),label("東路",66,8,-18,4.5,"#2f6b3f"),label("西路",-80,8,-16,6.5,"#2f6b3f")];
 ROADLBL.forEach(l=>LABELS.splice(LABELS.indexOf(l),1));
 
 /* ---------- 視角、動畫 ---------- */
@@ -5975,7 +5975,7 @@ const cv=$("map"),g=cv.getContext("2d"),host=$("mapStage");
 const VIEW=40,RW=8,C_REAL=343,C_VIS=14,LAM=5;      // 畫面 ±40 m；路寬 16 m；動畫聲速放慢
 let mics=[{x:-3,y:0},{x:3,y:0}],amb={x:30,y:3};
 let t0=null,heard=false,raf=0,spreadPrev=50;
-const ROADS={N:{x:-4,y:30},E:{x:30,y:3},S:{x:4,y:-30},W:{x:-30,y:-3}},RNAME={N:"北・惠中路",E:"東・臺灣大道",S:"南・惠中路",W:"西・臺灣大道"};
+const ROADS={N:{x:-4,y:30},E:{x:30,y:3},S:{x:4,y:-30},W:{x:-30,y:-3}},RNAME={N:"北路",E:"東路",S:"南路",W:"西路"};
 const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
 let W=600,S=7.5;
 const X=x=>W/2+x*S,Y=y=>W/2-y*S;
@@ -6191,7 +6191,7 @@ const KEY="ws3-doa-v1";
 const POS=[["正前方（0°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
 const PRACT=[0.10,0.29,0.50];
 const ROADN=["北","東","南","西"],ROADA={北:0,東:90,南:180,西:270};
-const RLAB={北:"北・惠中路",東:"東・臺灣大道",南:"南・惠中路",西:"西・臺灣大道"},RL=r=>RLAB[r]||r;   // 路名和情境一一樣
+const RL=r=>r+"路";   // 北路、東路、南路、西路
 const NTR=8;
 let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRACT.map(ms=>({ms,cm:"",deg:""})),
   t33:[...Array(5)].map(()=>({n:"",how:"",road:"",cand:"",ok:""})),q31:"",q32:"",
