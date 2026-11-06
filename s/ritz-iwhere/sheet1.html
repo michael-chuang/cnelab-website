@@ -220,6 +220,7 @@ svg text{font-family:var(--body)}
 .ck{font-weight:700;font-size:13px;white-space:nowrap}.ck.good{color:#1f7a4d}.ck.bad{color:#c0392b}
 #t1 td.num input{max-width:5.5em}
 #plChips .chip{padding:4px 10px;border-radius:999px;border:2px solid;background:var(--paper);font-size:13px;cursor:pointer}
+.subsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.subf{margin:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper);display:flex;flex-direction:column;gap:6px}.subf.on{outline:3px solid var(--a)}.subf svg{width:100%;height:auto}.subf figcaption{font-size:14px}
 </style>
 </head>
 <body>
@@ -282,8 +283,9 @@ svg text{font-family:var(--body)}
     <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：先選要點哪一個，再點量角器上的角度" style="cursor:crosshair;touch-action:manipulation"></svg>
     <p class="cap">圖 1-1　<b>自己點點看</b>：先在上面選「未遮蔽 1」，再到量角器上它的角度差那裡點一下（左右都可以點）；點完會自動換下一個。角度差幾度，就點在幾度的地方。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳機</b>。點越靠近中間的 0°，指得越準。</p>
   </div>
-  <div class="row"><button id="addSub">把這位受試者的平均加到表 1-2</button><button id="clr1">清空表 1-1，換下一位</button><button id="plClr">清除圖上的點</button><button id="demo">填入範例數據看看</button></div>
+  <div class="row"><button id="addSub">💾 保存這位受試者（加到表 1-2）</button><button id="clr1">清空表 1-1，換下一位</button><button id="plClr">清除圖上的點</button><button id="demo">填入範例數據看看</button></div>
   <p class="note" id="addMsg" aria-live="polite"></p>
+  <div class="card" id="subsCard"><h3>💾 已保存的受試者（每一位的量角器圖）</h3><p class="note" style="margin:0 0 8px">做完一位，按「保存這位受試者」，會把他的平均加到表 1-2，同時把圖 1-1 <b>截圖</b>存在這裡，可以寫圖片描述。按「叫出來」可以再看或修改，改完再按一次保存。</p><div id="subs" class="subsgrid"></div></div>
 </section>
 
 <section>
@@ -376,9 +378,9 @@ function drawProt(s=$("prot"),T1=S.t1,P=pal(),PL=(s===$("prot")?S.pl:undefined),
     if(ans&&want!==null){const [qx,qy]=pos(side,want,i);el("circle",{cx:qx,cy:qy,r:11,fill:"none",stroke:col,"stroke-width":2,"stroke-dasharray":"3 3"},s)}   // 對答案：虛線圈是應該點的位置
     if(d0===null||d0===undefined)return;n++;const [px,py]=pos(side,d0,i);
     el("circle",{cx:px,cy:py,r:9,fill:col,stroke:sel===k+i?ink:"#fff","stroke-width":sel===k+i?3:2},s);
-    el("text",{x:px+side*13,y:py+4,"text-anchor":side<0?"end":"start","font-size":12,fill:muted},s,String(i+1));
+    el("text",{x:px+side*13,y:py+4,"text-anchor":side<0?"end":"start","font-size":12,fill:muted},s,`${i+1}（${Math.round(d0)}°）`);
     if(ans&&want!==null)el("text",{x:px-side*14,y:py+4,"text-anchor":side<0?"start":"end","font-size":13,"font-weight":700,fill:Math.abs(d0-want)<=2?"#1f7a4d":"#c0392b"},s,Math.abs(d0-want)<=2?"✓":"✗")});
-  if(!n) el("text",{x:cx,y:cy-90,"text-anchor":"middle","font-size":15,fill:muted},s,PL?"先選上面的「未遮蔽 1」，再到量角器上點它的角度差":"在表 1-1 輸入數字，點會出現在這裡")}
+  if(!n&&s===$("prot")) el("text",{x:cx,y:cy-90,"text-anchor":"middle","font-size":15,fill:muted},s,PL?"先選上面的「未遮蔽 1」，再到量角器上點它的角度差":"在表 1-1 輸入數字，點會出現在這裡")}
 
 /* 圖 1-1 讓小朋友自己點：先選「未遮蔽 1」…「戴耳機 5」，再點量角器 */
 if(!S.pl)S.pl=blankPL();let plSel=(()=>{for(const k of ["a","b"])for(let i=0;i<N;i++)if(S.pl[k][i]===null)return k+i;return "a0"})();
@@ -386,6 +388,16 @@ function buildChips(){const box=$("plChips");box.innerHTML='<span class="note">�
   for(const [k,nm,col] of [["a","未遮蔽","var(--a)"],["b","戴耳機","var(--b)"]])for(let i=0;i<N;i++){const b=document.createElement("button");b.type="button";b.className="chip";
     const done=S.pl[k][i]!==null;b.textContent=`${nm} ${i+1}${done?" ✓":""}`;b.style.cssText=`border-color:${col};${plSel===k+i?`background:${col};color:#fff`:`color:${col}`}`;
     b.addEventListener("click",()=>{plSel=k+i;buildChips();drawProt()});box.appendChild(b)}}
+/* 滑鼠（手指）移到量角器上：先出現一個淡淡的點和角度，比較容易點準 */
+function protDeg(e){const s=$("prot"),m=s.getScreenCTM();if(!m)return null;const pt=new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());
+  const dx=pt.x-300,dy=300-pt.y;if(dy<-10||Math.hypot(dx,dy)>262)return null;return Math.min(90,Math.round(Math.abs(Math.atan2(dx,Math.max(dy,0.01)))*180/Math.PI))}
+function ghost(d){const s=$("prot");let g=s.querySelector("#pg");if(g)g.remove();if(d===null)return;const k=plSel[0],i=+plSel.slice(1),side=k==="a"?-1:1,P=pal(),col=k==="a"?P.a:P.b;
+  g=el("g",{id:"pg","pointer-events":"none"},s);const a=d*Math.PI/180,R=250,r=R-70-i*24,px=300+side*r*Math.sin(a),py=300-r*Math.cos(a);
+  el("line",{x1:300,y1:300,x2:300+side*R*Math.sin(a),y2:300-R*Math.cos(a),stroke:col,"stroke-width":1.5,"stroke-dasharray":"4 4",opacity:.7},g);
+  el("circle",{cx:px,cy:py,r:9,fill:col,opacity:.45},g);
+  const tx=300+side*(R+2)*Math.sin(a),ty=300-(R+2)*Math.cos(a)-8;el("rect",{x:tx-24,y:ty-15,width:48,height:22,rx:11,fill:col},g);el("text",{x:tx,y:ty+1,"text-anchor":"middle","font-size":14,"font-weight":700,fill:"#fff"},g,d+"°")}
+$("prot").addEventListener("pointermove",e=>ghost(protDeg(e)));
+$("prot").addEventListener("pointerleave",()=>ghost(null));
 $("prot").addEventListener("click",e=>{const s=$("prot"),m=s.getScreenCTM();if(!m)return;const pt=new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());
   const dx=pt.x-300,dy=300-pt.y;if(dy<-10||Math.hypot(dx,dy)>262)return;let d=Math.round(Math.abs(Math.atan2(dx,Math.max(dy,0.01)))*180/Math.PI);d=Math.min(90,d);
   const k=plSel[0],i=+plSel.slice(1);S.pl[k][i]=d;
@@ -393,7 +405,7 @@ $("prot").addEventListener("click",e=>{const s=$("prot"),m=s.getScreenCTM();if(!
   if(nx)plSel=nx;save();buildChips();drawProt()});
 $("plClr").addEventListener("click",()=>{if(!confirm("要清除圖 1-1 上的點嗎？"))return;S.pl=blankPL();plSel="a0";save();buildChips();drawProt()});
 /* 表 1-2＋圖 1-2 */
-function buildT2(){const tb=$("t2").querySelector("tbody");tb.innerHTML="";
+function buildT2(){setTimeout(renderSubs,0);const tb=$("t2").querySelector("tbody");tb.innerHTML="";
   S.t2.forEach((r,i)=>{const tr=document.createElement("tr");
     tr.innerHTML=`<td><input type="text" class="name" id="n${i}"></td><td><input type="number" id="ra${i}" step="0.1" inputmode="decimal"></td><td><input type="number" id="rb${i}" step="0.1" inputmode="decimal"></td><td class="num" id="rd${i}"></td><td><button class="xbtn" data-del="${i}" aria-label="刪除這一列">刪除</button></td>`;tb.appendChild(tr);
     for(const [id,k] of [["n","name"],["ra","a"],["rb","b"]]){const e=$(id+i);e.value=r[k]??"";e.addEventListener("input",()=>{r[k]=e.value;save();calcT2()})}});
@@ -415,9 +427,28 @@ function drawBar(A,B,s=$("bar"),P=pal()){s.innerHTML="";
   el("line",{x1:x0,x2:400,y1:y0,y2:y0,stroke:ink,"stroke-width":1.5},s);
   if(A===null&&B===null) el("text",{x:228,y:150,"text-anchor":"middle","font-size":14,fill:muted},s,"表 1-2 有數字後，長條會長出來")}
 
-$("addSub").addEventListener("click",()=>{const a=t1Avg("a"),b=t1Avg("b");if(a===null&&b===null)return;
-  S.t2.push({name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b),t1:JSON.parse(JSON.stringify(S.t1)),pl:JSON.parse(JSON.stringify(S.pl))});save();buildT2();$("addMsg").textContent="已加入表 1-2，原始紀錄也存起來了。可以按「清空表 1-1，換下一位」。"});
-$("clr1").addEventListener("click",()=>{S.t1=blank();S.pl=blankPL();plSel="a0";S.who="";$("who").value="";save();buildT1();buildChips();calcT1()});
+/* 保存時把圖 1-1 拍成一張圖（像截圖一樣），存在這位受試者的紀錄裡 */
+function protShot(T1,PL){return new Promise(ok=>{const sv=document.createElementNS(SVGNS,"svg");sv.setAttribute("xmlns",SVGNS);sv.setAttribute("viewBox","0 0 600 340");sv.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");
+  drawProt(sv,T1,PRINT,PL,false,"");const xml=new XMLSerializer().serializeToString(sv).replace("<svg",'<svg width="600" height="340"');const im=new Image();
+  im.onload=()=>{const c=document.createElement("canvas");c.width=1200;c.height=680;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/png"))};
+  im.onerror=()=>ok("");im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml)})}
+$("addSub").addEventListener("click",async()=>{const a=t1Avg("a"),b=t1Avg("b");if(a===null&&b===null)return;
+  const rec={name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b),t1:JSON.parse(JSON.stringify(S.t1)),pl:JSON.parse(JSON.stringify(S.pl)),img:await protShot(S.t1,S.pl)};
+  const ix=S.editIdx!=null&&S.t2[S.editIdx]?S.editIdx:-1;if(ix>=0){rec.cap=S.t2[ix].cap||"";S.t2[ix]=rec}else S.t2.push(rec);S.editIdx=null;save();buildT2();
+  $("addMsg").textContent=(ix>=0?`已更新「${rec.name}」的紀錄。`:`已保存「${rec.name}」，也加到表 1-2 了。`)+"可以按「清空表 1-1，換下一位」。"});
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function renderSubs(){const box=$("subs");if(!box)return;box.innerHTML="";const L=S.t2.map((r,i)=>[r,i]).filter(([r])=>r.t1);
+  if(!L.length){box.innerHTML='<p class="note" style="margin:0">還沒有保存的受試者。</p>';return}
+  for(const [r,i] of L){const c=document.createElement("figure");c.className="subf"+(S.editIdx===i?" on":"");if(r.img){const im=document.createElement("img");im.src=r.img;im.alt=`${r.name} 的圖 1-1`;im.style.cssText="width:100%;border-radius:8px;display:block";c.appendChild(im)}
+    else{const sv=document.createElementNS(SVGNS,"svg");sv.setAttribute("viewBox","0 0 600 340");drawProt(sv,r.t1,pal(),r.pl||undefined,false,"");c.appendChild(sv)}
+    const cap=document.createElement("figcaption");cap.innerHTML=`<b>${esc(r.name||"（沒有名字）")}</b>　未遮蔽平均 ${r.a||"—"}°、戴耳機平均 ${r.b||"—"}°`;c.appendChild(cap);
+    const ta=document.createElement("textarea");ta.rows=2;ta.placeholder="圖片描述：這位受試者的點在說什麼？（例如：戴耳機的點都離 0° 比較遠）";ta.value=r.cap||"";ta.setAttribute("aria-label",`${r.name} 的圖片描述`);ta.style.cssText="width:100%;box-sizing:border-box";
+    ta.addEventListener("input",()=>{r.cap=ta.value;save()});c.appendChild(ta);
+    const bt=document.createElement("div");bt.className="galbtn";bt.innerHTML='<button type="button" class="xbtn" data-load>叫出來看／修改</button><button type="button" class="xbtn" data-rm>🗑 刪掉</button>';c.appendChild(bt);
+    bt.querySelector("[data-load]").addEventListener("click",()=>{S.t1=JSON.parse(JSON.stringify(r.t1));S.pl=r.pl?JSON.parse(JSON.stringify(r.pl)):{a:r.t1.a.map(dUse),b:r.t1.b.map(dUse)};S.who=r.name;$("who").value=r.name;S.editIdx=i;save();buildT1();buildChips();calcT1();renderSubs();$("addMsg").textContent=`正在看「${r.name}」的紀錄，改完按「保存這位受試者」會更新。`;$("t1").scrollIntoView({behavior:"smooth"})});
+    bt.querySelector("[data-rm]").addEventListener("click",()=>{if(!confirm(`要刪掉「${r.name}」的紀錄嗎？（表 1-2 那一列也會刪掉）`))return;S.t2.splice(i,1);if(S.editIdx===i)S.editIdx=null;save();buildT2()});
+    box.appendChild(c)}}
+$("clr1").addEventListener("click",()=>{S.t1=blank();S.pl=blankPL();plSel="a0";S.editIdx=null;renderSubs();S.who="";$("who").value="";save();buildT1();buildChips();calcT1()});
 $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();buildT2()});
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
   S.t1={a:[["40","46"],["95","88"],["130","118"],["15","10"],["160","152"]].map(([r,p])=>({r,p})),b:[["70","92"],["20","45"],["150","126"],["100","70"],["35","20"]].map(([r,p])=>({r,p}))};for(const k of ["a","b"])S.t1[k].forEach(x=>x.d=f1(dRow(x)));S.pl={a:S.t1.a.map(dRow),b:S.t1.b.map(dRow)};save();buildT1();buildChips();calcT1()});
@@ -789,7 +820,7 @@ btn.addEventListener("click",async()=>{
       const r=["平均","—","—",f1(t1Avg("a",T1)),"—","—",f1(t1Avg("b",T1))];r.bold=true;rows.push(r);return rows};
     const H1=["第幾次","A 真實角度","A 指的角度","A 角度差","B 真實角度","B 指的角度","B 角度差"];
     // 受試者清單：表 1-2 裡有原始紀錄的人＋目前表 1-1（若還沒加入）
-    const subs=S.t2.filter(r=>r.t1).map(r=>({name:r.name,t1:r.t1,pl:r.pl}));
+    const subs=S.t2.filter(r=>r.t1).map(r=>({name:r.name,t1:r.t1,pl:r.pl,cap:r.cap}));
     const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
     if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1))) subs.push({name:S.who||"（未填名字）",t1:S.t1});
     const body=[];
@@ -811,7 +842,7 @@ btn.addEventListener("click",async()=>{
 
       const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT,x.pl,false,"");
       body.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(sv,600,340),transformation:{width:420,height:238}})]}));
-      body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));
+      body.push(cap(`圖 1-1（${i+1}）、${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`));if(x.cap)body.push(P(x.cap,{align:AlignmentType.CENTER}));
     }
     body.push(H("肆、全組整理（表 1-2、圖 1-2）"));
     const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
