@@ -289,10 +289,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 2. 了解警笛聲「長」什麼樣子，用傅立葉轉換找出它和一般汽車引擎聲有什麼不同。（What）
 3. 了解用 2 支麥克風模仿人的耳朵，判斷警笛方向夠不夠準確；比較 1～4 支麥克風的角度差和正確率。（Where）
 4. 根據實驗結果，想想怎麼讓路口紅綠燈和駕駛人一起幫救護車讓出通道。</p>
-  </div>
-
-  <div class="fw-card">
-    <h3>研究架構</h3>
+    <h3 style="margin-top:26px">研究架構</h3>
     <div class="fw-tree">
       <div class="fw-node fw-vision"><div class="t">【<span data-sync="wwt-title">智「where」開道、平安駕到</span>】</div></div>
       <div class="fw-split"></div>
@@ -4823,7 +4820,7 @@ svg text{font-family:var(--body)}
 .fc{padding:8px 10px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .fc textarea{min-height:6em;border-color:var(--line);background:var(--bg)}
 .fc input.wide{max-width:none!important;width:100%;text-align:left!important}
-.grade{flex-direction:row!important;align-items:center;flex-wrap:wrap;gap:6px!important}
+.grade{display:flex;flex-direction:row!important;align-items:center;flex-wrap:wrap;gap:6px!important}
 .grade input.sm{max-width:4em}
 .grade .nm{margin-left:14px;font-weight:500}
 .grade input.wide{flex:1;min-width:8em;width:auto}
@@ -4867,12 +4864,13 @@ svg text{font-family:var(--body)}
 <section>
   <div class="card form">
     <div class="ftitle">臺中市麗喆雙語中小學　校內科學展覽作品說明（初審）</div>
-    <div class="frow"><div class="fh">年級</div><div class="fc grade"><input type="text" id="yr" class="sm" aria-label="年">年<input type="text" id="cls" class="sm" aria-label="班">班<span class="nm">姓名</span><input type="text" id="nm" class="wide" aria-label="姓名"></div></div>
+    <div class="frow"><div class="fh">年級</div><div class="fc"><div id="mems" style="display:flex;flex-direction:column;gap:8px"></div><button type="button" class="imp" id="addMem">＋ 新增一位（不同班級的隊員）</button></div></div>
     <div class="frow"><div class="fh">科別</div><div class="fc kinds" id="kinds"></div></div>
     <div class="frow"><div class="fh">作品名稱</div><div class="fc" style="display:grid;gap:6px"><input type="text" id="title" class="wide" aria-label="作品名稱（主標題）"><div style="display:flex;align-items:center;gap:6px"><span aria-hidden="true">——</span><input type="text" id="subtitle" class="wide" aria-label="作品名稱（副標題）" style="flex:1"></div></div></div>
     <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea>
       <div class="pics" data-k="motivePics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="motivePics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea>
+      <button type="button" class="imp" id="impTree" hidden>📥 帶入研究架構圖</button>
       <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button>
       <div class="pics" data-k="toolsPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="toolsPics" multiple hidden></label></div></div>
@@ -4900,7 +4898,7 @@ const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條�
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
 const KINDS=["物理","化學","生物","地球科學","數學","生活與應用科學"];
-const FIELDS=["yr","cls","nm","title","subtitle","motive","goal","tools","proc","result","refs"];
+const FIELDS=["title","subtitle","motive","goal","tools","proc","result","refs"];
 let S={kinds:[],procPics:[],resPics:[],motivePics:[],goalPics:[],toolsPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
@@ -4924,7 +4922,29 @@ function showPics(k){const box=document.querySelector(`.pics[data-k="${k}"]`);bo
 document.querySelectorAll('input[type=file][data-k]').forEach(inp=>inp.addEventListener("change",async e=>{const k=inp.dataset.k;
   for(const f of e.target.files){try{S[k].push({src:await shrink(f),cap:""})}catch(err){}}
   if(!save()){$("expMsg").textContent="照片太多，瀏覽器存不下了；這些照片只會留到關掉頁面前，記得先匯出 Word。"}inp.value="";showPics(k)}));
+/* 年級：可以有好幾位隊員（不同班級），每位一列 */
+if(!Array.isArray(S.mems))S.mems=[{yr:S.yr||"",cls:S.cls||"",nm:S.nm||""}];if(!S.mems.length)S.mems=[{yr:"",cls:"",nm:""}];
+function buildMems(){const box=$("mems");box.innerHTML="";S.mems.forEach((m,i)=>{const d=document.createElement("div");d.className="grade";
+  d.innerHTML=`<input type="text" class="sm" data-f="yr" aria-label="年" value="${esc(m.yr)}">年<input type="text" class="sm" data-f="cls" aria-label="班" value="${esc(m.cls)}">班<span class="nm">姓名</span><input type="text" class="wide" data-f="nm" aria-label="姓名" value="${esc(m.nm)}">${S.mems.length>1?'<button type="button" class="xbtn" title="刪掉這一位">✕</button>':""}`;
+  d.querySelectorAll("input").forEach(e=>e.addEventListener("input",()=>{m[e.dataset.f]=e.value;save()}));
+  const x=d.querySelector(".xbtn");if(x)x.addEventListener("click",()=>{if((m.yr||m.cls||m.nm)&&!confirm("要刪掉這一位嗎？"))return;S.mems.splice(i,1);save();buildMems()});box.appendChild(d)})}
+buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.length-1]||{};S.mems.push({yr:l.yr||"",cls:"",nm:""});save();buildMems();$("mems").lastChild.querySelector('[data-f="cls"]').focus()});
 ["motivePics","goalPics","toolsPics","procPics","resPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
+/* 研究目的：把「研究架構」那一頁的架構圖拍下來，放進研究目的的圖（只有在網站裡才拍得到） */
+(()=>{let P=null;try{if(parent!==window&&parent.document.getElementById("tab0"))P=parent}catch(e){}
+  const b=$("impTree");if(!P||!b)return;b.hidden=false;
+  const need=()=>P.html2canvas?Promise.resolve():new Promise((ok,no)=>{const s=P.document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js";s.onload=ok;s.onerror=no;P.document.head.appendChild(s)});
+  b.addEventListener("click",async()=>{const old=b.textContent;b.disabled=true;b.textContent="拍架構圖中…";
+    const tab=P.document.getElementById("tab0"),tree=tab.querySelector(".fw-tree"),wasHidden=tab.hidden,css=tab.style.cssText;
+    try{await need();if(wasHidden){tab.hidden=false;tab.style.cssText+=";position:fixed;left:-12000px;top:0;width:1100px"}
+      const bg=P.getComputedStyle(tree.closest(".fw-card")).backgroundColor;
+      const c=await P.html2canvas(tree,{backgroundColor:bg,scale:2,logging:false});
+      const W=Math.min(1600,c.width),o=document.createElement("canvas");o.width=W;o.height=Math.round(c.height*W/c.width);
+      const g=o.getContext("2d");g.fillStyle=bg;g.fillRect(0,0,o.width,o.height);g.drawImage(c,0,0,o.width,o.height);
+      const src=o.toDataURL("image/jpeg",0.9),i=S.goalPics.findIndex(x=>x.cap==="研究架構");
+      if(i>=0)S.goalPics[i].src=src;else S.goalPics.push({src,cap:"研究架構"});save();showPics("goalPics");b.textContent="✓ 已放進架構圖（再按一次會更新）"}
+    catch(e){console.warn("tree",e);b.textContent="拍不到架構圖，請再試一次"}
+    finally{if(wasHidden){tab.hidden=true;tab.style.cssText=css}b.disabled=false;setTimeout(()=>b.textContent=old,2500)}})})();
 
 /* 從學習單（一）～（三）帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
@@ -4981,7 +5001,7 @@ btn.addEventListener("click",async()=>{
     const box=k=>(S.kinds.includes(k)?"■":"□")+k;
     const rows=[
       new TableRow({children:[new TableCell({columnSpan:2,borders:BD,margins:{top:100,bottom:100},children:[para("臺中市麗喆雙語中小學　校內科學展覽作品說明(初審)",{align:AlignmentType.CENTER,size:30,bold:true})]})]}),
-      row("年級",null,[para(`${S.yr||"　"} 年 ${S.cls||"　"} 班　　姓名：${S.nm||""}`)]),
+      row("年級",null,S.mems.map(m=>para(`${m.yr||"　"} 年 ${m.cls||"　"} 班　　姓名：${m.nm||""}`))),
       row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
       row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
@@ -4993,7 +5013,7 @@ btn.addEventListener("click",async()=>{
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
       sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2：",{size:22}),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[2300,7600],layout:D.TableLayoutType.FIXED,rows})]}]});
     const blob=await Packer.toBlob(doc);
-    const fn=`校內科展作品說明_初審_${(S.nm||"").replace(/[\/\\:*?"<>|]/g,"")||"未填姓名"}.docx`;
+    const fn=`校內科展作品說明_初審_${(S.mems.map(m=>m.nm).filter(Boolean).join("、")||"").replace(/[\/\\:*?"<>|]/g,"")||"未填姓名"}.docx`;
     let done=false;
     try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
     if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版匯出。"}done=true}}
