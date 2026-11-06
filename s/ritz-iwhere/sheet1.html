@@ -247,6 +247,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
     document.body.appendChild(W);
     W.querySelector("#ksHist").addEventListener("click",histPanel);
+    /* 手機上這一列會蓋到標題：在最上面留一點空間給它 */
+    {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
+      const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
