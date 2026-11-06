@@ -101,7 +101,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .fam .t-big{font-size:26px;font-weight:700}.fam .t-en{font-size:18px;font-style:italic}
 .fam .t-small{font-size:15px;fill:var(--muted)}.fam .t-head{font-size:19px;font-weight:700}
 .fam .t-ani{font-size:16px}.fam .t-hum{font-weight:700}
-.fam .r-hum{stroke:#3557b7}.fam .r-ani{stroke:var(--muted);opacity:.75}
+.fam .r-hum{stroke:#3557b7}.fam .r-ani{stroke:var(--muted);opacity:.75}.fam .hear-h{fill:#fff;stroke:var(--muted);stroke-width:4}.fam .hear-h:hover{stroke:#3557b7}.fam .hear-x circle{fill:#fff;stroke:currentColor;stroke-opacity:.35;stroke-width:2}.fam .hear-x text{font-size:15px;fill:var(--muted)}.fam .hear-x:hover circle{stroke:#c62d2d;stroke-opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .hearui{display:flex;flex-direction:column;gap:4px}.heartbl{display:flex;flex-direction:column;gap:6px}.hrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.hrow input[type=text]{flex:1;min-width:8em}.hrow input[type=number]{width:7.5em}svg.fam .hear-track:hover{stroke-opacity:.22}
 </style>
@@ -446,20 +446,43 @@ setTimeout(()=>{const svg=document.querySelector("svg.fam");const ui=document.ge
   let H=ST.get();if(!H||!Array.isArray(H.rows))H={rows:DEF.map(n=>({n,lo:"",hi:""})),src:""};
   const save=()=>ST.set(H);const g=document.createElementNS(NS,"g");svg.appendChild(g);
   const lines=[...svg.querySelectorAll("line")].filter(l=>l.getAttribute("stroke-dasharray")==="4 4");
-  function draw(){g.innerHTML="";const y0=334,dy=34,h=y0+dy*H.rows.length+10;svg.setAttribute("viewBox",`0 0 1000 ${Math.max(560,h+20)}`);lines.forEach(l=>l.setAttribute("y2",h));
-    H.rows.forEach((r,i)=>{const y=y0+i*dy,el=(n,a,txt)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;g.appendChild(e);return e};
-      el("line",{x1:60,y1:y,x2:960,y2:y,stroke:"currentColor","stroke-opacity":.12,"stroke-width":14,"stroke-linecap":"round",class:"hear-track","data-i":i,style:"cursor:ew-resize"});
-      const lo=+r.lo,hi=+r.hi,ok=lo>0&&hi>0;
-      if(ok){const a=X(Math.min(lo,hi)),b=X(Math.max(lo,hi));el("line",{x1:a,y1:y,x2:b,y2:y,class:"r-ani","stroke-width":10,"stroke-linecap":"round","pointer-events":"none"});
-        const lab=`${r.n}　${fmt(Math.min(lo,hi))}–${fmt(Math.max(lo,hi))} Hz`,right=b<700;el("text",{x:right?b+12:a-12,y:y+5,"text-anchor":right?"start":"end",class:"t-ani","pointer-events":"none"},lab)}
-      else el("text",{x:70,y:y+5,class:"t-ani","fill-opacity":.6,"pointer-events":"none"},`${r.n||"（動物名字）"}：查到後，在這條線上從低拖到高`)})
-    g.querySelectorAll(".hear-track").forEach(tr=>tr.addEventListener("pointerdown",e=>{e.preventDefault();const i=+tr.dataset.i,r=H.rows[i],m=svg.getScreenCTM().inverse();
-      const xAt=ev=>{const p=new DOMPoint(ev.clientX,ev.clientY).matrixTransform(m);return Math.max(60,Math.min(960,p.x))};const x0=xAt(e);
-      r.lo=String(nice(F(x0)));r.hi=r.lo;draw();buildUI();
-      const mv=ev=>{const x=xAt(ev),a=Math.min(x0,x),b=Math.max(x0,x);r.lo=String(nice(F(a)));r.hi=String(nice(F(b)));draw();syncUI()};
-      const up=()=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);save();buildUI()};addEventListener("pointermove",mv);addEventListener("pointerup",up)}))}
+  const y0=334,dy=44;   /* 每一列之間留寬一點，手機上比較好按 */
+  const el=(p,n,a,txt)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e};
+  const noScroll=e=>{e.addEventListener("touchstart",ev=>ev.preventDefault(),{passive:false});e.style.touchAction="none"};   // 拖的時候畫面不要跟著捲
+  const R=[];   // 每一列的圖形，拖曳時只改位置，不重畫
+  function paint(i){const r=H.rows[i],o=R[i],y=y0+i*dy,lo=+r.lo,hi=+r.hi,ok=lo>0&&hi>0;
+    o.rng.style.display=o.hl.style.display=o.hh.style.display=o.x.style.display=ok?"":"none";
+    if(ok){const a=X(Math.min(lo,hi)),b=X(Math.max(lo,hi));o.rng.setAttribute("x1",a);o.rng.setAttribute("x2",b);o.hl.setAttribute("cx",a);o.hh.setAttribute("cx",b);
+      const one=Math.min(lo,hi)===Math.max(lo,hi),lab=`${r.n}　${one?fmt(lo):fmt(Math.min(lo,hi))+"–"+fmt(Math.max(lo,hi))} Hz${one?"（再拖另一端）":""}`,right=b<640,left=a>330;   /* 右邊放不下就放左邊；兩邊都放不下就放在線的上面 */
+      o.t.setAttribute("x",right?b+20:left?a-20:(a+b)/2);o.t.setAttribute("text-anchor",right?"start":left?"end":"middle");
+      o.t.setAttribute("y",right||left?y+6:y-14);   /* 放在線的正上方 */o.t.removeAttribute("fill-opacity");o.t.textContent=lab}
+    else{o.t.setAttribute("x",70);o.t.setAttribute("y",y+6);o.t.setAttribute("text-anchor","start");o.t.setAttribute("fill-opacity",.6);o.t.textContent=`${r.n||"（動物名字）"}：查到後，在這條線上從最低拖到最高`}}
+  function draw(){g.innerHTML="";R.length=0;const h=y0+dy*H.rows.length;svg.setAttribute("viewBox",`0 0 1000 ${Math.max(560,h+10)}`);lines.forEach(l=>l.setAttribute("y2",h-10));
+    H.rows.forEach((r,i)=>{const y=y0+i*dy,G=el(g,"g",{});
+      el(G,"line",{x1:60,y1:y,x2:960,y2:y,stroke:"currentColor","stroke-opacity":.12,"stroke-width":14,"stroke-linecap":"round","pointer-events":"none"});
+      const o={rng:el(G,"line",{y1:y,y2:y,class:"r-ani","stroke-width":10,"stroke-linecap":"round","pointer-events":"none"}),
+        t:el(G,"text",{y:y+6,class:"t-ani","pointer-events":"none"})};
+      const hit=el(G,"rect",{x:40,y:y-dy/2,width:940,height:dy,fill:"transparent",style:"cursor:ew-resize"});   // 整條都可以按（比線粗很多）
+      o.hl=el(G,"circle",{cy:y,r:13,class:"hear-h",style:"cursor:ew-resize"});o.hh=el(G,"circle",{cy:y,r:13,class:"hear-h",style:"cursor:ew-resize"});
+      o.x=el(G,"g",{class:"hear-x",style:"cursor:pointer",role:"button","aria-label":`清除${r.n}`});el(o.x,"circle",{cx:984,cy:y,r:13});el(o.x,"text",{x:984,y:y+5,"text-anchor":"middle"},"✕");
+      R[i]=o;paint(i);
+      [hit,o.hl,o.hh].forEach(e=>{noScroll(e);e.addEventListener("pointerdown",ev=>start(ev,i,e===o.hl?"lo":e===o.hh?"hi":null))});
+      o.x.addEventListener("click",()=>{r.lo="";r.hi="";save();paint(i)})})}
+  /* 拖曳：按住一端的圓點拖它；按在線上別的地方，離哪一端近就拖哪一端；還沒有範圍時，從按下去的地方拉出來 */
+  function start(e,i,end){e.preventDefault();const r=H.rows[i],m=svg.getScreenCTM().inverse();
+    const xAt=ev=>{const p=new DOMPoint(ev.clientX,ev.clientY).matrixTransform(m);return Math.max(60,Math.min(960,p.x))};const x0=xAt(e);
+    const lo=+r.lo,hi=+r.hi,ok=lo>0&&hi>0;let anchor;
+    if(!ok)anchor=x0;
+    else{const a=X(Math.min(lo,hi)),b=X(Math.max(lo,hi));if(!end)end=Math.abs(x0-a)<=Math.abs(x0-b)?"lo":"hi";anchor=end==="lo"?b:a}
+    const set=x=>{const a=Math.min(anchor,x),b=Math.max(anchor,x);r.lo=String(nice(F(a)));r.hi=String(nice(F(b)));paint(i)};
+    if(ok)set(x0);else set(x0);
+    try{e.target.setPointerCapture(e.pointerId)}catch(_){}
+    const mv=ev=>{ev.preventDefault();set(xAt(ev))};
+    const up=()=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);save()};
+    addEventListener("pointermove",mv,{passive:false});addEventListener("pointerup",up);addEventListener("pointercancel",up)}
   function syncUI(){H.rows.forEach((r,i)=>{const a=ui.querySelector(`[data-lo="${i}"]`),b=ui.querySelector(`[data-hi="${i}"]`);if(a&&document.activeElement!==a)a.value=r.lo;if(b&&document.activeElement!==b)b.value=r.hi})}
-  function buildUI(){ui.hidden=true;return;   /* 下面的數字表不用了，只在圖上拖曳 */const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  function buildUI(){ui.hidden=false;ui.innerHTML=`<div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px"><span class="note" style="margin:0;flex:1;min-width:14em">拖<b>圓點</b>調整最低、最高；按 <b>✕</b> 清除那一種動物。</span><button type="button" class="xbtn" data-clr>🧹 全部清除</button></div>`;
+    ui.querySelector("[data-clr]").addEventListener("click",()=>{if(!H.rows.some(r=>r.lo||r.hi))return;if(!confirm("要把所有動物的範圍都清掉嗎？"))return;H.rows.forEach(r=>{r.lo="";r.hi=""});save();draw()});return;   /* 下面的數字表不用了，只在圖上拖曳 */const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
     ui.innerHTML=`<p class="note" style="margin:6px 0"><b>自己查查看：</b>上網或查書（例如搜尋「大象 聽力範圍 Hz」），在圖上那種動物的線上<b>從最低拖到最高</b>，或在下面直接打數字（1 kHz＝1,000 Hz）。</p>
       <div class="heartbl">${H.rows.map((r,i)=>`<div class="hrow"><input type="text" data-n="${i}" value="${esc(r.n)}" placeholder="動物名字" aria-label="第 ${i+1} 種動物"><input type="number" data-lo="${i}" value="${esc(r.lo)}" min="0" placeholder="最低 Hz" aria-label="${esc(r.n)} 最低 Hz"><span>～</span><input type="number" data-hi="${i}" value="${esc(r.hi)}" min="0" placeholder="最高 Hz" aria-label="${esc(r.n)} 最高 Hz"><span>Hz</span><button type="button" class="xbtn" data-rm="${i}" title="刪掉這一種">🗑</button></div>`).join("")}</div>
       <div class="row" style="gap:8px;margin-top:6px;align-items:center"><button type="button" class="xbtn" data-add>＋ 新增一種動物</button><label style="flex:1;display:flex;gap:6px;align-items:center;min-width:14em">資料來源：<input type="text" data-src value="${esc(H.src)}" placeholder="哪個網站或哪本書？" style="flex:1"></label></div>`;
