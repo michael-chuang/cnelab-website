@@ -354,6 +354,9 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
 label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋手機（播警笛）",70,22,-5,6,"#b3122e");
 label("電腦",-58,30,54,5,"#1f4fa8");
+/* 路名（和情境一一樣）：南北向是惠中路、東西向是臺灣大道；路名一直顯示 */
+const ROADLBL=[label("北・惠中路",-18,8,-80,7,"#2f6b3f"),label("南・惠中路",18,8,62,4,"#2f6b3f"),label("東・臺灣大道",66,8,-18,4.5,"#2f6b3f"),label("西・臺灣大道",-80,8,-16,6.5,"#2f6b3f")];
+ROADLBL.forEach(l=>LABELS.splice(LABELS.indexOf(l),1));
 
 /* ---------- 視角、動畫 ---------- */
 const views={v1:[[92,76,124],[-8,8,6]],v2:[[0,250,1],[0,0,0]],v3:[[-80,9,12],[40,12,-3]],v4:[[42,52,52],[0,24,0]]};
