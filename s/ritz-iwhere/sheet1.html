@@ -432,7 +432,7 @@ function makeGallery(el,get,set){if(!el)return;
   addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
@@ -443,8 +443,8 @@ async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;co
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
-  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
   const done=new Set();let n=0;
@@ -708,11 +708,12 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
   await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
   const b=await new Promise(r=>c.toBlob(r,"image/png"));return await b.arrayBuffer()}
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
   try{
-    const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
+    const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80},bullet:o.bullet?{level:0}:undefined});
     const H=(t)=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
     const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:22})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
@@ -761,6 +762,7 @@ btn.addEventListener("click",async()=>{
     body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
+    if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(body);return}
     const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;

@@ -1847,7 +1847,7 @@ function vehIcon(s,k,cx,cy){   // 卡通風格的側面小車（車頭朝右）�
 
 document.querySelectorAll("#sirens button[data-s]").forEach(b=>{const s=el("svg",{viewBox:"0 -2 64 48",width:56,height:42,"aria-hidden":"true"});vehIcon(s,b.dataset.s,32,22);
   const m=b.textContent.match(/^(.+?)（(.+)）$/);b.innerHTML="";b.classList.add("vbtn");b.appendChild(s);
-  const l=document.createElement("span");l.innerHTML=m?`<b>${m[1]}</b><small>${m[2]}</small>`:b.textContent;b.appendChild(l)});
+  const l=document.createElement("span");l.innerHTML=`<b>${m?m[1]:b.textContent}</b>`;   // 只寫車名，不寫聲音的樣子（後面要讓孩子自己去認識聲音）b.appendChild(l)});
 const st=document.createElement("style");st.textContent="#sirens .vbtn{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:16px;min-width:108px}#sirens .vbtn span{display:flex;flex-direction:column;align-items:center;line-height:1.25}#sirens .vbtn small{font-size:12px;opacity:.8}#sirens .vbtn svg{display:block}#sirens .vbtn.on{outline:3px solid currentColor}";
 document.head.appendChild(st)})();
 </script>
@@ -2320,7 +2320,7 @@ function makeGallery(el,get,set){if(!el)return;
   addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
@@ -2331,8 +2331,8 @@ async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;co
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
-  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
   const done=new Set();let n=0;
@@ -2596,11 +2596,12 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
   await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
   const b=await new Promise(r=>c.toBlob(r,"image/png"));return await b.arrayBuffer()}
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
   try{
-    const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
+    const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80},bullet:o.bullet?{level:0}:undefined});
     const H=(t)=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
     const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:22})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
@@ -2649,6 +2650,7 @@ btn.addEventListener("click",async()=>{
     body.push(P("2. 戴耳機時，播音員站在哪裡最容易指錯？"+(S.q2||"＿＿＿＿")));
     body.push(P("3. 圖 1-1 左右兩邊的點，哪一邊離 0° 比較遠？"+(S.q3||"＿＿＿＿")));
     body.push(P("4. 結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")));
+    if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(body);return}
     const doc=new Document({styles:{default:{document:{run:{font:FONT,size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:body}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單一_有無遮蔽_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -3438,7 +3440,7 @@ function makeGallery(el,get,set){if(!el)return;
   addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
@@ -3449,8 +3451,8 @@ async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;co
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
-  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
   const done=new Set();let n=0;
@@ -3729,10 +3731,11 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
+window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
-  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
+  try{const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
     const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
     const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:21})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
@@ -3769,6 +3772,7 @@ btn.addEventListener("click",async()=>{
     B.push(cap("圖 2-2、依法規畫出的三種警報聲：頻率隨時間的變化"));
     B.push(H("六、結果與結論"));
     B.push(P("回到我們的問題："+(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？"),{bold:true}));B.push(P("如果電腦「聽」到一個聲音，可以怎麼用頻率判斷它是什麼聲音？"));B.push(P("我的結論："+(S.cWhat||"＿＿＿＿＿＿＿＿")));
+    if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(B);return}
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單二_傅立葉轉換篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -4718,7 +4722,7 @@ function makeGallery(el,get,set){if(!el)return;
   addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
@@ -4729,8 +4733,8 @@ async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;co
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
-  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
   const done=new Set();let n=0;
@@ -4861,10 +4865,11 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
   await img.decode();const c=document.createElement("canvas");c.width=w*2;c.height=h*2;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
   return await (await new Promise(r=>c.toBlob(r,"image/png"))).arrayBuffer()}
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
+window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
-  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
+  try{const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
     const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
     const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:21})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
@@ -4896,6 +4901,7 @@ btn.addEventListener("click",async()=>{
     B.push(H("五、結果與結論"));
     B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 不用三角函數，怎麼從時間差找出角度？"+(S.c2||"＿＿")));
     B.push(P(`3. 麥克風越多，正確率越 ${S.c3a||"＿"}，角度差越 ${S.c3b||"＿"}。`));B.push(P("4. 我的假設對嗎？至少要幾支、怎麼擺？"+(S.c4||"＿＿")));B.push(P("5. 結論：給智慧路口的建議："+(S.c5||"＿＿＿＿")));
+    if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(B);return}
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
     const blob=await Packer.toBlob(doc);
     const fn=`紀錄單三_聲源定位篇_${(S.date||new Date().toISOString().slice(0,10)).replace(/[\/\\:*?"<>|]/g,"-")}.docx`;
@@ -5200,7 +5206,8 @@ svg text{font-family:var(--body)}
       <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button>
       <div class="pics" data-k="toolsPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="toolsPics" multiple hidden></label></div></div>
-    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><textarea id="proc" rows="12" aria-label="研究過程"></textarea><button type="button" class="imp" data-imp="proc">📥 從學習單帶入步驟和紀錄</button>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0 0 6px;background:var(--panel2,#eef6f1);padding:8px 10px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的內容</b>：實驗步驟、表格、圖、照片和結論都會照學習單的樣子排好。下面可以再補充自己的說明（可以不寫）。</p>
+      <textarea id="proc" rows="5" aria-label="研究過程（補充說明）" placeholder="補充說明（可以不寫）"></textarea>
       <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button>
       <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" multiple hidden></label></div></div>
@@ -5323,6 +5330,20 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 (()=>{const btn=$("export"),msg=$("expMsg");
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
+/* 研究過程：直接把學習單（一）～（三）整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
+async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
+  const X=window.docx,toU8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d).slice();if(ArrayBuffer.isView(d))return new Uint8Array(d.buffer,d.byteOffset,d.byteLength).slice();return d};
+  const L=Object.assign({},X,{ImageRun:function(o){return new X.ImageRun(Object.assign({},o,{data:toU8(o.data)}))}});
+  const out=[],WS=[["一","Why","tab4","__ws1Show","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？"],["二","What","tab5","__ws2Show","wwt-fw-h2q","警笛聲「長」什麼樣？"],["三","Where","tab6","__ws3Show","wwt-fw-h3q","警笛聲從哪裡來？"]];
+  for(const [n,tag,tab,show,qk,qd] of WS){say(`正在整理學習單（${n}）……`);
+    try{if(P[show])P[show](true);const f=P.document.querySelector("#"+tab+" iframe");let w=null;
+      for(let i=0;i<150;i++){try{w=f&&f.contentWindow;if(w&&w.__wsBlocks&&w.docx)break}catch(e){}await new Promise(r=>setTimeout(r,200))}
+      if(!w||!w.__wsBlocks)throw "沒載入";
+      const b=await w.__wsBlocks(L);let q=qd;try{q=localStorage.getItem(qk)||qd}catch(e){}
+      out.push(new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:`實驗${n}（${tag}）：${q}`,bold:true,size:26})]}));
+      out.push(...b.slice(2))}
+    catch(e){out.push(new X.Paragraph({children:[new X.TextRun({text:`（學習單（${n}）沒有整理進來，請到那一張學習單按「匯出 Word」）`,color:"AA0000"})]}))}}
+  out.push(new X.Paragraph({children:[]}));return out}
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
@@ -5345,7 +5366,7 @@ btn.addEventListener("click",async()=>{
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
       row("使用器材","（此實驗所需的器材）",[...lines(S.tools),...await pics(S.toolsPics)],1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...lines(S.proc),...await pics(S.procPics)],2400),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...(S.proc.trim()?lines(S.proc):[]),...await pics(S.procPics),...((await wsCompile(s=>msg.textContent=s))||[])],2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...lines(S.result),...await pics(S.resPics)],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
