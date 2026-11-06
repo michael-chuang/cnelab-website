@@ -3199,7 +3199,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <div class="sim">
   <div class="stage" id="stage">
     <div class="hud" id="hud">每秒轉 <b id="hz">1</b> 圈<span id="slowTag"></span></div>
-    <div class="views" id="views"><button id="reveal" class="go2">✨ 變出彈簧</button><button data-v="side" class="on">側面看（波）</button><button data-v="end">正面看（圓）</button><button data-v="tilt">斜斜看</button><button data-v="spin">慢慢轉過去</button></div>
+    <div class="views" id="views" style="top:46px"><button id="reveal" class="go2">✨ 變出彈簧</button><button data-v="side" class="on">側面看（波）</button><button data-v="end">正面看（圓）</button><button data-v="tilt">斜斜看</button><button data-v="spin">慢慢轉過去</button></div>
   </div>
   <div class="card">
     <div class="grp"><h3>彈簧每秒轉幾圈？</h3>
@@ -3533,7 +3533,7 @@ document.querySelectorAll("[data-f]").forEach(b=>b.addEventListener("click",()=>
 $("pause").addEventListener("click",()=>{paused=!paused;$("pause").textContent=paused?"繼續":"暫停";$("pause").classList.toggle("on",paused)});
 
 /* 視角 */
-const VIEWS={side:[[0,0,90],[0,0,0]],end:[[X0-60,0,0.01],[X0,0,0]],tilt:[[-44,28,56],[2,0,0]]};
+const VIEWS={side:[[0,0,90],[0,0,0]],end:[[X0-30,0,0.01],[X0,0,0]],tilt:[[-44,28,56],[2,0,0]]};
 let tween=null, spinT=null;
 function goView(k){spinT=null;const [p,t]=VIEWS[k];tween={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now(),d:reduce?1:1100};
   document.querySelectorAll("#views button[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===k))}
