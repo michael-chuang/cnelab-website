@@ -1026,13 +1026,13 @@ function start(d){
   if(run) return; audio();
   if(d==="X") d=Math.random()<.5?"F":"B";
   const v={type:"emerg",kind,w:kind==="fire"?2.5:2.0,h:kind==="fire"?3.0:2.3};
-  if(d==="B") Object.assign(v,{x:0,z:-75,v:27,front:false});
+  if(d==="B") Object.assign(v,{x:0,z:-230,v:27,front:false});   // 從很遠的後面來：先聽到，後照鏡還看不到
   else Object.assign(v,{x:-7.5,z:190,v:-18,front:true});
   const gm=document.getElementById("guessmode2").checked;
   run={d,v,t:0,guess:null,gm,rt:null,endT:null,kind,yieldMsg:false};
   sirenStart(); setBtns(true);
   if(gm){document.getElementById("guess2").hidden=false; say("聽！警笛在前面還是後面？先用耳朵猜。",""); cap(`<b>聽到警笛了！</b>先不要看羅盤，用耳朵猜它在前面還是後面。`)}
-  else {say(`${KN[kind]}從${DIRN[d]}開過來。`,""); cap(`<b>${KN[kind]}從${DIRN[d]}來</b>。看羅盤哪裡變紅。`)}
+  else {say(`${KN[kind]}從${DIRN[d]}開過來。`,""); cap(d==="B"?`<b>聽到警笛聲了！</b>可是往後照鏡看，<b>還看不到車</b>……聲音羅盤正在找聲音從哪裡來。`:`<b>聽到警笛聲了！</b>聲音羅盤正在找聲音從哪裡來。`)}
 }
 function finish(){
   const r=run; sirenStop();
@@ -1153,7 +1153,7 @@ function mirror(){
   g.fillStyle="#d8e4ec"; g.fillRect(MX,MY,MW,MH); g.fillStyle="#b9b2a4"; g.fillRect(MX,MY+MH*0.55,MW,MH);
   const mz=MY+MH*0.55, mP=(x,z)=>[MX+MW/2+(x-camX)/z*MF, mz+CAMH/z*MF*0.55];
   g.fillStyle="#555b5f"; g.beginPath(); let a=mP(-4,4),b=mP(4,4),c=mP(4,300),d=mP(-4,300); g.moveTo(...a);g.lineTo(...b);g.lineTo(...c);g.lineTo(...d);g.fill();
-  [...objs,...(run?[run.v]:[])].filter(o=>o.z<-2).sort((p,q)=>p.z-q.z).forEach(o=>{ const z=-o.z, [x,y]=mP(o.x,z), s=MF/z, w=o.w*s*0.9, h=o.h*s*0.9;
+  [...objs,...(run?[run.v]:[])].filter(o=>o.z<-2&&(o.type!=="emerg"||o.z>-90)).sort((p,q)=>p.z-q.z).forEach(o=>{ const z=-o.z, [x,y]=mP(o.x,z), s=MF/z, w=o.w*s*0.9, h=o.h*s*0.9;
     if(o.type==="emerg"){const on=Math.floor(performance.now()/170)%2;g.fillStyle=o.kind==="fire"?"#d32f2f":"#f6f7f8";g.fillRect(x-w/2,y-h,w,h);
       g.fillStyle="rgba(35,45,55,.7)";g.fillRect(x-w*0.4,y-h*0.92,w*0.8,h*0.3);   // 擋風玻璃
       if(o.kind==="amb"){g.fillStyle="#d23a3a";const c=Math.max(4,w*0.34),k=c/3;g.fillRect(x-k/2,y-h*0.5-c/2,k,c);g.fillRect(x-c/2,y-h*0.5-k/2,c,k)}   // 車頭的紅十字
@@ -1233,14 +1233,14 @@ function dashboard(){
     if(h<CH) poly([PJ(xi,z0,h),PJ(xo,z0,h),PJ(xo,z1,h),PJ(xi,z1,h)],col(1.08));   // 屋頂
   }
   // 緊急車輛在地圖上的位置（羅盤開時）
-  if(compassOn&&run&&(!run.gm||run.guess)){const dz=run.v.z,lx=Math.max(-5,Math.min(5,run.v.x-camX));if(dz>-12&&dz<240){const [mx,my]=PJ(lx,Math.max(-9,dz));const on=Math.floor(performance.now()/250)%2;
+  if(compassOn&&run&&run.detected&&(!run.gm||run.guess)){const dz=run.v.z,lx=Math.max(-5,Math.min(5,run.v.x-camX));if(dz>-12&&dz<240){const [mx,my]=PJ(lx,Math.max(-9,dz));const on=Math.floor(performance.now()/250)%2;
     g.fillStyle=on?"#ff3b30":"#ff8a80";g.beginPath();g.arc(mx,my,7,0,7);g.fill();g.strokeStyle="#fff";g.lineWidth=2;g.stroke()}}
   // 我的車（固定在中間）＋車子旁邊的圈圈＝聲音羅盤
   const R1=62, R0=32;
   g.save(); g.translate(cxm,cym); g.scale(1,0.5);
   if(compassOn){const lobes=[];
     if(hornMark&&hornMark.t<2.5) lobes.push({a:bearing(hornMark.o.x-camX,hornMark.o.z),v:0.72*Math.min(1,2.5-hornMark.t)});
-    if(run&&(!run.gm||run.guess)) lobes.push({a:bearing(run.v.x-camX,run.v.z),v:Math.max(0.45,Math.min(1,1-(Math.hypot(run.v.x-camX,run.v.z)-10)/160))});
+    if(run&&run.detected&&(!run.gm||run.guess)) lobes.push({a:bearing(run.v.x-camX,run.v.z),v:Math.max(0.45,Math.min(1,1-(Math.hypot(run.v.x-camX,run.v.z)-10)/160))});
     heat(0,0,R0,R1,lobes)}
   else{g.strokeStyle="rgba(200,210,220,.35)";g.lineWidth=4;g.beginPath();g.arc(0,0,R1-8,0,7);g.stroke()}
   g.restore();
@@ -1264,6 +1264,7 @@ function dashboard(){
   let msg="聲音羅盤：沒有聽到警笛", mc="#b9c6d8";
   if(!compassOn){msg="聲音羅盤已關閉";mc="#8a949b"}
   else if(run){ if(run.gm&&!run.guess){msg="警笛！先用耳朵猜";mc="#ff8a8a"}
+    else if(!run.detected){msg="🔊 聽到警笛聲…聲音羅盤偵測方向中";mc="#ffd23b"}
     else{const a=bearing(run.v.x-camX,run.v.z),d=Math.hypot(run.v.x-camX,run.v.z);msg=`🚨 ${KN[run.kind]}警笛・${word(a)}・約 ${Math.round(d)} 公尺　${run.v.front?(run.v.z>0?"迎面而來":"已經過去"):(run.v.z<0?"從後面靠近":"超過我們了")}`;mc="#ff8a80"}}
   else if(hornMark&&hornMark.t<2.5){msg=`📣 喇叭・${hornMark.o.label}・${word(bearing(hornMark.o.x-camX,hornMark.o.z))}`;mc="#ffd166"}
   g.fillStyle=mc; g.fillText(msg,sx+20,sy+sh-20,sw-40);
@@ -1284,6 +1285,7 @@ function hud(){ if(!run) return; let t=null, c="#ffd23b";
   if(run.gm&&!run.guess) t="聽到警笛…在前面還是後面？";
   else if(run.endT!==null){t=`${KN[run.kind]}已通過・恢復車道`;c="#7be3a5"}
   else if(run.yieldMsg) t=`自動讓道中・減速到 ${Math.round(egoV*3.6)} km/h`;
+  else if(!run.detected) t="聽到警笛聲…偵測方向中";
   else if(run.detected){t=`偵測到${KN[run.kind]}警笛・${word(bearing(run.v.x-camX,run.v.z))}`;c="#ff8a8a"}
   if(!t) return; g.font="bold 18px "+css("--body"); const w=g.measureText(t).width+36, x=W/2-w/2, y=MY+MH+26;
   g.fillStyle="rgba(15,20,25,.72)"; rr(x,y,w,34,10); g.fill(); g.strokeStyle=c; g.lineWidth=2; g.stroke();
@@ -1295,7 +1297,8 @@ function update(dt){
   const v=run&&run.v;
   // 讓道：緊急車輛在後方 70 公尺內、或前方 120 公尺內迎面而來
   let yf=0;
-  if(v){ const d=Math.hypot(v.x-camX,v.z); if(!v.front) yf=v.z<30?Math.max(0,Math.min(1,(75-d)/35)):Math.max(0,1-(v.z-30)/25);
+  if(v&&!v.front) v.v=egoV+(v.z<-100?32:12);   // 遠的時候開快一點（不用等太久），靠近後慢下來
+  if(v){ const d=Math.hypot(v.x-camX,v.z); if(!v.front) yf=v.z<30?Math.max(0,Math.min(1,(48-d)/22)):Math.max(0,1-(v.z-30)/25);   // 靠近到 48 公尺內才開始讓道
          else yf=v.z>-10?Math.max(0,Math.min(1,(130-v.z)/50))*0.6:0 }
   const slow=CRUISE-(CRUISE-6)*yf;
   egoV+=(slow-egoV)*Math.min(1,dt*1.5); travel+=egoV*dt;
@@ -1311,8 +1314,9 @@ function update(dt){
     const passed=(!v.front&&v.z>45)||(v.front&&v.z<-25);
     if(passed&&run.endT===null){run.endT=0;cap(`<b>${KN[run.kind]}過去了！</b>大家回到原本的車道，繼續往前開。`)}
     if(run.endT!==null){run.endT+=dt; if(run.endT>1.0) finish()}
-    else if(!run.detected&&(!run.gm||run.guess)&&(v.front?v.z<160:v.z>-95)){run.detected=true;
-      cap(`<b>偵測到${KN[run.kind]}警笛！</b>聲音羅盤算出它在你的<b>${word(bearing(v.x-camX,v.z))}</b>，約 ${Math.round(Math.hypot(v.x-camX,v.z))} 公尺，${v.front?"迎面而來":"正從後面靠近"}。`)}
+    else if(!run.detected&&(!run.gm||run.guess)&&run.t>1.8&&(v.front?v.z<160:v.z>-240)){run.detected=true;
+      cap(`<b>偵測到${KN[run.kind]}警笛！</b>聲音羅盤算出它在你的<b>${word(bearing(v.x-camX,v.z))}</b>，約 ${Math.round(Math.hypot(v.x-camX,v.z))} 公尺，${v.front?"迎面而來":"正從後面靠近"}。${v.front?"":"<b>後照鏡還看不到它</b>，但聲音已經先告訴我們了。"}`)}
+    else if(run.detected&&!v.front&&!run.seen&&v.z>-90){run.seen=true;cap(`<b>後照鏡看到${KN[run.kind]}了！</b>聲音羅盤比眼睛早了 ${Math.max(1,Math.round(run.t-1.8))} 秒知道它來了。等它再靠近一點，就開始讓道。`)}
     else if(yf>0.2&&!run.yieldMsg){run.yieldMsg=true; if(!run.gm||run.guess) cap(v.front?`<b>自動讓道：</b>你的車自動減速；對向車道的車往路邊靠，讓${KN[run.kind]}通過。`:`<b>自動讓道：</b>你的車自動<b>減速、往左靠</b>；右車道的車往右靠，中間讓出一條路給${KN[run.kind]}。`)} }
 }
 let last=performance.now();
@@ -1935,32 +1939,48 @@ document.head.appendChild(st)})();
 .shots .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .shots figure{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line,#d3dbe0);border-radius:12px;padding:8px;background:var(--bg,#f6f8f9)}
 .shots img{width:100%;border-radius:8px;display:block}.shots textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;min-height:3.2em;resize:vertical}
-.shots .del{align-self:flex-end;font-size:13px;padding:3px 10px}.shots .empty{border:2px dashed var(--line,#d3dbe0);border-radius:12px;display:flex;align-items:center;justify-content:center;min-height:120px;color:var(--muted,#5b6b75);font-size:14px;text-align:center;padding:10px}
+.shots .del{font-size:13px;padding:3px 10px}.shots .use{display:inline-block;margin-top:4px;font-size:12px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent,#2f7d5b) 14%,transparent);color:var(--accent,#2f7d5b)}.shots figure.on{outline:3px solid var(--accent,#2f7d5b)}.shots figure.flash{outline:3px solid #f0a020}.shots .empty{border:2px dashed var(--line,#d3dbe0);border-radius:12px;display:flex;align-items:center;justify-content:center;min-height:120px;color:var(--muted,#5b6b75);font-size:14px;text-align:center;padding:10px}
 </style>
 <script>
-/* 3D／平面畫面的 📷 截圖：除了下載，也放在畫面下面（每個情境最多 3 張），每張可以寫圖片描述、可以刪掉。
-   存在「ws5-shots」（全隊一份，會跟著學習單一起存到雲端）；作品說明（初審）每一格都可以「📷 從情境截圖選」放進去。 */
-(()=>{const KEY="ws5-shots@_team",MAX=3;
-  const TABS={tab1:"🚦 情境1：路口",tab2:"🚗 情境2：駕駛",tab3:"📦 實驗模型"};
+/* 情境1、情境2 的「說明用截圖」：每個情境 3 格，各有要拍的畫面，之後自動放進「科展作品說明」的研究動機／研究目的。
+   存在「ws5-shots」的 slots 裡（全隊一份，會存到雲端）。按 📷：放進選好的那格，沒選就放第一個空格。 */
+(()=>{const KEY="ws5-shots@_team";
+  const SLOTS={
+    tab1:[{k:"jam",t:"緊急車輛塞在車陣中",h:"紅燈時，救護車被前面停著的車子擋住，過不去",use:"motive"},
+          {k:"green",t:"紅綠燈切換：緊急車輛這邊綠燈、其他方向紅燈",h:"智慧路口聽到警笛，把救護車那條路變綠燈",use:"goal"},
+          {k:"pass",t:"緊急車輛順利通過路口",h:"車子讓開，救護車開過路口",use:"goal"}],
+    tab2:[{k:"hear",t:"關著車窗，聽得到警笛卻不知道它在哪裡",h:"剛聽到警笛：後照鏡還看不到車，不知道要往哪裡讓",use:"motive"},
+          {k:"screen",t:"車用螢幕顯示警笛從哪裡來",h:"聲音羅盤標出警笛的方向和距離",use:"goal"},
+          {k:"yield",t:"汽車自動閃避，讓出通道",h:"緊急車輛靠近時，車子減速、往旁邊靠",use:"goal"}]};
+  const USE={motive:"研究動機",goal:"研究目的"};
   const rd=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){return {}}};
   const wr=o=>{try{localStorage.setItem(KEY,JSON.stringify(o));localStorage.setItem(KEY+"#ts",String(Date.now()));window.__rawSync&&window.__rawSync("ws5-shots");return true}catch(e){alert("截圖太多，這台電腦存不下了，先刪掉幾張。");return false}};
   const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const small=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const W=Math.min(1280,im.width),c=document.createElement("canvas");c.width=W;c.height=Math.round(im.height*W/im.width);
     const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(u);im.src=u});
+  const force={};
+  const slot=(o,tab,k)=>{o.slots=o.slots||{};o.slots[tab]=o.slots[tab]||{};return o.slots[tab][k]||(o.slots[tab][k]={src:"",cap:""})};
   function box(tab){const T=document.getElementById(tab);if(!T)return null;let b=T.querySelector(":scope > .shots");
     if(!b){b=document.createElement("div");b.className="shots";T.appendChild(b)}return b}
-  function render(tab){const b=box(tab);if(!b)return;const L=(rd()[tab]||[]);
-    b.innerHTML=`<h3>📷 我的截圖（${L.length}／${MAX}）</h3><p class="tip">按畫面左下角的 📷 就會截一張放在這裡（最多 ${MAX} 張），寫下這張圖在說什麼。之後在「📋 科展作品說明」每一格都可以選這些截圖放進去。</p><div class="grid"></div>`;
+  function render(tab){const b=box(tab);if(!b||!SLOTS[tab])return;const o=rd();
+    b.innerHTML=`<h3>📷 說明用的截圖（${SLOTS[tab].filter(s=>slot(o,tab,s.k).src).length}／3）</h3><p class="tip">照下面三格的說明，把畫面調到那個時候（可以按「❚❚ 暫停」），再按畫面上的 📷。截圖會放進選好的那格（沒選就放第一個空格），寫一句圖片描述。匯出「📋 科展作品說明」時，會<b>自動放進研究動機或研究目的</b>。</p><div class="grid"></div>`;
     const G=b.querySelector(".grid");
-    L.forEach((s,i)=>{const f=document.createElement("figure");f.innerHTML=`<img alt="截圖 ${i+1}" src="${s.src}"><textarea placeholder="圖片描述：這張圖在說什麼？（例如：救護車從北邊來，紅燈時路口車子擋住了）" aria-label="截圖 ${i+1} 的圖片描述">${esc(s.cap)}</textarea><button type="button" class="del">🗑 刪掉這張</button>`;
-      f.querySelector("textarea").addEventListener("input",e=>{const o=rd();if(o[tab]&&o[tab][i]){o[tab][i].cap=e.target.value;wr(o)}});
-      f.querySelector(".del").addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const o=rd();(o[tab]||[]).splice(i,1);wr(o);render(tab)});G.appendChild(f)});
-    for(let i=L.length;i<MAX;i++){const e=document.createElement("div");e.className="empty";e.textContent=i===L.length?"按 📷 截一張放這裡":"空位";G.appendChild(e)}}
-  addEventListener("pp-snap",async e=>{const T=e.detail.host&&e.detail.host.closest('[id^="tab"]'),tab=T&&T.id;if(!TABS[tab])return;
-    const o=rd(),L=o[tab]=o[tab]||[];if(L.length>=MAX){alert(`已經有 ${MAX} 張截圖了，先在下面刪掉一張，再截新的。（這張還是有下載到電腦裡）`);return}
-    L.push({src:await small(e.detail.u),cap:"",from:TABS[tab],t:Date.now()});if(wr(o)){render(tab);const b=box(tab);b.scrollIntoView({behavior:"smooth",block:"nearest"})}});
-  addEventListener("storage",e=>{if(e.key===KEY)Object.keys(TABS).forEach(t=>{const a=document.activeElement;if(!(a&&a.closest&&a.closest("#"+t+" .shots")))render(t)})});
-  Object.keys(TABS).forEach(render);window.__onRaw=k=>{if(k==="ws5-shots")Object.keys(TABS).forEach(render)};})();
+    SLOTS[tab].forEach((s,i)=>{const x=slot(o,tab,s.k),f=document.createElement("figure");if(force[tab]===s.k)f.classList.add("on");
+      f.innerHTML=`<div><b>${i+1}. ${s.t}</b><div class="tip" style="margin:2px 0 0">${s.h}</div><span class="use">→ 放在「${USE[s.use]}」</span></div>
+        ${x.src?`<img alt="${esc(s.t)}" src="${x.src}">`:`<div class="empty">還沒有截圖</div>`}
+        <textarea placeholder="圖片描述：這張圖在說什麼？" aria-label="${esc(s.t)} 的圖片描述">${esc(x.cap)}</textarea>
+        <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="del" data-f>${force[tab]===s.k?"✓ 下一張放這格":"下一張放這格"}</button>${x.src?'<button type="button" class="del" data-d>🗑 刪掉</button>':""}</div>`;
+      f.querySelector("textarea").addEventListener("input",e=>{const o=rd();slot(o,tab,s.k).cap=e.target.value;wr(o)});
+      f.querySelector("[data-f]").addEventListener("click",()=>{force[tab]=force[tab]===s.k?null:s.k;render(tab)});
+      const d=f.querySelector("[data-d]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const o=rd();slot(o,tab,s.k).src="";wr(o);render(tab)});
+      G.appendChild(f)})}
+  addEventListener("pp-snap",async e=>{const T=e.detail.host&&e.detail.host.closest('[id^="tab"]'),tab=T&&T.id;if(!SLOTS[tab])return;
+    const o=rd(),k=force[tab]||(SLOTS[tab].find(s=>!slot(o,tab,s.k).src)||{}).k;
+    if(!k){alert("三格都有截圖了。想換哪一張，先按那格的「下一張放這格」，再按 📷。（這張還是有下載到電腦裡）");return}
+    slot(o,tab,k).src=await small(e.detail.u);force[tab]=null;
+    if(wr(o)){render(tab);const f=box(tab).querySelectorAll("figure")[SLOTS[tab].findIndex(s=>s.k===k)];if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}}});
+  addEventListener("storage",e=>{if(e.key===KEY)Object.keys(SLOTS).forEach(t=>{const a=document.activeElement;if(!(a&&a.closest&&a.closest("#"+t+" .shots")))render(t)})});
+  window.__shotSlots=SLOTS;Object.keys(SLOTS).forEach(render);window.__onRaw=k=>{if(k==="ws5-shots")Object.keys(SLOTS).forEach(render)};})();
 </script>
 <!-- SHOTS END -->
 
@@ -6232,10 +6252,10 @@ svg text{font-family:var(--body)}
     <div class="frow"><div class="fh">科別</div><div class="fc kinds" id="kinds"></div></div>
     <div class="frow"><div class="fh">作品名稱</div><div class="fc" style="display:grid;gap:6px"><input type="text" id="title" class="wide" aria-label="作品名稱（主標題）"><div style="display:flex;align-items:center;gap:6px"><span aria-hidden="true">——</span><input type="text" id="subtitle" class="wide" aria-label="作品名稱（副標題）" style="flex:1"></div></div></div>
     <div class="frow"><div class="fh">研究動機<small>（描述為何想研究的起因）</small></div><div class="fc"><textarea id="motive" rows="6" aria-label="研究動機"></textarea>
-      <div class="pics" data-k="motivePics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="motivePics" multiple hidden></label></div></div>
+      <p class="note" style="margin:6px 0 0">🚦🚗 情境1、情境2 裡寫著「放在研究動機」的截圖，匯出 Word 時會自動放進這一格。</p><div class="pics" data-k="motivePics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="motivePics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea>
       <button type="button" class="imp" id="impTree" hidden>📥 帶入研究架構圖</button>
-      <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
+      <p class="note" style="margin:6px 0 0">🚦🚗 情境1、情境2 裡寫著「放在研究目的」的截圖，匯出 Word 時會自動放進這一格。</p><div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的三個實驗所需要的實驗器材</b>。</p><textarea id="tools" hidden aria-hidden="true"></textarea></div></div>
     <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗過程</b>：研究問題、器材、實驗步驟、模型截圖和實驗照片都會照學習單的樣子排好。</p></div></div>
     <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗結果</b>：表格、圖、分析和結論都會照學習單的樣子排好。</p><textarea id="result" hidden aria-hidden="true"></textarea></div></div>
@@ -6294,7 +6314,8 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 /* 每一格都可以「📷 從情境截圖選」：情境1、情境2、實驗模型按 📷 截下來的圖（含孩子寫的描述） */
 (()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(e){return {}}};
     const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,x])=>["模型截圖："+n,x]),...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
-    return [...W,...["tab1","tab2","tab3"].flatMap(t=>o[t]||[])]};
+    const SN={tab1:"情境1",tab2:"情境2"},SS=Object.entries(o.slots||{}).flatMap(([tab,m])=>Object.values(m||{}).filter(x=>x&&x.src).map(x=>({src:x.src,cap:x.cap||"",from:SN[tab]||tab})));
+    return [...SS,...W,...["tab1","tab2","tab3"].flatMap(t=>Array.isArray(o[t])?o[t]:[])]};
   document.querySelectorAll('label.addpic').forEach(lab=>{const k=lab.querySelector("input").dataset.k;
     const b=document.createElement("button");b.type="button";b.className="imp shotbtn";b.textContent="📷 從截圖和照片選";lab.after(b);
     const pan=document.createElement("div");pan.className="shotpick";pan.hidden=true;b.after(pan);
@@ -6396,6 +6417,12 @@ btn.addEventListener("click",async()=>{
     const para=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??40,line:300},children:[new TextRun({text:t,bold:o.bold,size:o.size??24,color:o.color})]});
     const lines=t=>String(t||"").split("\n").map(l=>para(l));
     const head=(t,hint)=>new TableCell({width:{size:2300,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:100,right:100},children:[para(t,{bold:true}),...(hint?[para(""),para(hint,{size:20,color:"666666"})]:[])]});
+    /* 情境1、情境2 的說明用截圖：照它寫的用途，自動放進研究動機或研究目的 */
+    const SL={tab1:[["jam","緊急車輛塞在車陣中","motive"],["green","紅綠燈切換：緊急車輛這邊綠燈、其他方向紅燈","goal"],["pass","緊急車輛順利通過路口","goal"]],
+      tab2:[["hear","關著車窗，聽得到警笛卻不知道它在哪裡","motive"],["screen","車用螢幕顯示警笛從哪裡來","goal"],["yield","汽車自動閃避，讓出通道","goal"]]};
+    const sceneShots=use=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const out=[];
+      for(const [tab,L] of Object.entries(SL))for(const [k,title,u] of L){const x=o.slots&&o.slots[tab]&&o.slots[tab][k];if(u===use&&x&&x.src)out.push({src:x.src,cap:(tab==="tab1"?"情境1：":"情境2：")+title+(x.cap?"。"+x.cap:"")})}return out};
+    const withScene=(arr,use)=>{const mine=arr||[],seen=new Set(mine.map(p=>p.src));return [...mine,...sceneShots(use).filter(p=>!seen.has(p.src))]};
     async function pics(arr){const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
       out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:120},children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:W,height:H}})]}));
       if(p.cap)out.push(para(p.cap,{align:AlignmentType.CENTER,size:20,color:"444444",after:120}))}return out}
@@ -6407,8 +6434,8 @@ btn.addEventListener("click",async()=>{
       row("年級",null,S.mems.map(m=>para(`${m.yr||"　"} 年 ${m.cls||"　"} 班　　姓名：${m.nm||""}`))),
       row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
       row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
-      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
-      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
+      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(withScene(S.motivePics,"motive"))],1800),
+      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
       row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",(((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})],2000),
