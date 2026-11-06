@@ -3856,7 +3856,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -5159,7 +5159,7 @@ const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.maxDistance
 addPanPad(host,cam,ctl,"bl",()=>{renderer.render(scene,cam);   // 截圖：女孩＋下面的說明與波形，拼成一張
   const a=renderer.domElement,sc=$("hScope"),W=a.width,k=W/a.clientWidth,pad=Math.round(16*k);
   const res=$("hRes").cloneNode(true);res.querySelectorAll(".note,br").forEach(e=>e.remove());const txt=res.textContent.trim();
-  const sh=sc.width?Math.round(sc.height*(W-2*pad)/sc.width):0,th=txt?Math.round(40*k):0;
+  const sh=0,th=txt?Math.round(40*k):0;
   const c=document.createElement("canvas");c.width=W;c.height=a.height+pad+th+sh+pad;const g=c.getContext("2d");
   const cs=getComputedStyle(document.documentElement);g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,c.width,c.height);
   g.drawImage(a,0,0);let y=a.height+pad;
@@ -5636,7 +5636,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -5758,6 +5758,14 @@ window.__galModelOnly=true;   // 學習單三的「模型截圖」只收小模�
   const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{const st=f.contentDocument.createElement("style");st.textContent=".hud{display:none!important}";f.contentDocument.head.appendChild(st)}catch(e){}try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
     f.srcdoc=src.textContent.replace(/%%ENDSCRIPT%%/g,"</"+"script")};
   try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){go();o.disconnect()}},{rootMargin:"400px"}).observe(f)}catch(e){go()}})();
+setTimeout(()=>{const sc=document.querySelector(".scope-card");makeShotSlot(sc,"學習單三_兩隻耳朵","兩隻耳朵聽聲音",()=>S.gal1,g=>{S.gal1=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}})},0);   // 女孩／男孩聽音樂的截圖，放在波形下面
+/* 按 📷 時，同時把「圖 3-1 兩隻耳朵收到的聲音」存成一張圖，放進研究過程 */
+const S31=()=>{const c=$("hScope");if(!c||!c.width)return "";const o=document.createElement("canvas");o.width=c.width;o.height=c.height;const g=o.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,o.width,o.height);g.drawImage(c,0,0);return o.toDataURL("image/jpeg",0.85)};
+function draw31(){let el=document.getElementById("fig31");const sl=document.querySelector(".scope-card + .shotslot");if(!sl)return;
+  if(!el){el=document.createElement("div");el.id="fig31";el.style.marginTop="10px";sl.appendChild(el)}
+  el.innerHTML=S.fig31?`<div class="note" style="margin:0 0 4px">同一個時候的「圖 3-1　兩隻耳朵收到的聲音」（也會放進報告）：</div><img src="${S.fig31}" alt="圖 3-1 兩隻耳朵收到的聲音" style="width:100%;border:1px solid var(--line,#ddd);border-radius:8px">`:""}
+addEventListener("pp-snap",e=>{if(!e.detail||e.detail.name!=="學習單三_兩隻耳朵")return;S.fig31=S31();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}setTimeout(draw31,300)});
+setTimeout(()=>{if(!S.gal1||!(S.gal1.ms||{})["學習單三_兩隻耳朵"]||!S.gal1.ms["學習單三_兩隻耳朵"].src)S.fig31=S.fig31||"";draw31()},50);
 setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
 const USE0={1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"};
@@ -5870,7 +5878,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
-    B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));
+    B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));B.push(...await wordGal(S.gal1,"兩隻耳朵聽聲音的截圖"));if(S.fig31){const [w,h]=await new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,1]);i.src=S.fig31});B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(S.fig31)).arrayBuffer()),transformation:{width:440,height:Math.round(440*h/w)}})]}));B.push(cap("圖 3-1、兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"))}
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
     B.push(H("二、從時間差找出角度"));B.push(...await wordFigs(secBy("二、"),[]));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
