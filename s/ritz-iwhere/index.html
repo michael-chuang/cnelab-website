@@ -3382,7 +3382,10 @@ stage.insertBefore(renderer.domElement,stage.firstChild);
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0f1424);
 const cam=new THREE.PerspectiveCamera(36,16/10,0.5,800);
 const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.minDistance=15; ctl.maxDistance=220;
-addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
+addPanPad(stage,cam,ctl,"bl",()=>{renderer.render(scene,cam);const a=renderer.domElement,sc=document.getElementById("airScope");
+  if(stage.id!=="airStage"||!sc)return a.toDataURL("image/png");
+  const W=a.width,h2=Math.round(sc.height*W/sc.width),gap=Math.round(W*0.012),c=document.createElement("canvas");c.width=W;c.height=a.height+gap+h2;   // 3D 畫面＋下面的波形一起截
+  const g=c.getContext("2d");g.fillStyle="#0e1422";g.fillRect(0,0,c.width,c.height);g.drawImage(a,0,0);g.drawImage(sc,0,a.height+gap,W,h2);return c.toDataURL("image/png")},stage.id==="airStage"?"喇叭推空氣":"彩虹彈簧");
 function size(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 new ResizeObserver(size).observe(stage); size();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334466,0.8));
