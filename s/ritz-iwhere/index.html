@@ -3778,7 +3778,7 @@ setTimeout(()=>makeEquip($("eqPics2"),$("equipList2"),()=>IMG.eq,(L)=>{IMG.eq=L;
 {if(IMG.gal&&IMG.gal.ms&&IMG.gal.ms["彩虹彈簧"]){delete IMG.gal.ms["彩虹彈簧"];saveImg()}   // 舊版只有一格，換成三格
  const st=$("stage");makeShotSlots(st&&st.closest(".sim"),"彩虹彈簧","彩虹彈簧",[
    {key:"before",title:"變出彈簧前",hint:"還沒按「✨ 變出彈簧」，只有波形"},
-   {key:"side",title:"變出彈簧後（側面）",hint:"按「側面看（波）」，截在彈簧忽快忽慢的時候"},
+   {key:"side",title:"變出彈簧後（側面）",hint:"按「側面看（波）」，比較波形與彈簧"},
    {key:"end",title:"正面看（圓）",hint:"最後按「正面看（圓）」"}],
   ()=>{const rv=$("reveal"),on=rv&&/收起/.test(rv.textContent),v=(document.querySelector("#views button.on[data-v]")||{}).dataset;return !on?"before":(v&&v.v==="end"?"end":"side")},
   ()=>IMG.gal,g=>{IMG.gal=g;return saveImg()})}
