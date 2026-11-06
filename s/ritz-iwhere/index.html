@@ -1084,7 +1084,7 @@ function drawVeh(o){
     wheelPair(x,y,w,h); g.fillStyle=body; rr(x-w/2,y-h*0.95,w,h*0.85,w*0.08); g.fill(); g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=1; g.stroke();
     g.fillStyle="rgba(35,45,55,.75)"; rr(x-w*0.36,y-h*0.86,w*0.72,h*0.26,w*0.05); g.fill();
     if(o.kind==="amb"){g.fillStyle="#e85d2a";g.fillRect(x-w/2,y-h*0.42,w,h*0.07);g.fillStyle="#d23a3a";g.fillRect(x-w*0.05,y-h*0.55,w*0.1,h*0.26);g.fillRect(x-w*0.13,y-h*0.47,w*0.26,h*0.09)}
-    if(o.kind==="police"){g.fillStyle="#15181a";rr(x-w/2,y-h*0.55,w,h*0.45,w*0.06);g.fill();g.fillStyle="#f4f6f8";g.font=`bold ${Math.max(6,w*0.13)}px sans-serif`;g.textAlign="center";g.fillText("POLICE",x,y-h*0.3)}
+    if(o.kind==="police"){g.fillStyle="#1f5fbf";g.fillRect(x-w/2,y-h*0.5,w,h*0.14);g.fillStyle="#1f5fbf";g.font=`bold ${Math.max(6,w*0.16)}px sans-serif`;g.textAlign="center";g.fillText("警察",x,y-h*0.16)}   // 臺灣警車：白底藍條
     if(o.kind==="fire"){g.fillStyle="#e6e6e0";g.fillRect(x-w/2,y-h*0.36,w,h*0.05)}
     g.fillStyle=front?"#fff8d8":"#ff3030"; g.fillRect(x-w*0.46,y-h*0.3,w*0.14,h*0.08); g.fillRect(x+w*0.32,y-h*0.3,w*0.14,h*0.08);
     g.fillStyle=on?"#ff2a2a":"#2a6bff"; g.fillRect(x-w*0.34,y-h*1.04,w*0.34,h*0.1); g.fillStyle=on?"#2a6bff":(o.kind==="fire"?"#ffd23b":"#ff2a2a"); g.fillRect(x,y-h*1.04,w*0.34,h*0.1);
@@ -1104,7 +1104,11 @@ function mirror(){
   const mz=MY+MH*0.55, mP=(x,z)=>[MX+MW/2+(x-camX)/z*MF, mz+CAMH/z*MF*0.55];
   g.fillStyle="#555b5f"; g.beginPath(); let a=mP(-4,4),b=mP(4,4),c=mP(4,300),d=mP(-4,300); g.moveTo(...a);g.lineTo(...b);g.lineTo(...c);g.lineTo(...d);g.fill();
   [...objs,...(run?[run.v]:[])].filter(o=>o.z<-2).sort((p,q)=>p.z-q.z).forEach(o=>{ const z=-o.z, [x,y]=mP(o.x,z), s=MF/z, w=o.w*s*0.9, h=o.h*s*0.9;
-    if(o.type==="emerg"){const on=Math.floor(performance.now()/170)%2;g.fillStyle=o.kind==="fire"?"#d32f2f":"#f6f7f8";g.fillRect(x-w/2,y-h,w,h);if(o.kind==="police"){g.fillStyle="#15181a";g.fillRect(x-w/2,y-h*0.55,w,h*0.45)}
+    if(o.type==="emerg"){const on=Math.floor(performance.now()/170)%2;g.fillStyle=o.kind==="fire"?"#d32f2f":"#f6f7f8";g.fillRect(x-w/2,y-h,w,h);
+      g.fillStyle="rgba(35,45,55,.7)";g.fillRect(x-w*0.4,y-h*0.92,w*0.8,h*0.3);   // 擋風玻璃
+      if(o.kind==="amb"){g.fillStyle="#d23a3a";const c=Math.max(4,w*0.34),k=c/3;g.fillRect(x-k/2,y-h*0.5-c/2,k,c);g.fillRect(x-c/2,y-h*0.5-k/2,c,k)}   // 車頭的紅十字
+      if(o.kind==="fire"){g.fillStyle="#fff";g.fillRect(x-w/2,y-h*0.5,w,h*0.1);g.font=`bold ${Math.max(6,w*0.28)}px sans-serif`;g.textAlign="center";g.fillStyle="#fff";g.fillText("119",x,y-h*0.14)}
+      if(o.kind==="police"){g.fillStyle="#1f5fbf";g.fillRect(x-w/2,y-h*0.55,w,h*0.16);g.font=`bold ${Math.max(6,w*0.26)}px sans-serif`;g.textAlign="center";g.fillStyle="#1f5fbf";g.fillText("警",x,y-h*0.12)}
       g.fillStyle="#fff8d8";g.fillRect(x-w*0.45,y-h*0.3,w*0.15,h*0.1);g.fillRect(x+w*0.3,y-h*0.3,w*0.15,h*0.1);
       g.fillStyle=on?"#ff2a2a":"#2a6bff";g.fillRect(x-w*0.35,y-h*1.08,w*0.35,h*0.12);g.fillStyle=on?"#2a6bff":"#ff2a2a";g.fillRect(x,y-h*1.08,w*0.35,h*0.12);return}
     g.fillStyle=o.type==="truck"?"#e3e5e6":o.color;g.fillRect(x-w/2,y-h,w,h);g.fillStyle="rgba(35,45,55,.6)";g.fillRect(x-w*0.38,y-h*0.92,w*0.76,h*0.3);
@@ -1866,10 +1870,10 @@ function vehIcon(s,k,cx,cy){   // 卡通風格的側面小車（車頭朝右）�
   const wx=k==="police"?[15,50]:k==="fire"?[12,26,51]:k==="trash"?[12,26,51]:[13,51];
   for(const x of wx){C({cx:x,cy:35.5,r:5.6,fill:"#2b2f33"});C({cx:x,cy:35.5,r:2.6,fill:"#c9ced3"});C({cx:x,cy:35.5,r:0.9,fill:"#7d858b"})}}
 
-document.querySelectorAll("#sirens button[data-s]").forEach(b=>{const s=el("svg",{viewBox:"0 -2 64 48",width:56,height:42,"aria-hidden":"true"});vehIcon(s,b.dataset.s,32,22);
-  const m=b.textContent.match(/^(.+?)（(.+)）$/);b.innerHTML="";b.classList.add("vbtn");b.appendChild(s);
-  const l=document.createElement("span");l.innerHTML=`<b>${m?m[1]:b.textContent}</b>`;/* 只寫車名，不寫聲音的樣子（後面要讓孩子自己去認識聲音） */b.appendChild(l)});
-const st=document.createElement("style");st.textContent="#sirens .vbtn{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:16px;min-width:108px}#sirens .vbtn span{display:flex;flex-direction:column;align-items:center;line-height:1.25}#sirens .vbtn small{font-size:12px;opacity:.8}#sirens .vbtn svg{display:block}#sirens .vbtn.on{outline:3px solid currentColor}";
+document.querySelectorAll("#sirens button[data-s],#kinds2 button[data-k]").forEach(b=>{const s=el("svg",{viewBox:"0 -2 64 48",width:56,height:42,"aria-hidden":"true"});vehIcon(s,b.dataset.s||b.dataset.k,32,22);
+  const tx=b.textContent.trim(),m=tx.match(/^(.+?)（(.+)）$/);b.innerHTML="";b.classList.add("vbtn");b.appendChild(s);
+  const l=document.createElement("span");l.innerHTML=`<b>${m?m[1]:tx}</b>`;/* 只寫車名，不寫聲音的樣子（後面要讓孩子自己去認識聲音） */b.appendChild(l)});
+const st=document.createElement("style");st.textContent="#sirens .vbtn,#kinds2 .vbtn{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:16px;min-width:108px}#sirens .vbtn span{display:flex;flex-direction:column;align-items:center;line-height:1.25}#sirens .vbtn small{font-size:12px;opacity:.8}#sirens .vbtn svg{display:block}#sirens .vbtn.on{outline:3px solid currentColor}#kinds2 .vbtn span{display:flex;flex-direction:column;align-items:center;line-height:1.25}#kinds2 .vbtn small{font-size:12px;opacity:.8}#kinds2 .vbtn svg{display:block}#kinds2 .vbtn.on{outline:3px solid currentColor}";
 document.head.appendChild(st)})();
 </script>
 <!-- SHOTS START -->
