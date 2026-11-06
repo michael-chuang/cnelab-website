@@ -23,17 +23,22 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
 </script>
 <!-- BIGSTORE START -->
 <script>
+window.__bigHost=1;   // 主頁面：自己等照片載入，不用停下來
 /* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
    大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
   B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
     tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
   B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
@@ -57,14 +62,13 @@ if(T===window){
   addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
     if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
     else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
-  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
-    const d=document.createElement("div");d.setAttribute("role","alert");
-    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
-    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
-    (document.body||document.documentElement).appendChild(d)});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
 }
 const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
 P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
   if(B.map.has(k))return B.map.get(k);
   const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
@@ -2077,12 +2081,16 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
   B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
     tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
   B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
@@ -2106,14 +2114,13 @@ if(T===window){
   addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
     if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
     else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
-  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
-    const d=document.createElement("div");d.setAttribute("role","alert");
-    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
-    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
-    (document.body||document.documentElement).appendChild(d)});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
 }
 const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
 P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
   if(B.map.has(k))return B.map.get(k);
   const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
@@ -3106,12 +3113,16 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
   B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
     tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
   B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
@@ -3135,14 +3146,13 @@ if(T===window){
   addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
     if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
     else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
-  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
-    const d=document.createElement("div");d.setAttribute("role","alert");
-    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
-    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
-    (document.body||document.documentElement).appendChild(d)});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
 }
 const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
 P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
   if(B.map.has(k))return B.map.get(k);
   const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
@@ -4520,12 +4530,16 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
   B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
     tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
   B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
@@ -4549,14 +4563,13 @@ if(T===window){
   addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
     if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
     else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
-  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
-    const d=document.createElement("div");d.setAttribute("role","alert");
-    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
-    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
-    (document.body||document.documentElement).appendChild(d)});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
 }
 const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
 P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
   if(B.map.has(k))return B.map.get(k);
   const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
@@ -6215,12 +6228,16 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
   B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
     tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
   B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
@@ -6244,14 +6261,13 @@ if(T===window){
   addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
     if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
     else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
-  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
-    const d=document.createElement("div");d.setAttribute("role","alert");
-    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
-    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
-    (document.body||document.documentElement).appendChild(d)});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
 }
 const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
 P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
   if(B.map.has(k))return B.map.get(k);
   const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
