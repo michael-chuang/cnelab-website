@@ -371,7 +371,7 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
     <div class="group">
       <h2>4　動畫速度</h2>
       <div class="row" id="speeds">
-        <button data-v="1">正常</button><button data-v="0.5" class="on">慢動作（½）</button><button data-v="0.25">超慢（¼）</button>
+        <button data-v="1">正常</button><button data-v="0.5" class="on">慢動作（½）</button><button data-v="0.25">超慢（¼）</button><button type="button" id="uPause" data-pause aria-pressed="false">❚❚ 暫停</button>
       </div>
     </div>
     <div class="guess" id="guess" hidden>
@@ -822,12 +822,14 @@ function renderLog(){
 document.getElementById("copy").addEventListener("click",async()=>{
   const t=["次數\t方向\t車種\t偵測系統\t系統判斷\t等紅燈（秒）\t結果",...history.map(h=>[h.n,h.d,h.s,h.m,h.est,h.wait.toFixed(1),h.ok].join("\t"))].join("\n");
   try{await navigator.clipboard.writeText(t);say("表格已複製，可以貼到 Excel 或 Google 試算表。","good")}catch(e){say("這裡不能直接複製，請用滑鼠選取表格再複製。","")}});
-document.querySelectorAll("#speeds button").forEach(b=>b.addEventListener("click",()=>{speed=+b.dataset.v;document.querySelectorAll("#speeds button").forEach(x=>x.classList.toggle("on",x===b))}));
+document.querySelectorAll("#speeds button:not([data-pause])").forEach(b=>b.addEventListener("click",()=>{speed=+b.dataset.v;document.querySelectorAll("#speeds button:not([data-pause])").forEach(x=>x.classList.toggle("on",x===b))}));
+let uPause=false;   // 暫停鍵：整個路口停住（車子、紅綠燈、聲波），再按一次繼續
+document.getElementById("uPause").addEventListener("click",e=>{uPause=!uPause;const b=e.currentTarget;b.textContent=uPause?"▶ 繼續":"❚❚ 暫停";b.classList.toggle("on",uPause);b.setAttribute("aria-pressed",uPause)});
 document.getElementById("clear").addEventListener("click",()=>{history=[];renderLog()});
 
 /* ===== 主迴圈 ===== */
 let last=performance.now();
-function loop(t){const dt=paused?0:Math.min(0.05,(t-last)/1000)*speed;last=t;
+function loop(t){const dt=(paused||uPause)?0:Math.min(0.05,(t-last)/1000)*speed;last=t;
   if(document.getElementById("tab1").hidden){requestAnimationFrame(loop);return}
   updateLights(dt); updateRun(dt); track(dt); updateCars(dt); if(shortened)shortened.t+=dt;
   for(const w of waves) w.r+=360*dt; waves=waves.filter(w=>w.r<900);
