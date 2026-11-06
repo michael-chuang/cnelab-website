@@ -4218,7 +4218,7 @@ td.no{color:var(--b);font-weight:700}
     </div>
     <div class="card"><h3>器材</h3><ul id="equipList3">
       <li>電腦或平板（用這個網頁做動畫和模擬）</li>
-      <li>小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭</li>
+      <li>小模型路口、玩具救護車、手機（播放警笛聲，放在救護車後面）</li>
       <li>陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」</li>
       <li>量角器或角度墊、捲尺</li>
       <li>要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）</li></ul><div id="eqPics3"></div></div>
@@ -4285,7 +4285,7 @@ td.no{color:var(--b);font-weight:700}
 <section>
   <h2>三、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
   <p class="lead">用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。</p>
-  <div class="card"><h3>小模型路口（3D）</h3><p class="note" style="margin:0 0 8px">實驗要搭的樣子：ReSpeaker 陣列式麥克風在路口正中央，接到電腦的「頻率雷達」；救護車上綁著藍牙喇叭。可以拖曳轉動、按左下角 📷 截圖，截圖會放進下面的「模型截圖」。</p>
+  <div class="card"><h3>小模型路口（3D）</h3><p class="note" style="margin:0 0 8px">用紙箱房子、紙膠帶道路、玩具小汽車和透明壓克力架擺出小路口：ReSpeaker 陣列式麥克風放在路口正中央，接到電腦的「頻率雷達」；手機播放警笛聲，放在玩具救護車後面一起移動。可以拖曳轉動，按左下角 📷 截圖，截圖會放進下面的「模型截圖」。</p>
     <iframe id="modelFrame" title="小模型路口 3D" style="width:100%;height:520px;border:0;border-radius:12px;background:#eee" loading="lazy"></iframe></div>
   <div class="card" id="gal3"></div>
   <div class="two">
@@ -4294,7 +4294,7 @@ td.no{color:var(--b);font-weight:700}
       <li>電腦打開「頻率雷達」，先照說明校正。</li>
       <li>先做「場景設定」（右邊）：記下 1～4 號麥克風各在雷達的幾度；再把救護車依序放在北、東、南、西四條路上，播警笛聲，記下雷達顯示的角度，填進去。</li>
       <li>點雷達中間的 1～4 號，選這一輪要用的麥克風。</li>
-      <li>把綁著藍牙喇叭的救護車放在某一條路上，「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。</li>
+      <li>把玩具救護車放在某一條路上，手機播放警笛聲、放在救護車後面；「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。</li>
       <li>播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。</li>
     </ol></div>
     <div class="card"><h3>場景設定（先做好再開始）</h3>
@@ -4335,7 +4335,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","P
 <div id="app"></div>
 <div class="hud">
   <h1>小模型路口 3D</h1>
-  <p>用紙箱房子、紙膠帶道路、玩具小汽車和透明壓克力架擺出的小路口。陣列式麥克風（ReSpeaker）放在壓克力板正中央，藍牙喇叭綁在玩具救護車上移動。</p>
+  <p>用紙箱房子、紙膠帶道路、玩具小汽車和透明壓克力架擺出的小路口。陣列式麥克風（ReSpeaker）放在壓克力板正中央；手機播放警笛聲，放在玩具救護車的後面一起移動。</p>
 </div>
 <div class="ctrl" id="ctrl"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">麥克風特寫</button><button data-v="spin">自動旋轉：關</button></div>
 <div class="tip">拖曳旋轉・滾輪或兩指縮放</div>
@@ -4620,15 +4620,16 @@ function moto(x,z,rotY,color=0xffd23b){const g=new THREE.Group();
   g.scale.setScalar(CS);g.rotation.y=rotY;g.position.set(x,0.4,z);g.traverse(o=>o.castShadow=true);scene.add(g)}
 moto(-22.5,7.6,0);moto(-22.5,2.6,0,0x6cbf6a);moto(-7.6,-22.5,-Math.PI/2,0xe8483f);moto(-2.6,-22.5,-Math.PI/2);
 
-// 救護車（白色廂型車＋紅色線條＋警示燈＋車頂的藍牙喇叭）
+// 救護車（白色廂型車＋紅色線條＋警示燈）；後面立著一支播警笛聲的手機
 const amb=place(van(0xf7f7f5,true),70,-5,"W");
 for(const s of [-1,1]) part(amb,7.0,0.38,0.06,paint(0xd32f2f),0,1.55,s*1.85);
 const crossT=canvasTex(64,64,(c)=>{c.fillStyle="#fff";c.fillRect(0,0,64,64);c.fillStyle="#d32f2f";c.fillRect(24,8,16,48);c.fillRect(8,24,48,16)});
 for(const s of [-1,1]){const cr=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),new THREE.MeshBasicMaterial({map:crossT}));cr.position.set(-1.6,2.75,s*1.86);if(s<0)cr.rotation.y=Math.PI;amb.add(cr)}
 function lampM(c){return new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:1.5})}
 const lbR=part(amb,0.7,0.45,1.1,lampM(0xff2a2a),1.4,3.95,-0.62), lbB=part(amb,0.7,0.45,1.1,lampM(0x2a6bff),1.4,3.95,0.62);
-const spk=part(amb,3.2,2.4,2.4,M(0x2a2e33,{roughness:0.6}),-1.4,4.95,0);
-const grill=new THREE.Mesh(new THREE.CircleGeometry(0.85,24),M(0x111111));grill.position.set(-1.4,4.95,1.21);amb.add(grill);
+const phone=part(amb,0.35,4.2,2.2,M(0x1c1f24,{roughness:0.4}),-4.6,2.3,0);   // 手機（直立在救護車後面）
+{const scrT=canvasTex(64,128,(c)=>{const g=c.getContext?c:c;c.fillStyle="#2a6bff";c.fillRect(0,0,64,128);c.fillStyle="#fff";c.font="bold 40px sans-serif";c.textAlign="center";c.fillText("🚨",32,62);c.font="bold 16px sans-serif";c.fillText("警笛",32,100)});
+ const scr=new THREE.Mesh(new THREE.PlaneGeometry(1.9,3.7),new THREE.MeshBasicMaterial({map:scrT}));scr.position.set(-4.8,2.3,0);scr.rotation.y=-Math.PI/2;amb.add(scr)}
 
 const waves=[];const circ=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
 for(let i=0;i<5;i++){const w=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:0.8}));w.position.set(70,9,-5);w.userData.ph=i/5;scene.add(w);waves.push(w)}
@@ -4640,7 +4641,7 @@ function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElemen
   g.fillStyle="rgba(255,255,255,.88)";const r=24;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,c.height,r);g.arcTo(w,c.height,0,c.height,r);g.arcTo(0,c.height,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
   g.fillStyle=color;g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,16+i*80));
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
-label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
+label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋手機（播警笛）",70,22,-5,6,"#b3122e");
 label("電腦",-58,30,54,5,"#1f4fa8");
 
 /* ---------- 視角、動畫 ---------- */
@@ -5310,7 +5311,7 @@ setTimeout(()=>makeEquip($("eqPics3"),$("equipList3"),()=>S.eq,(L)=>{S.eq=L;S.eq
 window.__galModelOnly=true;   // 學習單三的「模型截圖」只收小模型路口的截圖
 /* 小模型路口：看到才載入；模型裡按 📷 的截圖，放進「模型截圖」 */
 (()=>{const f=$("modelFrame"),src=$("modelSrc");if(!f||!src)return;let done=false;
-  const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
+  const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{const st=f.contentDocument.createElement("style");st.textContent=".hud{display:none!important}";f.contentDocument.head.appendChild(st)}catch(e){}try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
     f.srcdoc=src.textContent.replace(/%%ENDSCRIPT%%/g,"</"+"script")};
   try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){go();o.disconnect()}},{rootMargin:"400px"}).observe(f)}catch(e){go()}})();
 setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
@@ -5768,7 +5769,7 @@ svg text{font-family:var(--body)}
 
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
-const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）", "藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）", "遮光眼罩、隔音耳機（耳罩式）"], "st": ["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"]}, "2": {"eq": ["彩色串珠一大盒（拆散）、手機或相機（拍照）", "手機安裝 Phyphox，用「Audio Spectrum」", "電腦或平板（播 YouTube）、喇叭", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。", "依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？", "最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。"]}, "3": {"eq": ["電腦或平板（用這個網頁做動畫和模擬）", "小模型路口（見「實驗模型」分頁）、玩具救護車＋藍牙喇叭", "陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」", "量角器或角度墊、捲尺", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。", "電腦打開「頻率雷達」，先照說明校正。", "先做「場景設定」（右邊）：記下 1～4 號麥克風各在雷達的幾度；再把救護車依序放在北、東、南、西四條路上，播警笛聲，記下雷達顯示的角度，填進去。", "點雷達中間的 1～4 號，選這一輪要用的麥克風。", "把綁著藍牙喇叭的救護車放在某一條路上，「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。", "播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。"]}};
+const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條（各約 3 公尺）", "藍牙喇叭＋救護車警笛聲、分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）", "遮光眼罩、隔音耳機（耳罩式）"], "st": ["準備場地：在戶外找一塊平坦、比較安靜的空地（遠離車道和人多的地方），把大型量角器平放在地上，用膠帶或小石頭壓住，不讓風吹動。圓心對準受試者站的位置，0°（正前方）對準受試者的臉。", "分工：一人當受試者、一人當播音員、一人當記錄員，做完一輪再輪流換。", "受試者站在圓心，戴上眼罩，頭不能轉、身體不能動。", "播音員自己選一個位置，安靜地走過去，離受試者約 2 公尺（用繩子量）。正面面對受試者，喇叭朝向受試者；不要說話，也不要讓腳步聲洩漏位置。", "記錄員用分貝計確認音量約 75 dB（每次都一樣），說「開始」後，播音員播 2 秒救護車警笛。", "受試者聽完會用手指方向：用右手指出他覺得聲音來的方向，手先不要放下。", "綠色繩子＝拉到播音員（真實角度）：從量角器圓心拉到播音員腳下，讀出量角器上的刻度。", "彩色繩子＝沿著手指拉（指的角度）：從圓心沿著受試者的手指拉直，讀出刻度。", "記錄員把兩個角度寫進表 1-1。角度差＝兩個刻度相減（大減小，都是正的；超過 180° 就用 360 減掉）。", "A 未遮蔽做 5 次，每次換不同位置（前、後、左、右都要有）；B 戴上耳機（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。", "換下一位受試者，重複第 3～10 步。"]}, "2": {"eq": ["彩色串珠一大盒（拆散）、手機或相機（拍照）", "手機安裝 Phyphox，用「Audio Spectrum」", "電腦或平板（播 YouTube）、喇叭", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["打開 Phyphox 的「Audio Spectrum」：點上方的「Raw data」看原始波形，點「Spectrum」看頻譜（Peak-Frequency 就是主要頻率）。手機放在嘴巴前約 30 公分。", "依照表 2-2 發出不同聲音：波形有沒有一直重複同樣的形狀（規律）？頻譜有沒有尖尖的山峰？", "最高、最尖的山峰對應的頻率，就是這個聲音的「主要頻率」。截圖貼在下面。"]}, "3": {"eq": ["電腦或平板（用這個網頁做動畫和模擬）", "小模型路口、玩具救護車、手機（播放警笛聲，放在救護車後面）", "陣列式麥克風 ReSpeaker（4 支麥克風）＋電腦，開「頻率雷達」", "量角器或角度墊、捲尺", "要量音量（分貝）時：分貝計（美國國家職業安全衛生研究所 NIOSH SLM app）"], "st": ["搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。", "電腦打開「頻率雷達」，先照說明校正。", "先做「場景設定」（右邊）：記下 1～4 號麥克風各在雷達的幾度；再把救護車依序放在北、東、南、西四條路上，播警笛聲，記下雷達顯示的角度，填進去。", "點雷達中間的 1～4 號，選這一輪要用的麥克風。", "把玩具救護車放在某一條路上，手機播放警笛聲、放在救護車後面；「真實角度」就填場景設定裡那條路的角度（換了位置就用量角器重新量）。", "播警笛聲，記下雷達的角度。每一種麥克風數量做 8 次：四條路各 2 次，位置自己換。"]}};
 /* ================= 作品說明（初審）：資料、照片、匯出 Word（照附件 2 的表格） ================= */
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
