@@ -21,6 +21,65 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 </script>
+<!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
+  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
+    const d=document.createElement("div");d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
+    (document.body||document.documentElement).appendChild(d)});
+}
+const B=T.__BIG;
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+</script>
+<!-- BIGSTORE END -->
 <!-- AUDIOUNLOCK START -->
 <script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -147,6 +206,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -1980,7 +2040,7 @@ document.head.appendChild(st)})();
     slot(o,tab,k).src=await small(e.detail.u);force[tab]=null;
     if(wr(o)){render(tab);const f=box(tab).querySelectorAll("figure")[SLOTS[tab].findIndex(s=>s.k===k)];if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}}});
   addEventListener("storage",e=>{if(e.key===KEY)Object.keys(SLOTS).forEach(t=>{const a=document.activeElement;if(!(a&&a.closest&&a.closest("#"+t+" .shots")))render(t)})});
-  window.__shotSlots=SLOTS;Object.keys(SLOTS).forEach(render);window.__onRaw=k=>{if(k==="ws5-shots")Object.keys(SLOTS).forEach(render)};})();
+  window.__shotSlots=SLOTS;(window.__BIG&&window.__BIG.ready||Promise.resolve()).then(()=>Object.keys(SLOTS).forEach(render));window.__onRaw=k=>{if(k==="ws5-shots")Object.keys(SLOTS).forEach(render)};})();
 </script>
 <!-- SHOTS END -->
 
@@ -2010,7 +2070,66 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
-</head><body><!-- KIDSYNC START -->
+</head><body><!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
+  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
+    const d=document.createElement("div");d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
+    (document.body||document.documentElement).appendChild(d)});
+}
+const B=T.__BIG;
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+<\/script>
+<!-- BIGSTORE END -->
+<!-- KIDSYNC START -->
 <script>
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
@@ -2022,6 +2141,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -2955,7 +3075,8 @@ btn.addEventListener("click",async()=>{
 function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
 window.__ws1Show=on=>{if(!on||loaded)return;loaded=true;
   f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
-  f.srcdoc=document.getElementById("ws1src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+  const go=()=>{f.srcdoc=document.getElementById("ws1src").textContent.replace(/<\\\/script/g,"<"+"/script")};
+  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB4 END -->
@@ -2978,7 +3099,66 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
-</head><body><!-- KIDSYNC START -->
+</head><body><!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
+  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
+    const d=document.createElement("div");d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
+    (document.body||document.documentElement).appendChild(d)});
+}
+const B=T.__BIG;
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+<\/script>
+<!-- BIGSTORE END -->
+<!-- KIDSYNC START -->
 <script>
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
@@ -2990,6 +3170,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -4285,7 +4466,8 @@ btn.addEventListener("click",async()=>{
 function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
 window.__ws2Show=on=>{if(!on||loaded)return;loaded=true;
   f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
-  f.srcdoc=document.getElementById("ws2src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+  const go=()=>{f.srcdoc=document.getElementById("ws2src").textContent.replace(/<\\\/script/g,"<"+"/script")};
+  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB5 END -->
@@ -4308,7 +4490,66 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
-</head><body><!-- KIDSYNC START -->
+</head><body><!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
+  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
+    const d=document.createElement("div");d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
+    (document.body||document.documentElement).appendChild(d)});
+}
+const B=T.__BIG;
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+<\/script>
+<!-- BIGSTORE END -->
+<!-- KIDSYNC START -->
 <script>
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
@@ -4320,6 +4561,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -5919,7 +6161,8 @@ btn.addEventListener("click",async()=>{
 function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
 window.__ws3Show=on=>{if(!on||loaded)return;loaded=true;
   f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
-  f.srcdoc=document.getElementById("ws3src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+  const go=()=>{f.srcdoc=document.getElementById("ws3src").textContent.replace(/<\\\/script/g,"<"+"/script")};
+  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB6 END -->
@@ -5942,7 +6185,66 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
   document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
   document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
 <\/script>
-</head><body><script>window.KS_TEAM=1<\/script>
+</head><body><!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{if(window.top!==window&&window.top.__BIG&&window.top.location.origin===location.origin)T=window.top}catch(e){}
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  /* 單獨打開學習單（不是從主頁面）時，照片還沒載入就被讀了：請孩子回主頁面 */
+  B.ready.then(()=>{if(!B.missed.size||document.querySelector('[data-tab="tab4"]'))return;
+    const d=document.createElement("div");d.setAttribute("role","alert");
+    d.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff3cd;color:#5c4400;border:1px solid #e0c060;border-radius:12px;padding:12px 14px;font:15px/1.5 sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+    d.innerHTML='照片還在，但這一頁要從主頁面打開才看得到。<a href="./" style="font-weight:700">→ 回到主頁面</a>';
+    (document.body||document.documentElement).appendChild(d)});
+}
+const B=T.__BIG;
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+<\/script>
+<!-- BIGSTORE END -->
+<script>window.KS_TEAM=1<\/script>
 <!-- KIDSYNC START -->
 <script>
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
@@ -5955,6 +6257,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
   const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
   const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
   W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
     if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
@@ -6476,7 +6779,8 @@ btn.addEventListener("click",async()=>{
 function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
 window.__ws4Show=on=>{if(!on||loaded)return;loaded=true;
   f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
-  f.srcdoc=document.getElementById("ws4src").textContent.replace(/<\\\/script/g,"<"+"/script");};
+  const go=()=>{f.srcdoc=document.getElementById("ws4src").textContent.replace(/<\\\/script/g,"<"+"/script")};
+  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB7 END -->
