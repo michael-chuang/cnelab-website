@@ -321,8 +321,8 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
     <button class="tab" data-tab="tab4" role="tab">📝 學習單(一) Why 人因工程篇</button>
     <button class="tab" data-tab="tab5" role="tab">📝 學習單(二) What 傅立葉轉換篇</button>
     <button class="tab" data-tab="tab6" role="tab">📝 學習單(三) Where 聲源定位篇</button>
-    <button class="tab" data-tab="tab7" role="tab">📋 科展作品說明(初審)</button>
     <button class="tab" data-tab="tab8" role="tab">🗣 討論過程紀錄</button>
+    <button class="tab" data-tab="tab7" role="tab">📋 科展作品說明(初審)</button>
   </div>
 </header>
 
@@ -6369,6 +6369,492 @@ window.__ws3Show=on=>{if(!on||loaded)return;loaded=true;
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB6 END -->
+<!-- TAB8 START -->
+<div class="wrap" id="tab8" hidden style="margin-top:20px">
+<iframe id="ws5frame" title="討論過程紀錄" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+</div>
+<script type="text/plain" id="ws5src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
+/* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
+(()=>{if(window.__audioUnlock)return;window.__audioUnlock=1;const ACs=[];const O=window.AudioContext||window.webkitAudioContext;
+if(O){const W=function(o){const c=o?new O(o):new O();ACs.push(c);return c};W.prototype=O.prototype;try{window.AudioContext=W;window.webkitAudioContext=W}catch(e){}}
+let done=false;
+function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
+  if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
+  ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
+["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
+/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
+window.__hushers=window.__hushers||[];
+window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
+  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
+  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
+<\/script>
+</head><body><!-- BIGSTORE START -->
+<script>
+/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
+   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
+   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
+(()=>{if(window.__bigInst)return;window.__bigInst=1;
+let LS;try{LS=window.localStorage}catch(e){return}
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG){T=w;break}}}catch(e){}   // 往上找已經開好的那一份（別的網站的框會讀不到，就停）   // 往上找已經開好的那一份
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
+const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
+/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
+let SELF=false;
+if(T===window&&!window.__bigHost&&window.top===window){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
+if(T===window){
+  const map=new Map(),ver=new Map();let db=null;
+  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
+  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
+    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
+  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
+  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
+    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
+      o.onsuccess=()=>{db=o.result;B.ok=true;
+        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
+          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
+            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
+            c.continue()};
+          tx.oncomplete=()=>{
+            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
+            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
+            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
+            end()};
+          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
+      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
+  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
+    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
+  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
+  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
+    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
+    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
+  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
+    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
+    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
+    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
+}
+const B=T.__BIG;
+if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
+P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
+  if(B.map.has(k))return B.map.get(k);
+  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
+P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
+  if(v.length>=MIN&&B.ok){B.store(k,v);return}
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oS.call(this,k,v)};
+P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
+  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
+  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
+  return oR.call(this,k)};
+})();
+<\/script>
+<!-- BIGSTORE END -->
+<script>window.KS_TEAM=1<\/script>
+<!-- KIDSYNC START -->
+<script>
+/* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
+   資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
+   連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  if(W.__FBP)return W.__FBP;
+  const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
+  const CFG={apiKey:"AIzaSyCAGlOVeifH8SIQ8YgE8ZXmZMJYs80i9Zc",authDomain:"ritz-iwhere.firebaseapp.com",projectId:"ritz-iwhere",storageBucket:"ritz-iwhere.firebasestorage.app",messagingSenderId:"534026294493",appId:"1:534026294493:web:29807da1cf6bf69b413734"};
+  const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
+  const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
+  W.__FBP=timeout((async()=>{
+    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
+    if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
+    const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
+    await fb.auth().signInAnonymously();
+    const db=fb.firestore(),root=db.collection("teams").doc("ritz"),D=root.collection("docs"),C=root.collection("chunks"),CH=250000;
+    const HI=root.collection("hist"),HC=root.collection("hchunks"),KEEP=12;   // 舊版本：每張學習單留最近 12 份
+    const meta=new Map(),who=new Map(),subs=new Set(),lastSnap=new Map();let loaded=false;
+    let DEV="";try{DEV=W.localStorage.getItem("wwt-dev")||"";if(!DEV){DEV="d"+Math.random().toString(36).slice(2,10);W.localStorage.setItem("wwt-dev",DEV)}}catch(e){DEV="d"+Math.random().toString(36).slice(2,10)}
+    const NAME=()=>{const u=navigator.userAgent;return /iPhone/.test(u)?"iPhone":/iPad/.test(u)?"iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows 電腦":"電腦"};
+    async function snap(key,data,ts,dev,dn,why){ts=+ts>1e12?+ts:Date.now();const id=key+"~"+ts,n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
+      for(let i=0;i<n;i++)b.set(HC.doc(id+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
+      b.set(HI.doc(id),{key,ts:+ts,n,len:data.length,dev:dev||"",dn:dn||"",why:why||"",at:fb.firestore.FieldValue.serverTimestamp()});
+      await timeout(b.commit(),30000,"hist "+key);lastSnap.set(key,Date.now());
+      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>y.ts-x.ts);   // 太多就把最舊的刪掉
+        for(const o of L.slice(KEEP)){const d=db.batch();for(let i=0;i<(o.n||1);i++)d.delete(HC.doc(o.id+"~"+i));d.delete(HI.doc(o.id));await d.commit()}}catch(e){}}
+    async function lastSnapOf(key){if(lastSnap.has(key))return lastSnap.get(key);
+      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>+(d.data().ts||0));const t=L.length?Math.max(...L):0;lastSnap.set(key,t);return t}catch(e){return Date.now()}}
+    const api={
+      async save(key,data,ts){data=String(data??"");
+        /* 存之前先留一份舊版本：上一次是別台電腦存的（換電腦了），先把雲端那一份留起來；同一台每 10 分鐘也留一份 */
+        try{const pw=who.get(key);
+          if(pw&&pw.dev&&pw.dev!==DEV&&meta.has(key)){const old=await api.load(key);if(old&&old.data)await snap(key,old.data,old.ts,pw.dev,pw.dn,"換電腦之前")}
+          else if(Date.now()-(await lastSnapOf(key))>600000&&data.length)setTimeout(()=>snap(key,data,+ts||Date.now(),DEV,NAME(),"每 10 分鐘").catch(()=>{}),0)}catch(e){}
+        const n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
+        for(let i=0;i<n;i++)b.set(C.doc(key+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
+        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:data.length,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()});
+        await timeout(b.commit(),20000,"save "+key);meta.set(key,+ts||Date.now());who.set(key,{dev:DEV,dn:NAME()})},
+      /* 舊版本清單、拿回某一版 */
+      async hist(key){const L=(await timeout(HI.where("key","==",key).get(),20000,"hist")).docs.map(d=>({id:d.id,...d.data()}));return L.sort((x,y)=>y.ts-x.ts)},
+      async histLoad(id){const m=await HI.doc(id).get();if(!m.exists)return null;const {n,ts,key}=m.data();
+        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>HC.doc(id+"~"+i).get())),30000,"hchunks");return {key,ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+      snap:(key,data,ts,why)=>snap(key,data,ts,DEV,NAME(),why),dev:DEV,
+      async load(key){const m=await timeout(D.doc(key).get(),20000,"load "+key);if(!m.exists)return null;const {ts,n}=m.data();
+        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
+        return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+      ts:key=>meta.get(key),loaded:()=>loaded,
+      watch(cb){subs.add(cb);if(loaded){for(const [k,t] of meta)cb(k,t);cb(null)}return()=>subs.delete(cb)}};
+    const tell=(...a)=>subs.forEach(f=>{try{f(...a)}catch(e){subs.delete(f)}});   // 已經關掉的分頁會出錯，就把它拿掉
+    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.type==="removed")return;const k=c.doc.id,x=c.doc.data(),t=+(x.ts||0);meta.set(k,t);who.set(k,{dev:x.dev||"",dn:x.dn||""});ch.push([k,t])});
+      const first=!loaded;loaded=true;ch.forEach(([k,t])=>tell(k,t));if(first)tell(null)},e=>console.warn("[firebase]",e));
+    return api})(),15000,"connect");
+  W.__FBP.catch(e=>console.warn("[firebase] 連不上，改用 Google 試算表：",e&&e.message||e));
+  return W.__FBP})();
+/* 每個小孩自己的紀錄＋自動存到雲端（Google 試算表／雲端硬碟）。
+   學習單的資料（ws1…、ws2…、ws3…、ws4…）在這台電腦裡依「名字」分開存；有網路時自動上傳，換電腦時自動下載最新的。 */
+(()=>{if(window.__kidsync)return;window.__kidsync=1;
+const SYNC_URL="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec", TOKEN="ritz";
+const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.localStorage;
+const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
+const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
+try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
+const url=()=>SYNC_URL||g("wwt-sync-url")||"";
+const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
+let kid=TEAM?"_team":(g("wwt-kid")||"");
+if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
+  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
+  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
+const nk=k=>kid?k+"@"+kid:k;
+const used=new Set();
+P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
+let boot=true;setTimeout(()=>boot=false,4000);   // 頁面剛打開時自己寫的（預設值、整理舊資料）不算新的修改，才不會蓋掉雲端比較新的
+P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);
+    if(boot){if(oG.call(this,nk(k)+"#ts")===null)oS.call(this,nk(k)+"#ts","1");return}
+    oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
+P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
+const dirty=new Set();let tm=null,st="",stT=0;
+/* Firebase 是主要的雲端（即時同步）；Google 試算表留著當備份（每分鐘最多送一次） */
+let fb=null,fbDead=false;
+const gasQ=new Set();let gasT=null;
+function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
+function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
+  try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
+function onRemote(k,ts){if(!fb)return;
+  if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
+    if(dirty.size)sched();return}
+  if(!isWS(k)||!used.has(k))return;   // 這一頁沒用到的，讓用到的那一頁去處理
+  const lt=+(g(nk(k)+"#ts")||0);
+  if(ts>lt+1000){fb.load(k).then(r=>{if(!r||+(g(nk(k)+"#ts")||0)>=r.ts)return;s(nk(k),r.data);s(nk(k)+"#ts",String(r.ts));
+      if(window.__wsRemote&&window.__wsRemote(k))return;reloadSoon()}).catch(e=>console.warn("[firebase] load",k,e))}
+  else if(lt>ts+1000){dirty.add(k);sched()}}
+window.__FB.then(a=>{fb=a;const un=a.watch(onRemote);addEventListener("pagehide",un);show("☁ 已連上雲端（會即時同步）");if(dirty.size)push()})
+  .catch(()=>{fbDead=true;pull();if(dirty.size)push()});
+try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}   // 第一次：先把 Google 試算表裡比較新的拿下來，再交給 Firebase
+function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
+function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
+async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
+  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
+  const keys=[...dirty];if(!keys.length)return;
+  if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
+  if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
+      if(beacon){fb.save(k,data,ts).catch(()=>{});gasQ.add(k);continue}
+      try{show("☁ 存到雲端中…");await fb.save(k,data,ts);dirty.delete(k);gasLater(k)}
+      catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
+    if(beacon){gasFlush(true);return}
+    const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`);return}
+  for(const k of keys){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});
+    if(beacon){try{navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));dirty.delete(k)}catch(e){}continue}
+    try{show("☁ 存到雲端中…");const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw r.error||"失敗";dirty.delete(k)}
+    catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
+  const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`)}
+async function pull(){if(!kid||!url())return;
+  try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
+    for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
+      const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
+      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
+      else if(lt>it.ts+1000)dirty.add(it.key)}
+    for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
+    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
+function reloadSoon(){const a=document.activeElement;
+  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
+  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
+const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
+setInterval(()=>{if(fbDead&&shown()&&!dirty.size)pull()},30000);   // 只有連不上 Firebase 時才每 30 秒問試算表
+addEventListener("visibilitychange",()=>{if(fbDead&&document.visibilityState==="visible"&&!dirty.size)pull()});
+addEventListener("pagehide",()=>{if(dirty.size)push(true);if(gasQ.size)gasFlush(true)});
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
+addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+/* 舊版本：雲端替這一頁的資料留了最近幾份，選一份就能拿回來（拿回之前，現在這一份也會先留起來） */
+async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove();return}
+  P=document.createElement("div");P.id="ksHP";P.setAttribute("role","dialog");P.setAttribute("aria-label","舊版本");
+  P.style.cssText="position:absolute;right:0;top:calc(100% + 6px);width:min(360px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);color:var(--ink,#000);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:left;font-size:14px";
+  document.getElementById("kidBar").appendChild(P);P.innerHTML="讀取中…";
+  if(!fb){P.innerHTML="還沒連上雲端，等一下再試。";return}
+  const keys=[...used].filter(k=>!/#/.test(k)),T=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`};
+  const lab=k=>/-img$/.test(k)?"照片":"紀錄",sz=n=>n>1e6?(n/1e6).toFixed(1)+" MB":Math.max(1,Math.round(n/1000))+" KB";
+  let L=[];try{for(const k of keys)L.push(...(await fb.hist(k)).map(o=>Object.assign(o,{k})))}catch(e){P.innerHTML="讀不到舊版本，等一下再試。";return}
+  L.sort((x,y)=>y.ts-x.ts);
+  P.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🕘 舊版本</b><button type="button" data-x style="font:inherit;border:0;background:none;cursor:pointer;font-size:18px" aria-label="關閉">✕</button></div>
+    <div style="font-size:13px;color:var(--muted,#666);margin-bottom:8px">不小心被蓋掉時，選一份拿回來。換電腦存檔之前、和每 10 分鐘，雲端會自動留一份。</div>
+    ${L.length?L.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line,#eee)"><div style="flex:1"><b>${T(o.ts)}</b>${keys.length>1?`（${lab(o.k)}）`:""}<br><span style="font-size:12px;color:var(--muted,#666)">${o.dn||""}${o.why?"・"+o.why:""}・${sz(o.len||0)}</span></div><button type="button" data-i="${i}" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">拿回這一版</button></div>`).join(""):"<div>還沒有舊版本（存過幾次之後就會有）。</div>"}`;
+  P.querySelector("[data-x]").addEventListener("click",()=>P.remove());
+  P.querySelectorAll("[data-i]").forEach(b=>b.addEventListener("click",async()=>{const o=L[+b.dataset.i];
+    if(!confirm(`要把「${lab(o.k)}」換回 ${T(o.ts)} 那一版嗎？\n（現在這一份會先留起來，之後還可以換回來）`))return;
+    b.disabled=true;b.textContent="拿回中…";
+    try{const cur=g(nk(o.k));if(cur)await fb.snap(o.k,cur,+(g(nk(o.k)+"#ts")||Date.now()),"拿回舊版之前");
+      const r=await fb.histLoad(o.id);if(!r||!r.data)throw 0;
+      const now=Date.now();s(nk(o.k),r.data);s(nk(o.k)+"#ts",String(now));await fb.save(o.k,r.data,now);
+      show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
+    catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
+/* 名字列 */
+function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
+function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
+  if(!old&&!L.slice(0,-1).length){for(const k of Object.keys(LS))if(isWS(k)&&!k.includes("@")&&g(k+"@"+n)===null){s(k+"@"+n,g(k));s(k+"@"+n+"#ts",String(Date.now()))}}  // 第一次選名字：原本的紀錄給他
+  s("wwt-kid",n);location.reload()}
+function bar(){const W=document.createElement("div");W.id="kidBar";
+  const top=window.top===window;
+  W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
+  const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
+  const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
+    document.body.appendChild(W);
+    W.querySelector("#ksHist").addEventListener("click",histPanel);
+    /* 手機上這一列會蓋到標題：在最上面留一點空間給它 */
+    {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
+      const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
+    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
+    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
+  W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
+  <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
+    <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
+    <span id="ksNew" hidden><input id="ksName" type="text" maxlength="12" aria-label="新的名字" style="font:inherit;font-size:15px;width:9em;padding:3px 6px;border-radius:8px;border:1px solid var(--line,#ccc)"> <button type="button" id="ksOk" style="font:inherit;font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">好</button></span>
+    <span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span>
+    <button type="button" id="ksSave" style="font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button>
+  </div>`;
+  if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";
+  document.body.appendChild(W);
+  const P=W.querySelector("#ksPanel"),B=W.querySelector("#ksBtn");
+  const open=o=>{P.hidden=!o;P.style.display=o?"grid":"none";B.setAttribute("aria-expanded",String(o))};open(!kid);
+  B.addEventListener("click",()=>open(P.hidden));
+  document.addEventListener("click",e=>{if(kid&&!W.contains(e.target))open(false)});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&kid)open(false)});
+  const b=W;
+  const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
+  const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
+  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
+  show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bar);else bar();
+window.__kid=()=>kid;
+/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
+function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v});
+  document.querySelectorAll("[data-sync-rw]").forEach(e=>{const v=LS.getItem(e.dataset.syncRw);   // 和研究架構雙向同步（全隊共用）
+    if(v!==null&&v!==""&&e.value!==v){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    else if((v===null||v==="")&&!e.value&&e.dataset.def){e.value=e.dataset.def;e.dispatchEvent(new Event("input",{bubbles:true}))}
+    if(!e.__rw){e.__rw=1;e.addEventListener("input",ev=>{if(ev.isTrusted)LS.setItem(e.dataset.syncRw,e.value)})}})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
+})();
+<\/script>
+<!-- KIDSYNC END -->
+<title>討論過程紀錄</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout：一欄式學習單。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+:root{
+  --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
+  --a:#2a6fb8;        /* 未遮蔽 */
+  --b:#d9532c;        /* 有遮蔽（戴耳機） */
+  --accent:#1f7a5a;   /* 真實方向、按鈕 */
+  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
+  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:14px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3vw,26px);margin:0;text-wrap:balance}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.lead{color:var(--muted);max-width:66ch}
+section{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
+.tag.a{background:var(--a)} .tag.b{background:var(--b)}
+/* 3D */
+.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.sim.sim1{grid-template-columns:minmax(0,1fr)}
+.sim.sim1 .stage{max-width:640px;margin:0 auto}   /* 和 3D 街景差不多大 */
+@media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.stage{aspect-ratio:1/1}}
+.stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
+.stage canvas{display:block;width:100%;height:100%}
+.views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
+.views button.on{background:#18232b;color:#fff}
+.edlist{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s}
+.edlist:hover{background:color-mix(in srgb,var(--accent,#2a6fb8) 6%,transparent)}
+.edlist:focus{box-shadow:0 0 0 2px var(--accent,#2a6fb8);background:var(--paper,#fff)}
+.gear{position:absolute;bottom:10px;right:10px;display:flex;gap:6px;z-index:5}
+.gear button{font-size:15px;padding:6px 14px;background:rgba(255,255,255,.9);color:#18232b;border:2px solid rgba(24,35,43,.25);border-radius:999px}
+.gear button.on{background:#18232b;color:#fff;border-color:#18232b}
+.gear #gEar.on{background:var(--b);border-color:var(--b)}
+.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp h3{font-size:14px;color:var(--muted);font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 14px}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+button.seg-a.on{background:var(--a);border-color:var(--a);color:#fff}
+button.seg-b.on{background:var(--b);border-color:var(--b);color:#fff}
+button.go{font-family:var(--display);font-size:18px;border-radius:12px;padding:10px 18px;background:var(--accent);border-color:var(--accent);color:#fff}
+button.go:disabled{opacity:.5;cursor:wait}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3a008;outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}
+.log{display:flex;flex-direction:column;gap:2px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* 表格 */
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:14px;line-height:1.35;white-space:nowrap}
+th.a{color:var(--a)} th.b{color:var(--b)}
+td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+tr.avg td{font-weight:700;border-bottom:0}
+input[type=number],input[type=text]{font:inherit;font-size:15px;width:100%;max-width:7em;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center}
+input[type=text].name{max-width:9em}
+textarea{font:inherit;width:100%;min-height:5em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+.fill{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:2px solid var(--ink);text-align:center;font-family:var(--num);font-weight:700}
+.cap{font-size:14px;color:var(--muted);text-align:center}
+svg text{font-family:var(--body)}
+.xbtn{padding:2px 9px;font-size:13px;white-space:nowrap}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa li{line-height:2}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 模型截圖＋實驗照片 */
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
+.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
+.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
+.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
+.eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
+.eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
+
+.ck{font-weight:700;font-size:13px;white-space:nowrap}.ck.good{color:#1f7a4d}.ck.bad{color:#c0392b}
+#t1 td.num input{max-width:5.5em}
+#plChips .chip{padding:4px 10px;border-radius:999px;border:2px solid;background:var(--paper);font-size:13px;cursor:pointer}
+.subsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.subf{margin:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper);display:flex;flex-direction:column;gap:6px}.subf.on{outline:3px solid var(--a)}.subf svg{width:100%;height:auto}.subf figcaption{font-size:14px}
+.tklist{display:flex;flex-direction:column;gap:10px}
+.tkrow{display:flex;gap:12px;align-items:stretch;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.tkph{flex:0 0 auto;width:180px;min-height:135px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:26px;color:var(--muted);overflow:hidden;background:var(--bg,#fff)}
+.tkph span{font-size:13px}.tkph img{width:100%;height:100%;object-fit:cover;display:block}.tkph.has{border-style:solid}
+.tkside{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tktop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.tktop b{white-space:nowrap}
+.tkside input[type=date]{font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg,#fff);color:var(--ink)}
+.tkside textarea{flex:1;font:inherit;width:100%;box-sizing:border-box;min-height:80px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);resize:vertical;background:var(--bg,#fff);color:var(--ink)}
+.tkbtns{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}.tkbtns button{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}.tkbtns button:disabled{opacity:.35;cursor:default}
+@media (max-width:560px){.tkrow{flex-direction:column}.tkph{width:100%;min-height:180px}}
+#export.primary{font:inherit;font-size:17px;padding:12px 24px;border-radius:14px;border:0;background:var(--accent,#1f7a5a);color:#fff;cursor:pointer}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展討論紀錄</div>
+  <h1>討論過程紀錄</h1>
+  <p class="lead">每次小組討論，拍一張照片（白板、筆記、大家在做實驗都可以），寫下日期和討論了什麼。最多 20 張，全隊共用，會自動存到雲端。</p>
+</header>
+<section>
+  <div class="card">
+    <h3 style="margin:0 0 4px">📸 每次討論 <span id="tkCount" class="note" style="font-weight:400"></span></h3>
+    <p class="note" style="margin:0 0 8px">按左邊的 📷 拍照（或選相簿的照片），右邊寫日期和這次討論了什麼。按「＋ 新增一次討論」加一列。</p>
+    <div id="tkList" class="tklist"></div>
+    <button type="button" class="addeq" id="tkAdd">＋ 新增一次討論</button>
+  </div>
+</section>
+<section>
+  <div class="card">
+    <button type="button" id="export" class="primary">匯出 Word 檔（.docx）</button> <span id="expMsg" class="note" aria-live="polite"></span>
+  </div>
+</section>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
+<script>
+/* 討論過程紀錄：最多 20 張照片，每張有日期、討論了什麼。全隊一份（ws6-talk-v1），照片放 IndexedDB、同步到雲端 */
+const $=id=>document.getElementById(id),KEY="ws6-talk-v1",MAX=20;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+let S;try{S=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}if(!S||!Array.isArray(S.L))S={L:[]};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}};
+function shrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.82))};im.onerror=()=>ok(src);im.src=src})}
+function draw(){const L=S.L;$("tkCount").textContent=`（${L.length}／${MAX}）`;const add=$("tkAdd");add.hidden=L.length>=MAX;
+  $("tkList").innerHTML=L.map((o,i)=>`<div class="tkrow" data-i="${i}">
+    <label class="tkph${o.src?" has":""}" for="tkf${i}" title="${o.src?"換一張照片":"拍照或選照片"}">${o.src?`<img src="${o.src}" alt="第 ${i+1} 次討論的照片">`:"📷<span>拍照</span>"}</label><input type="file" accept="image/*" id="tkf${i}" hidden>
+    <div class="tkside"><div class="tktop"><b>第 ${i+1} 次</b><input type="date" value="${esc(o.date)}" aria-label="第 ${i+1} 次的日期">
+      <div class="tkbtns"><button type="button" data-up ${i?"":"disabled"} aria-label="往上移">▲</button><button type="button" data-dn ${i<L.length-1?"":"disabled"} aria-label="往下移">▼</button>${o.src?'<button type="button" data-unpic>移除照片</button>':""}<button type="button" data-del aria-label="刪掉這一次">🗑</button></div></div>
+      <textarea placeholder="這次討論了什麼？決定了什麼？" aria-label="第 ${i+1} 次：討論了什麼">${esc(o.cap)}</textarea></div></div>`).join("")||'<p class="note" style="margin:0">還沒有紀錄。按下面的「＋ 新增一次討論」。</p>';
+  $("tkList").querySelectorAll(".tkrow").forEach(r=>{const i=+r.dataset.i,o=S.L[i];
+    r.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;save()});
+    r.querySelector("input[type=date]").addEventListener("change",e=>{o.date=e.target.value;save()});
+    r.querySelector("input[type=file]").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;const ph=r.querySelector(".tkph");ph.innerHTML="處理中…";
+      const u=await new Promise(ok=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.readAsDataURL(file)});o.src=await shrink(u);
+      if(!o.date&&file.lastModified){const d=new Date(file.lastModified);o.date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+      if(save()===false)alert("存不下了，請先刪掉幾張。");draw()});
+    const up=r.querySelector("[data-unpic]");if(up)up.addEventListener("click",()=>{if(!confirm("要把這張照片拿掉嗎？"))return;o.src="";save();draw()});
+    r.querySelector("[data-del]").addEventListener("click",()=>{if((o.src||o.cap)&&!confirm(`要刪掉第 ${i+1} 次的紀錄嗎？`))return;S.L.splice(i,1);save();draw()});
+    r.querySelector("[data-up]").addEventListener("click",()=>{[S.L[i-1],S.L[i]]=[S.L[i],S.L[i-1]];save();draw()});
+    r.querySelector("[data-dn]").addEventListener("click",()=>{[S.L[i+1],S.L[i]]=[S.L[i],S.L[i+1]];save();draw()})})}
+$("tkAdd").addEventListener("click",()=>{if(S.L.length>=MAX)return;S.L.push({src:"",date:today(),cap:""});save();draw();const last=$("tkList").lastElementChild;if(last){last.scrollIntoView({behavior:"smooth",block:"nearest"});const t=last.querySelector("textarea");if(t)t.focus({preventScroll:true})}});
+if(!S.L.length){S.L.push({src:"",date:today(),cap:""})}   // 一開始就有一列可以填
+draw();
+/* 給「科展作品說明」或其他地方用 */
+window.__talkList=()=>S.L.slice();
+/* 匯出 Word */
+$("export").addEventListener("click",async()=>{const msg=$("expMsg"),btn=$("export");btn.disabled=true;msg.textContent="產生中…";
+  try{const X=window.docx,{Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType}=X;
+    const P=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??120},children:[new TextRun({text:t,bold:o.bold,size:o.size||24,color:o.color})]});
+    const B=[P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展討論紀錄",{align:AlignmentType.CENTER,size:22,color:"5B6872"}),P("討論過程紀錄",{align:AlignmentType.CENTER,bold:true,size:36,after:240})];
+    if(!S.L.length)B.push(P("（還沒有照片）"));
+    for(const [i,o] of S.L.filter(o=>o.src||o.cap).entries()){const [w,h]=o.src?await new Promise(ok=>{const im=new Image();im.onload=()=>ok([im.naturalWidth,im.naturalHeight]);im.onerror=()=>ok([4,3]);im.src=o.src}):[4,3];
+      B.push(P(`第 ${i+1} 次　${o.date||""}`,{bold:true,size:26,after:80}));
+      if(o.src)B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:420,height:Math.round(420*h/w)}})]}));
+      B.push(P(o.cap?"討論內容："+o.cap:"討論內容：＿＿＿＿＿＿",{after:280}))}
+    const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:B}]});
+    const blob=await Packer.toBlob(doc),fn="科展討論過程紀錄.docx";let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
+    if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent="已取消儲存。"}done=true}}
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
+  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}btn.disabled=false});
+/* 標題跟著網站改 */
+document.querySelectorAll("[data-sync-ro]").forEach(e=>{try{const v=localStorage.getItem(e.dataset.syncRo);if(v)e.textContent=v}catch(x){}});
+<\/script>
+<style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
+<script>
+(()=>{let loaded=false;const f=document.getElementById("ws5frame");
+function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
+window.__ws5Show=on=>{if(!on||loaded)return;loaded=true;
+  f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
+  const go=()=>{f.srcdoc=document.getElementById("ws5src").textContent.replace(/<\\\/script/g,"<"+"/script")};
+  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
+addEventListener("resize",fit);})();
+</script>
+<!-- TAB8 END -->
 <!-- TAB7 START -->
 <div class="wrap" id="tab7" hidden style="margin-top:20px">
 <iframe id="ws4frame" title="科展作品說明(初審)" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
@@ -6913,6 +7399,15 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 
 /* 從學習單（一）～（三）帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
+/* 研究過程最後面：「討論過程紀錄」分頁的每一次討論（日期、照片、討論內容） */
+async function talkBlocks(){const X=window.docx,{Paragraph,TextRun,ImageRun,AlignmentType}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&(o.src||o.cap));if(!L.length)return [];
+  const out=[new Paragraph({spacing:{before:200,after:80},children:[new TextRun({text:"討論過程紀錄",bold:true,size:26})]})];
+  for(const [i,o] of L.entries()){out.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:`第 ${i+1} 次`+(o.date?`　${o.date.replace(/-/g,"/")}`:""),bold:true,size:22})]}));
+    if(o.src){const [w,h]=await new Promise(ok=>{const im=new Image();im.onload=()=>ok([im.naturalWidth,im.naturalHeight]);im.onerror=()=>ok([4,3]);im.src=o.src});
+      out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:300,height:Math.round(300*h/w)}})]}))}
+    if(o.cap)out.push(new Paragraph({spacing:{after:120},children:[new TextRun({text:o.cap,size:22})]}))}
+  return out}
+window.__talkBlocks=talkBlocks;
   const ls=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
   const items=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
   const W=()=>{const a=rd("ws1-occlusion-v2"),b=rd("ws2-fourier-v1"),c=rd("ws3-doa-v1");
@@ -7008,7 +7503,7 @@ btn.addEventListener("click",async()=>{
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(withScene(S.motivePics,"motive"))],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",(((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),...await talkBlocks()],2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
@@ -7037,494 +7532,6 @@ window.__ws4Show=on=>{if(!on||loaded)return;loaded=true;
 addEventListener("resize",fit);})();
 </script>
 <!-- TAB7 END -->
-<!-- TAB8 START -->
-<div class="wrap" id="tab8" hidden style="margin-top:20px">
-<iframe id="ws5frame" title="討論過程紀錄" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
-</div>
-<script type="text/plain" id="ws5src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
-/* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
-(()=>{if(window.__audioUnlock)return;window.__audioUnlock=1;const ACs=[];const O=window.AudioContext||window.webkitAudioContext;
-if(O){const W=function(o){const c=o?new O(o):new O();ACs.push(c);return c};W.prototype=O.prototype;try{window.AudioContext=W;window.webkitAudioContext=W}catch(e){}}
-let done=false;
-function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
-  if(!done){done=true;try{const a=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");a.setAttribute("playsinline","");a.volume=0.01;a.play().catch(()=>{done=false})}catch(e){}}
-  ACs.forEach(c=>{if(c.state!=="running"&&c.state!=="closed")c.resume().catch(()=>{})})}
-["pointerdown","touchend","click","keydown"].forEach(t=>addEventListener(t,unlock,{capture:true,passive:true}));
-/* 換分頁時把聲音關掉：先按頁面上的「■ 停止」，不去暫停整個聲音系統（Safari 暫停後常常叫不回來） */
-window.__hushers=window.__hushers||[];
-window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
-  document.querySelectorAll("button").forEach(b=>{if(/^\s*■/.test(b.textContent)&&!b.hidden&&!b.disabled)try{b.click()}catch(e){}});
-  document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})};})();
-<\/script>
-</head><body><!-- BIGSTORE START -->
-<script>
-/* BIGSTORE：iPhone 的 Safari 給每個網站的 localStorage 只有大約 5 MB，照片很快就滿了。
-   大的資料（照片、截圖，超過 2 萬字）改放 IndexedDB（可以用到好幾百 MB），localStorage 只留一個小記號。
-   整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
-(()=>{if(window.__bigInst)return;window.__bigInst=1;
-let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG){T=w;break}}}catch(e){}   // 往上找已經開好的那一份（別的網站的框會讀不到，就停）   // 往上找已經開好的那一份
-const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
-const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
-/* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
-let SELF=false;
-if(T===window&&!window.__bigHost&&window.top===window){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
-  if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
-if(T===window){
-  const map=new Map(),ver=new Map();let db=null;
-  const B=window.__BIG={map,ver,loaded:false,ok:false,missed:new Set(),MIN,MARK,self:false};
-  B.put=(k,v,cb)=>{if(!db){cb&&cb(false);return}try{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);
-    tx.oncomplete=()=>cb&&cb(true);tx.onerror=tx.onabort=()=>cb&&cb(false)}catch(e){cb&&cb(false)}};
-  B.del=k=>{if(!db)return;try{db.transaction("kv","readwrite").objectStore("kv").delete(k)}catch(e){}};
-  B.ready=new Promise(done=>{let fin=false;const end=()=>{if(fin)return;fin=true;B.loaded=true;done()};setTimeout(end,8000);
-    try{const o=indexedDB.open("wwt-big",1);o.onupgradeneeded=()=>{try{o.result.createObjectStore("kv")}catch(e){}};
-      o.onsuccess=()=>{db=o.result;B.ok=true;
-        try{const tx=db.transaction("kv","readwrite"),st=tx.objectStore("kv"),cur=st.openCursor();
-          cur.onsuccess=()=>{const c=cur.result;if(!c)return;const raw=oG.call(LS,c.key);
-            if(isM(raw)){if(!map.has(c.key))map.set(c.key,c.value)}else if(!map.has(c.key))c.delete();   // 記號不見了：這份是舊的
-            c.continue()};
-          tx.oncomplete=()=>{
-            /* 搬家：以前存在 localStorage 裡的大資料，搬進 IndexedDB，空出 localStorage */
-            const keys=[];try{for(let i=0;i<LS.length;i++)keys.push(LS.key(i))}catch(e){}
-            for(const k of keys){const v=oG.call(LS,k);if(v&&v.length>=MIN&&!isM(v))B.store(k,v)}
-            end()};
-          tx.onerror=tx.onabort=()=>end()}catch(e){end()}};
-      o.onerror=o.onblocked=()=>end()}catch(e){end()}});
-  B.store=(k,v)=>{const n=(ver.get(k)||0)+1;ver.set(k,n);map.set(k,v);
-    B.put(k,v,ok=>{if(ok&&ver.get(k)===n){try{oS.call(LS,k,MARK+Date.now())}catch(e){}}})};   // 存好了才把 localStorage 換成小記號
-  /* 別的分頁改了照片：重新從 IndexedDB 拿 */
-  addEventListener("storage",e=>{if(!e.key||e.storageArea!==LS)return;
-    if(isM(e.newValue)&&db){try{const r=db.transaction("kv").objectStore("kv").get(e.key);r.onsuccess=()=>{if(r.result!=null)map.set(e.key,r.result)}}catch(x){}}
-    else if(map.has(e.key)){map.delete(e.key);ver.set(e.key,(ver.get(e.key)||0)+1)}});
-  if(SELF){B.self=true;B.ready.then(()=>{const t=document.title;
-    document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#fff"><iframe style="position:fixed;inset:0;width:100%;height:100%;border:0;display:block"></iframe></body>';
-    document.title=t||"";const f=document.querySelector("iframe");f.title=t||"學習單";
-    f.addEventListener("load",()=>{try{document.title=f.contentDocument.title||document.title}catch(e){}});f.src=location.href})}
-}
-const B=T.__BIG;
-if(T!==window&&B.self)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target||e.defaultPrevented||/^(#|javascript:)/.test(a.getAttribute("href")))return;e.preventDefault();T.location.href=a.href},true);   // 框裡的連結，換整頁
-P.getItem=function(k){if(this!==LS)return oG.call(this,k);k=String(k);
-  if(B.map.has(k))return B.map.get(k);
-  const v=oG.call(this,k);if(isM(v)){if(!B.loaded)B.missed.add(k);return null}return v};
-P.setItem=function(k,v){if(this!==LS)return oS.call(this,k,v);k=String(k);v=String(v);
-  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;   // 照片還沒載入好：不要蓋掉
-  if(v.length>=MIN&&B.ok){B.store(k,v);return}
-  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
-  return oS.call(this,k,v)};
-P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
-  if(!B.loaded&&!B.map.has(k)&&isM(oG.call(LS,k)))return;
-  if(B.map.has(k)){B.map.delete(k);B.ver.set(k,(B.ver.get(k)||0)+1);B.del(k)}
-  return oR.call(this,k)};
-})();
-<\/script>
-<!-- BIGSTORE END -->
-<script>window.KS_TEAM=1<\/script>
-<!-- KIDSYNC START -->
-<script>
-/* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
-   資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
-   連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
-window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  if(W.__FBP)return W.__FBP;
-  const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
-  const CFG={apiKey:"AIzaSyCAGlOVeifH8SIQ8YgE8ZXmZMJYs80i9Zc",authDomain:"ritz-iwhere.firebaseapp.com",projectId:"ritz-iwhere",storageBucket:"ritz-iwhere.firebasestorage.app",messagingSenderId:"534026294493",appId:"1:534026294493:web:29807da1cf6bf69b413734"};
-  const load=src=>new Promise((ok,no)=>{const s=W.document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load "+src));W.document.head.appendChild(s)});
-  const timeout=(p,ms,what)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error("timeout "+what)),ms))]);
-  W.__FBP=timeout((async()=>{
-    if(W.__BIG&&W.__BIG.ready)await W.__BIG.ready;   // 先等照片從 IndexedDB 載入好，才開始同步
-    if(!(W.firebase&&W.firebase.firestore)){await load(B+"firebase-app-compat.js");await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")])}
-    const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
-    await fb.auth().signInAnonymously();
-    const db=fb.firestore(),root=db.collection("teams").doc("ritz"),D=root.collection("docs"),C=root.collection("chunks"),CH=250000;
-    const HI=root.collection("hist"),HC=root.collection("hchunks"),KEEP=12;   // 舊版本：每張學習單留最近 12 份
-    const meta=new Map(),who=new Map(),subs=new Set(),lastSnap=new Map();let loaded=false;
-    let DEV="";try{DEV=W.localStorage.getItem("wwt-dev")||"";if(!DEV){DEV="d"+Math.random().toString(36).slice(2,10);W.localStorage.setItem("wwt-dev",DEV)}}catch(e){DEV="d"+Math.random().toString(36).slice(2,10)}
-    const NAME=()=>{const u=navigator.userAgent;return /iPhone/.test(u)?"iPhone":/iPad/.test(u)?"iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows 電腦":"電腦"};
-    async function snap(key,data,ts,dev,dn,why){ts=+ts>1e12?+ts:Date.now();const id=key+"~"+ts,n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
-      for(let i=0;i<n;i++)b.set(HC.doc(id+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
-      b.set(HI.doc(id),{key,ts:+ts,n,len:data.length,dev:dev||"",dn:dn||"",why:why||"",at:fb.firestore.FieldValue.serverTimestamp()});
-      await timeout(b.commit(),30000,"hist "+key);lastSnap.set(key,Date.now());
-      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>y.ts-x.ts);   // 太多就把最舊的刪掉
-        for(const o of L.slice(KEEP)){const d=db.batch();for(let i=0;i<(o.n||1);i++)d.delete(HC.doc(o.id+"~"+i));d.delete(HI.doc(o.id));await d.commit()}}catch(e){}}
-    async function lastSnapOf(key){if(lastSnap.has(key))return lastSnap.get(key);
-      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>+(d.data().ts||0));const t=L.length?Math.max(...L):0;lastSnap.set(key,t);return t}catch(e){return Date.now()}}
-    const api={
-      async save(key,data,ts){data=String(data??"");
-        /* 存之前先留一份舊版本：上一次是別台電腦存的（換電腦了），先把雲端那一份留起來；同一台每 10 分鐘也留一份 */
-        try{const pw=who.get(key);
-          if(pw&&pw.dev&&pw.dev!==DEV&&meta.has(key)){const old=await api.load(key);if(old&&old.data)await snap(key,old.data,old.ts,pw.dev,pw.dn,"換電腦之前")}
-          else if(Date.now()-(await lastSnapOf(key))>600000&&data.length)setTimeout(()=>snap(key,data,+ts||Date.now(),DEV,NAME(),"每 10 分鐘").catch(()=>{}),0)}catch(e){}
-        const n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
-        for(let i=0;i<n;i++)b.set(C.doc(key+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
-        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:data.length,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()});
-        await timeout(b.commit(),20000,"save "+key);meta.set(key,+ts||Date.now());who.set(key,{dev:DEV,dn:NAME()})},
-      /* 舊版本清單、拿回某一版 */
-      async hist(key){const L=(await timeout(HI.where("key","==",key).get(),20000,"hist")).docs.map(d=>({id:d.id,...d.data()}));return L.sort((x,y)=>y.ts-x.ts)},
-      async histLoad(id){const m=await HI.doc(id).get();if(!m.exists)return null;const {n,ts,key}=m.data();
-        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>HC.doc(id+"~"+i).get())),30000,"hchunks");return {key,ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
-      snap:(key,data,ts,why)=>snap(key,data,ts,DEV,NAME(),why),dev:DEV,
-      async load(key){const m=await timeout(D.doc(key).get(),20000,"load "+key);if(!m.exists)return null;const {ts,n}=m.data();
-        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
-        return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
-      ts:key=>meta.get(key),loaded:()=>loaded,
-      watch(cb){subs.add(cb);if(loaded){for(const [k,t] of meta)cb(k,t);cb(null)}return()=>subs.delete(cb)}};
-    const tell=(...a)=>subs.forEach(f=>{try{f(...a)}catch(e){subs.delete(f)}});   // 已經關掉的分頁會出錯，就把它拿掉
-    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.type==="removed")return;const k=c.doc.id,x=c.doc.data(),t=+(x.ts||0);meta.set(k,t);who.set(k,{dev:x.dev||"",dn:x.dn||""});ch.push([k,t])});
-      const first=!loaded;loaded=true;ch.forEach(([k,t])=>tell(k,t));if(first)tell(null)},e=>console.warn("[firebase]",e));
-    return api})(),15000,"connect");
-  W.__FBP.catch(e=>console.warn("[firebase] 連不上，改用 Google 試算表：",e&&e.message||e));
-  return W.__FBP})();
-/* 每個小孩自己的紀錄＋自動存到雲端（Google 試算表／雲端硬碟）。
-   學習單的資料（ws1…、ws2…、ws3…、ws4…）在這台電腦裡依「名字」分開存；有網路時自動上傳，換電腦時自動下載最新的。 */
-(()=>{if(window.__kidsync)return;window.__kidsync=1;
-const SYNC_URL="https://script.google.com/macros/s/AKfycbzqmKZXt-feBTnozOMbTq8ncS49MSAyBXC-mqjHfVOOfPsOICYZlzKgBBs_l0oKIh_KLQ/exec", TOKEN="ritz";
-const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem,LS=window.localStorage;
-const g=k=>{try{return oG.call(LS,k)}catch(e){return null}},s=(k,v)=>{try{oS.call(LS,k,v);return true}catch(e){return false}};
-const isWS=k=>typeof k==="string"&&/^ws\d/.test(k);
-try{const q=new URLSearchParams((window.top===window?location:parent.location).search).get("sync");if(q&&/^https:\/\/script\.google(usercontent)?\.com\//.test(q))s("wwt-sync-url",q)}catch(e){}
-const url=()=>SYNC_URL||g("wwt-sync-url")||"";
-const TEAM=true;   // 全隊共用一份（不用選名字）   // 全隊共用一份（科展作品說明），不用選名字
-let kid=TEAM?"_team":(g("wwt-kid")||"");
-if(TEAM)try{for(const base of new Set(Object.keys(LS).filter(k=>/^ws\d/.test(k)&&!k.endsWith("#ts")).map(k=>k.split("@")[0])))if(g(base+"@_team")===null){   // 第一次：拿最近改過的那一份
-  let best=null,bt=-1;for(const k of Object.keys(LS))if((k===base||k.startsWith(base+"@"))&&!k.endsWith("#ts")){const ts=+(g(k+"#ts")||0);if(ts>bt){bt=ts;best=k}}
-  if(best){s(base+"@_team",g(best));s(base+"@_team#ts",String(bt>0?bt:1))}}}catch(e){}
-const nk=k=>kid?k+"@"+kid:k;
-const used=new Set();
-P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
-let boot=true;setTimeout(()=>boot=false,4000);   // 頁面剛打開時自己寫的（預設值、整理舊資料）不算新的修改，才不會蓋掉雲端比較新的
-P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);
-    if(boot){if(oG.call(this,nk(k)+"#ts")===null)oS.call(this,nk(k)+"#ts","1");return}
-    oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
-P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
-const dirty=new Set();let tm=null,st="",stT=0;
-/* Firebase 是主要的雲端（即時同步）；Google 試算表留著當備份（每分鐘最多送一次） */
-let fb=null,fbDead=false;
-const gasQ=new Set();let gasT=null;
-function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
-function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
-  try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-function onRemote(k,ts){if(!fb)return;
-  if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
-    if(dirty.size)sched();return}
-  if(!isWS(k)||!used.has(k))return;   // 這一頁沒用到的，讓用到的那一頁去處理
-  const lt=+(g(nk(k)+"#ts")||0);
-  if(ts>lt+1000){fb.load(k).then(r=>{if(!r||+(g(nk(k)+"#ts")||0)>=r.ts)return;s(nk(k),r.data);s(nk(k)+"#ts",String(r.ts));
-      if(window.__wsRemote&&window.__wsRemote(k))return;reloadSoon()}).catch(e=>console.warn("[firebase] load",k,e))}
-  else if(lt>ts+1000){dirty.add(k);sched()}}
-window.__FB.then(a=>{fb=a;const un=a.watch(onRemote);addEventListener("pagehide",un);show("☁ 已連上雲端（會即時同步）");if(dirty.size)push()})
-  .catch(()=>{fbDead=true;pull();if(dirty.size)push()});
-try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}   // 第一次：先把 Google 試算表裡比較新的拿下來，再交給 Firebase
-function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
-function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
-async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
-  if(!url()){dirty.clear();show("已存在這台電腦（還沒設定雲端）");return}
-  const keys=[...dirty];if(!keys.length)return;
-  if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
-  if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
-      if(beacon){fb.save(k,data,ts).catch(()=>{});gasQ.add(k);continue}
-      try{show("☁ 存到雲端中…");await fb.save(k,data,ts);dirty.delete(k);gasLater(k)}
-      catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
-    if(beacon){gasFlush(true);return}
-    const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`);return}
-  for(const k of keys){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});
-    if(beacon){try{navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));dirty.delete(k)}catch(e){}continue}
-    try{show("☁ 存到雲端中…");const r=await (await fetch(url(),{method:"POST",body})).json();if(!r.ok)throw r.error||"失敗";dirty.delete(k)}
-    catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
-  const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`)}
-async function pull(){if(!kid||!url())return;
-  try{const r=await (await fetch(url()+"?op=list&token="+TOKEN+"&kid="+encodeURIComponent(kid))).json();if(!r.ok)return;let changed=false;
-    for(const it of r.items||[]){const lt=+(g(it.key+"@"+kid+"#ts")||0);if(it.ts>lt+1000){
-      const d=await (await fetch(url()+"?op=get&token="+TOKEN+"&kid="+encodeURIComponent(kid)+"&key="+encodeURIComponent(it.key))).json();
-      if(d.ok&&typeof d.data==="string"){s(it.key+"@"+kid,d.data);s(it.key+"@"+kid+"#ts",String(d.ts));if(used.has(it.key))changed=true}}
-      else if(lt>it.ts+1000)dirty.add(it.key)}
-    for(const k of Object.keys(LS))if(k.endsWith("@"+kid)&&isWS(k)&&!(r.items||[]).some(i=>i.key+"@"+kid===k))dirty.add(k.slice(0,-kid.length-1));
-    if(changed){reloadSoon();return}if(dirty.size)push()}catch(e){}}
-function reloadSoon(){const a=document.activeElement;
-  if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable)){show("雲端有新的版本，離開這一格就更新");a.addEventListener("blur",()=>setTimeout(()=>location.reload(),300),{once:true})}
-  else{show("已從雲端拿到最新的紀錄");setTimeout(()=>location.reload(),400)}}
-const shown=()=>document.visibilityState==="visible"&&(!window.frameElement||window.frameElement.offsetParent!==null);   // 只檢查看得到的那一頁
-setInterval(()=>{if(fbDead&&shown()&&!dirty.size)pull()},30000);   // 只有連不上 Firebase 時才每 30 秒問試算表
-addEventListener("visibilitychange",()=>{if(fbDead&&document.visibilityState==="visible"&&!dirty.size)pull()});
-addEventListener("pagehide",()=>{if(dirty.size)push(true);if(gasQ.size)gasFlush(true)});
-addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
-addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
-/* 舊版本：雲端替這一頁的資料留了最近幾份，選一份就能拿回來（拿回之前，現在這一份也會先留起來） */
-async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove();return}
-  P=document.createElement("div");P.id="ksHP";P.setAttribute("role","dialog");P.setAttribute("aria-label","舊版本");
-  P.style.cssText="position:absolute;right:0;top:calc(100% + 6px);width:min(360px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);color:var(--ink,#000);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:left;font-size:14px";
-  document.getElementById("kidBar").appendChild(P);P.innerHTML="讀取中…";
-  if(!fb){P.innerHTML="還沒連上雲端，等一下再試。";return}
-  const keys=[...used].filter(k=>!/#/.test(k)),T=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`};
-  const lab=k=>/-img$/.test(k)?"照片":"紀錄",sz=n=>n>1e6?(n/1e6).toFixed(1)+" MB":Math.max(1,Math.round(n/1000))+" KB";
-  let L=[];try{for(const k of keys)L.push(...(await fb.hist(k)).map(o=>Object.assign(o,{k})))}catch(e){P.innerHTML="讀不到舊版本，等一下再試。";return}
-  L.sort((x,y)=>y.ts-x.ts);
-  P.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🕘 舊版本</b><button type="button" data-x style="font:inherit;border:0;background:none;cursor:pointer;font-size:18px" aria-label="關閉">✕</button></div>
-    <div style="font-size:13px;color:var(--muted,#666);margin-bottom:8px">不小心被蓋掉時，選一份拿回來。換電腦存檔之前、和每 10 分鐘，雲端會自動留一份。</div>
-    ${L.length?L.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line,#eee)"><div style="flex:1"><b>${T(o.ts)}</b>${keys.length>1?`（${lab(o.k)}）`:""}<br><span style="font-size:12px;color:var(--muted,#666)">${o.dn||""}${o.why?"・"+o.why:""}・${sz(o.len||0)}</span></div><button type="button" data-i="${i}" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">拿回這一版</button></div>`).join(""):"<div>還沒有舊版本（存過幾次之後就會有）。</div>"}`;
-  P.querySelector("[data-x]").addEventListener("click",()=>P.remove());
-  P.querySelectorAll("[data-i]").forEach(b=>b.addEventListener("click",async()=>{const o=L[+b.dataset.i];
-    if(!confirm(`要把「${lab(o.k)}」換回 ${T(o.ts)} 那一版嗎？\n（現在這一份會先留起來，之後還可以換回來）`))return;
-    b.disabled=true;b.textContent="拿回中…";
-    try{const cur=g(nk(o.k));if(cur)await fb.snap(o.k,cur,+(g(nk(o.k)+"#ts")||Date.now()),"拿回舊版之前");
-      const r=await fb.histLoad(o.id);if(!r||!r.data)throw 0;
-      const now=Date.now();s(nk(o.k),r.data);s(nk(o.k)+"#ts",String(now));await fb.save(o.k,r.data,now);
-      show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
-    catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
-/* 名字列 */
-function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
-function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
-  if(!old&&!L.slice(0,-1).length){for(const k of Object.keys(LS))if(isWS(k)&&!k.includes("@")&&g(k+"@"+n)===null){s(k+"@"+n,g(k));s(k+"@"+n+"#ts",String(Date.now()))}}  // 第一次選名字：原本的紀錄給他
-  s("wwt-kid",n);location.reload()}
-function bar(){const W=document.createElement("div");W.id="kidBar";
-  const top=window.top===window;
-  W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
-  const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
-  const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
-  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
-    document.body.appendChild(W);
-    W.querySelector("#ksHist").addEventListener("click",histPanel);
-    /* 手機上這一列會蓋到標題：在最上面留一點空間給它 */
-    {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
-      const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
-    W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-    show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
-  W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
-  <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
-    <label style="display:flex;gap:8px;align-items:center"><b>我是：</b><select id="ksSel" style="flex:1;font:inherit;font-size:15px;padding:3px 8px;border-radius:8px;border:1px solid var(--line,#ccc);background:var(--bg,#fff);color:var(--ink,#000)">${kid?"":`<option value="">（選名字）</option>`}${L.map(n=>`<option${n===kid?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 新增名字</option></select></label>
-    <span id="ksNew" hidden><input id="ksName" type="text" maxlength="12" aria-label="新的名字" style="font:inherit;font-size:15px;width:9em;padding:3px 6px;border-radius:8px;border:1px solid var(--line,#ccc)"> <button type="button" id="ksOk" style="font:inherit;font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">好</button></span>
-    <span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span>
-    <button type="button" id="ksSave" style="font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button>
-  </div>`;
-  if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";
-  document.body.appendChild(W);
-  const P=W.querySelector("#ksPanel"),B=W.querySelector("#ksBtn");
-  const open=o=>{P.hidden=!o;P.style.display=o?"grid":"none";B.setAttribute("aria-expanded",String(o))};open(!kid);
-  B.addEventListener("click",()=>open(P.hidden));
-  document.addEventListener("click",e=>{if(kid&&!W.contains(e.target))open(false)});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&kid)open(false)});
-  const b=W;
-  const sel=b.querySelector("#ksSel");sel.addEventListener("change",()=>{if(sel.value==="__new"){b.querySelector("#ksNew").hidden=false;b.querySelector("#ksName").focus()}else if(sel.value)setKid(sel.value)});
-  const ok=()=>setKid(b.querySelector("#ksName").value);b.querySelector("#ksOk").addEventListener("click",ok);b.querySelector("#ksName").addEventListener("keydown",e=>{if(e.key==="Enter")ok()});
-  b.querySelector("#ksSave").addEventListener("click",()=>{if(kid)for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
-  show(st||(kid?(url()?"會自動存到雲端":"已存在這台電腦（還沒設定雲端）"):"先選你的名字，資料才會分開存，也才能存到雲端"))}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bar);else bar();
-window.__kid=()=>kid;
-/* 題目跟網站最上面的大標題一樣（唯讀顯示） */
-function ro(){document.querySelectorAll("[data-sync-ro]").forEach(e=>{const v=LS.getItem(e.dataset.syncRo);if(v)e.textContent=v});
-  document.querySelectorAll("[data-sync-rw]").forEach(e=>{const v=LS.getItem(e.dataset.syncRw);   // 和研究架構雙向同步（全隊共用）
-    if(v!==null&&v!==""&&e.value!==v){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
-    else if((v===null||v==="")&&!e.value&&e.dataset.def){e.value=e.dataset.def;e.dispatchEvent(new Event("input",{bubbles:true}))}
-    if(!e.__rw){e.__rw=1;e.addEventListener("input",ev=>{if(ev.isTrusted)LS.setItem(e.dataset.syncRw,e.value)})}})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ro);else ro();addEventListener("storage",e=>{if(e.key&&e.key.startsWith("wwt-"))ro()});
-})();
-<\/script>
-<!-- KIDSYNC END -->
-<title>討論過程紀錄</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
-<style>
-/* Layout：一欄式學習單。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
-:root{
-  --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
-  --a:#2a6fb8;        /* 未遮蔽 */
-  --b:#d9532c;        /* 有遮蔽（戴耳機） */
-  --accent:#1f7a5a;   /* 真實方向、按鈕 */
-  --display:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
-  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --num:"JetBrains Mono",ui-monospace,Menlo,monospace;
-}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
-  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }}
-:root[data-theme="dark"]{
-  --bg:#12171a; --paper:#1b2226; --ink:#e7ecee; --muted:#9aa7af; --line:#313b41; --chip:#232c31;
-  --a:#6aa8ec; --b:#ff8a63; --accent:#4cc79a; color-scheme:dark }
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
-.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
-header{display:flex;flex-direction:column;gap:6px}
-.eyebrow{font-size:14px;color:var(--muted);letter-spacing:.08em}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,38px);line-height:1.25;margin:0;text-wrap:balance}
-h2{font-family:var(--display);font-weight:400;font-size:clamp(20px,3vw,26px);margin:0;text-wrap:balance}
-h3{font-size:16px;margin:0}
-p{margin:0}
-.lead{color:var(--muted);max-width:66ch}
-section{display:flex;flex-direction:column;gap:14px}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
-ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
-.tag{display:inline-block;padding:0 8px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;vertical-align:1px}
-.tag.a{background:var(--a)} .tag.b{background:var(--b)}
-/* 3D */
-.sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
-.sim.sim1{grid-template-columns:minmax(0,1fr)}
-.sim.sim1 .stage{max-width:640px;margin:0 auto}   /* 和 3D 街景差不多大 */
-@media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){.stage{aspect-ratio:1/1}}
-.stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
-.stage canvas{display:block;width:100%;height:100%}
-.views{position:absolute;top:10px;right:10px;left:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
-.views button{font-size:13px;padding:3px 10px;background:rgba(255,255,255,.88);color:#18232b;border-color:rgba(24,35,43,.2)}
-.views button.on{background:#18232b;color:#fff}
-.edlist{border-radius:8px;outline:none;cursor:text;transition:background .15s,box-shadow .15s}
-.edlist:hover{background:color-mix(in srgb,var(--accent,#2a6fb8) 6%,transparent)}
-.edlist:focus{box-shadow:0 0 0 2px var(--accent,#2a6fb8);background:var(--paper,#fff)}
-.gear{position:absolute;bottom:10px;right:10px;display:flex;gap:6px;z-index:5}
-.gear button{font-size:15px;padding:6px 14px;background:rgba(255,255,255,.9);color:#18232b;border:2px solid rgba(24,35,43,.25);border-radius:999px}
-.gear button.on{background:#18232b;color:#fff;border-color:#18232b}
-.gear #gEar.on{background:var(--b);border-color:var(--b)}
-.result{padding:8px 12px;border-radius:10px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:15px;line-height:1.5}
-.ctrl{display:flex;flex-direction:column;gap:14px}
-.grp{display:flex;flex-direction:column;gap:6px}
-.grp h3{font-size:14px;color:var(--muted);font-weight:500}
-.row{display:flex;flex-wrap:wrap;gap:6px}
-button{font:inherit;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 14px}
-button:hover{border-color:var(--accent)}
-button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-button.seg-a.on{background:var(--a);border-color:var(--a);color:#fff}
-button.seg-b.on{background:var(--b);border-color:var(--b);color:#fff}
-button.go{font-family:var(--display);font-size:18px;border-radius:12px;padding:10px 18px;background:var(--accent);border-color:var(--accent);color:#fff}
-button.go:disabled{opacity:.5;cursor:wait}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3a008;outline-offset:2px}
-.note{font-size:13px;color:var(--muted)}
-.log{display:flex;flex-direction:column;gap:2px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
-/* 表格 */
-.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
-table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
-th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
-th{font-weight:500;color:var(--muted);font-size:14px;line-height:1.35;white-space:nowrap}
-th.a{color:var(--a)} th.b{color:var(--b)}
-td.num{font-family:var(--num);font-variant-numeric:tabular-nums}
-tr.avg td{font-weight:700;border-bottom:0}
-input[type=number],input[type=text]{font:inherit;font-size:15px;width:100%;max-width:7em;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center}
-input[type=text].name{max-width:9em}
-textarea{font:inherit;width:100%;min-height:5em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
-.fill{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:2px solid var(--ink);text-align:center;font-family:var(--num);font-weight:700}
-.cap{font-size:14px;color:var(--muted);text-align:center}
-svg text{font-family:var(--body)}
-.xbtn{padding:2px 9px;font-size:13px;white-space:nowrap}
-.qa{display:flex;flex-direction:column;gap:10px}
-.qa li{line-height:2}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-
-/* 模型截圖＋實驗照片 */
-.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
-.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
-.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
-.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
-.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
-.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.shotslot{margin-top:10px}.galf.on{outline:3px solid var(--a)}.galf.flash{outline:3px solid #f0a020;transition:outline .2s}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
-.eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
-.eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
-
-.ck{font-weight:700;font-size:13px;white-space:nowrap}.ck.good{color:#1f7a4d}.ck.bad{color:#c0392b}
-#t1 td.num input{max-width:5.5em}
-#plChips .chip{padding:4px 10px;border-radius:999px;border:2px solid;background:var(--paper);font-size:13px;cursor:pointer}
-.subsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.subf{margin:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper);display:flex;flex-direction:column;gap:6px}.subf.on{outline:3px solid var(--a)}.subf svg{width:100%;height:auto}.subf figcaption{font-size:14px}
-.tkhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.addbtn{display:inline-block;padding:10px 18px;border-radius:999px;background:var(--accent,#1f7a5a);color:#fff;font-weight:700;cursor:pointer}
-.addbtn.off{opacity:.45;pointer-events:none}
-.tklist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.tk{margin:0;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--paper)}
-.tk .no{font-weight:700}.tk img{width:100%;border-radius:10px;display:block;background:#eee}
-.tk input[type=date]{font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg,#fff);color:var(--ink)}
-.tk textarea{font:inherit;width:100%;box-sizing:border-box;padding:6px 8px;border-radius:8px;border:1px solid var(--line);resize:vertical;background:var(--bg,#fff);color:var(--ink)}
-.tk .row2{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.tk .btns{display:flex;gap:6px}.tk .btns button{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
-.tk .btns button:disabled{opacity:.35;cursor:default}
-#export.primary{font:inherit;font-size:17px;padding:12px 24px;border-radius:14px;border:0;background:var(--accent,#1f7a5a);color:#fff;cursor:pointer}
-</style>
-
-<div class="wrap">
-<header>
-  <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展討論紀錄</div>
-  <h1>討論過程紀錄</h1>
-  <p class="lead">每次小組討論，拍一張照片（白板、筆記、大家在做實驗都可以），寫下日期和討論了什麼。最多 20 張，全隊共用，會自動存到雲端。</p>
-</header>
-<section>
-  <div class="card">
-    <div class="tkhead"><h3 style="margin:0">📸 討論照片 <span id="tkCount" class="note" style="font-weight:400"></span></h3>
-      <label class="addbtn" for="tkFile">＋ 拍照或選照片（可以一次選好幾張）</label><input type="file" id="tkFile" accept="image/*" multiple hidden></div>
-    <p class="note" id="tkEmpty">還沒有照片。按上面的按鈕，拍照或從相簿選照片。</p>
-    <div id="tkList" class="tklist"></div>
-  </div>
-</section>
-<section>
-  <div class="card">
-    <button type="button" id="export" class="primary">匯出 Word 檔（.docx）</button> <span id="expMsg" class="note" aria-live="polite"></span>
-  </div>
-</section>
-</div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
-<script>
-/* 討論過程紀錄：最多 20 張照片，每張有日期、討論了什麼。全隊一份（ws6-talk-v1），照片放 IndexedDB、同步到雲端 */
-const $=id=>document.getElementById(id),KEY="ws6-talk-v1",MAX=20;
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-let S;try{S=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}if(!S||!Array.isArray(S.L))S={L:[]};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}};
-function shrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
-  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.82))};im.onerror=()=>ok(src);im.src=src})}
-function draw(){const L=S.L;$("tkCount").textContent=`（${L.length}／${MAX}）`;$("tkEmpty").hidden=L.length>0;
-  const add=document.querySelector('label[for="tkFile"]');add.classList.toggle("off",L.length>=MAX);add.textContent=L.length>=MAX?"已經 20 張了（刪掉一張才能再加）":"＋ 拍照或選照片（可以一次選好幾張）";
-  $("tkList").innerHTML=L.map((o,i)=>`<figure class="tk" data-i="${i}"><div class="row2"><span class="no">第 ${i+1} 張</span><input type="date" value="${esc(o.date)}" aria-label="第 ${i+1} 張的日期"></div>
-    <img src="${o.src}" alt="討論照片 ${i+1}">
-    <textarea rows="3" placeholder="這次討論了什麼？決定了什麼？" aria-label="第 ${i+1} 張：討論了什麼">${esc(o.cap)}</textarea>
-    <div class="row2"><div class="btns"><button type="button" data-up ${i?"":"disabled"} aria-label="往前移">◀ 往前</button><button type="button" data-dn ${i<L.length-1?"":"disabled"} aria-label="往後移">往後 ▶</button></div>
-      <div class="btns"><button type="button" data-del>🗑 刪掉</button></div></div></figure>`).join("");
-  $("tkList").querySelectorAll(".tk").forEach(f=>{const i=+f.dataset.i,o=S.L[i];
-    f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;save()});
-    f.querySelector("input[type=date]").addEventListener("change",e=>{o.date=e.target.value;save()});
-    f.querySelector("[data-del]").addEventListener("click",()=>{if(!confirm(`要刪掉第 ${i+1} 張嗎？`))return;S.L.splice(i,1);save();draw()});
-    f.querySelector("[data-up]").addEventListener("click",()=>{[S.L[i-1],S.L[i]]=[S.L[i],S.L[i-1]];save();draw()});
-    f.querySelector("[data-dn]").addEventListener("click",()=>{[S.L[i+1],S.L[i]]=[S.L[i],S.L[i+1]];save();draw()})})}
-$("tkFile").addEventListener("change",async e=>{const files=[...e.target.files].slice(0,MAX-S.L.length);e.target.value="";if(!files.length)return;
-  const add=document.querySelector('label[for="tkFile"]');add.textContent="照片處理中…";
-  for(const file of files){const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});
-    const d=file.lastModified?new Date(file.lastModified):new Date(),ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    S.L.push({src:await shrink(u),date:ds||today(),cap:""})}
-  if(save()===false)alert("存不下了，請先刪掉幾張。");draw();
-  const last=$("tkList").lastElementChild;if(last)last.scrollIntoView({behavior:"smooth",block:"nearest"})});
-draw();
-/* 給「科展作品說明」或其他地方用 */
-window.__talkList=()=>S.L.slice();
-/* 匯出 Word */
-$("export").addEventListener("click",async()=>{const msg=$("expMsg"),btn=$("export");btn.disabled=true;msg.textContent="產生中…";
-  try{const X=window.docx,{Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType}=X;
-    const P=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??120},children:[new TextRun({text:t,bold:o.bold,size:o.size||24,color:o.color})]});
-    const B=[P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展討論紀錄",{align:AlignmentType.CENTER,size:22,color:"5B6872"}),P("討論過程紀錄",{align:AlignmentType.CENTER,bold:true,size:36,after:240})];
-    if(!S.L.length)B.push(P("（還沒有照片）"));
-    for(const [i,o] of S.L.entries()){const [w,h]=await new Promise(ok=>{const im=new Image();im.onload=()=>ok([im.naturalWidth,im.naturalHeight]);im.onerror=()=>ok([4,3]);im.src=o.src});
-      B.push(P(`第 ${i+1} 次　${o.date||""}`,{bold:true,size:26,after:80}));
-      B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:420,height:Math.round(420*h/w)}})]}));
-      B.push(P(o.cap?"討論內容："+o.cap:"討論內容：＿＿＿＿＿＿",{after:280}))}
-    const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:B}]});
-    const blob=await Packer.toBlob(doc),fn="科展討論過程紀錄.docx";let done=false;
-    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
-    if(!done&&window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename:fn,data:blob});msg.textContent="已存好 Word 檔。"}catch(e){msg.textContent="已取消儲存。"}done=true}}
-    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent="已下載 "+fn}
-  }catch(e){console.error(e);msg.textContent="產生 Word 檔失敗："+(e&&e.message||e)}btn.disabled=false});
-/* 標題跟著網站改 */
-document.querySelectorAll("[data-sync-ro]").forEach(e=>{try{const v=localStorage.getItem(e.dataset.syncRo);if(v)e.textContent=v}catch(x){}});
-<\/script>
-<style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
-<script>
-(()=>{let loaded=false;const f=document.getElementById("ws5frame");
-function fit(){try{const d=f.contentDocument;if(d&&d.documentElement)f.style.height=Math.max(600,d.documentElement.scrollHeight)+"px"}catch(e){}}
-window.__ws5Show=on=>{if(!on||loaded)return;loaded=true;
-  f.addEventListener("load",()=>{fit();try{new ResizeObserver(fit).observe(f.contentDocument.body)}catch(e){setInterval(fit,1000)}});
-  const go=()=>{f.srcdoc=document.getElementById("ws5src").textContent.replace(/<\\\/script/g,"<"+"/script")};
-  (window.__BIG&&window.__BIG.ready||Promise.resolve()).then(go);};   // 等照片從 IndexedDB 載入好才打開學習單
-addEventListener("resize",fit);})();
-</script>
-<!-- TAB8 END -->
 <script>
 document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()=>{
   if(!b.classList.contains("on")){try{window.__hush&&window.__hush()}catch(e){}document.querySelectorAll("iframe").forEach(f=>{try{f.contentWindow.__hush&&f.contentWindow.__hush()}catch(e){}})}
@@ -7536,8 +7543,8 @@ document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()
   document.getElementById("tab4").hidden=t!=="tab4"; if(window.__ws1Show) window.__ws1Show(t==="tab4");
   document.getElementById("tab5").hidden=t!=="tab5"; if(window.__ws2Show) window.__ws2Show(t==="tab5");
   document.getElementById("tab6").hidden=t!=="tab6"; if(window.__ws3Show) window.__ws3Show(t==="tab6");
-  document.getElementById("tab7").hidden=t!=="tab7"; if(window.__ws4Show) window.__ws4Show(t==="tab7");
   document.getElementById("tab8").hidden=t!=="tab8"; if(window.__ws5Show) window.__ws5Show(t==="tab8");
+  document.getElementById("tab7").hidden=t!=="tab7"; if(window.__ws4Show) window.__ws4Show(t==="tab7");
   if(t!=="tab1"&&typeof sirenOff==="function") sirenOff();
   if(t!=="tab2"&&window.__cockpitStop) window.__cockpitStop();
   window.dispatchEvent(new Event("resize"));
