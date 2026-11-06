@@ -214,6 +214,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.shotslot{margin-top:10px}.shotrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.shotrow img{width:100%;border-radius:10px;display:block}.shotside{display:flex;flex-direction:column;gap:6px}.shotside textarea{width:100%;box-sizing:border-box}@media(max-width:640px){.shotrow{grid-template-columns:1fr}}
 .eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
@@ -490,9 +491,9 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
     ts.textContent="📷 截圖已放進下面的「模型截圖」（點這裡看）";ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
+async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
-  out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
+  out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
@@ -539,6 +540,17 @@ function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").
       r.querySelector("[data-del]").addEventListener("click",()=>{if((o.name||o.src)&&!confirm(`要刪掉「${o.name||"這個器材"}」嗎？`))return;L.splice(i,1);sync();draw()})});
     el.querySelector("[data-add]").addEventListener("click",()=>{L.push({name:"",src:""});sync();draw();const ins=el.querySelectorAll(".eqname");ins[ins.length-1].focus()})}
   sync();draw();return draw}
+
+/* 單一模型的截圖格：放在模型畫面正下方；那個模型按 📷 就放進來，可以寫圖片描述 */
+function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const el=document.createElement("div");el.className="card shotslot";anchor.after(el);
+  const cur=()=>{const g=galFix(get());g.ms=g.ms||{};return [g,g.ms[name]||(g.ms[name]={src:"",cap:""})]};
+  function draw(){const [g,o]=cur();el.innerHTML=`<h3>📷 ${title}的截圖</h3><div class="shotrow">${o.src?`<img src="${o.src}" alt="${title}的截圖">`:`<div class="galempty">按上面畫面左下角的 📷，截圖會放在這裡</div>`}
+      <div class="shotside"><textarea rows="3" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖的圖片描述">${esc(o.cap)}</textarea>${o.src?'<div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉截圖</button></div>':""}</div></div>`;
+    el.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur();o.cap=e.target.value;set(g)});
+    const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";set(g);draw()})}
+  addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();o.src=await galShrink(e.detail.u);if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
+  draw();return draw}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
