@@ -351,8 +351,9 @@ document.querySelectorAll("#tab0 [data-goto]").forEach(b=>b.addEventListener("cl
       </div>
     </div>
     <div class="group">
-      <h2>3　車子從哪裡來？（按下就出發）</h2>
-      <div id="dirs" class="dpad">
+      <h2>3　車子從哪裡來？（在路上點一下就出發）</h2>
+      <p id="pickTip" style="margin:0;padding:12px 14px;border-radius:12px;background:var(--panel,#fff);border:2px dashed var(--line,#d3dbe0);font-size:15px;line-height:1.6">👉 在左邊路口畫面的<b>路上點一下</b>，車子就從那條路開過來（3D、平面都可以點）。滑鼠移到路上，會顯示是哪一條路。</p>
+      <div id="dirs" class="dpad" hidden>
         <button class="big" data-d="N" style="grid-area:n">北<br><small>惠中路</small></button>
         <button class="big" data-d="W" style="grid-area:w">西<br><small>臺灣大道</small></button>
         <button class="big" data-d="R" style="grid-area:r">隨機</button>
@@ -802,6 +803,20 @@ const steps=[...document.querySelectorAll("#steps li")];
 function step(k,state){const li=steps.find(l=>l.dataset.k===k); if(li) li.className=state}
 function say(t,c){const m=document.getElementById("msg");m.textContent=t;m.className="msg "+(c||"")}
 function setButtons(busy){document.querySelectorAll("#dirs button,#sirens button,#systems button").forEach(b=>b.disabled=busy)}
+/* 在路上點一下就出發：看點的位置在哪一條路（北、東、南、西），路口中間不算 */
+const ROADN2={N:"北邊（惠中路）",S:"南邊（惠中路）",E:"東邊（臺灣大道）",W:"西邊（臺灣大道）"};
+window.__armAt=(px,py)=>{const dx=px-C,dy=py-C;if(Math.abs(dx)<HALF&&Math.abs(dy)<HALF)return null;
+  if(Math.abs(dx)<HALF*1.15)return dy<0?"N":"S";if(Math.abs(dy)<HALF*1.15)return dx>0?"E":"W";return null};
+window.__armName=d=>ROADN2[d];
+window.__armGo=d=>{const b=document.querySelector("#sirens button");if(!d||(b&&b.disabled))return false;startRun(d);return true};
+{let down=null,tip=null;const T=()=>{if(!tip){tip=document.createElement("div");tip.style.cssText="position:absolute;z-index:7;pointer-events:none;padding:4px 10px;border-radius:999px;background:rgba(16,24,32,.8);color:#fff;font:600 13px system-ui;white-space:nowrap;display:none";cv.parentElement.appendChild(tip)}return tip};
+ const at=e=>{const r=cv.getBoundingClientRect(),lx=(e.clientX-r.left)/r.width*S,ly=(e.clientY-r.top)/r.height*S;return __armAt((lx-(C-C*VZ+VX))/VZ,(ly-(C-C*VZ+VY))/VZ)};
+ window.__armTip=(d,e,host)=>{const t=T();if(!d){t.style.display="none";return}const b=cv.parentElement.getBoundingClientRect();const busy=document.querySelector("#sirens button").disabled;
+   if(!d||busy){t.style.display="none";return}t.textContent="從"+ROADN2[d]+"出發";t.style.display="block";t.style.left=(e.clientX-b.left+14)+"px";t.style.top=(e.clientY-b.top+10)+"px"};
+ cv.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});
+ cv.addEventListener("pointermove",e=>{const d=at(e);cv.style.cursor=d?"pointer":"";__armTip(d,e)});
+ cv.addEventListener("pointerleave",()=>{if(tip)tip.style.display="none"});
+ cv.addEventListener("pointerup",e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;down=null;if(__armGo(at(e))&&tip)tip.style.display="none"})}
 document.querySelectorAll("#dirs button").forEach(b=>b.addEventListener("click",()=>{
   let d=b.dataset.d; if(document.getElementById("challenge").checked) d="R"; startRun(d)}));
 document.querySelectorAll("#turns button").forEach(b=>b.addEventListener("click",()=>{turnType=b.dataset.t;document.querySelectorAll("#turns button").forEach(x=>x.classList.toggle("on",x===b))}));
@@ -1454,6 +1469,12 @@ const circ=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;circ.push(new THREE.
 const WL=[];function updWaves(){while(WL.length<waves.length){const l=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true}));scene.add(l);WL.push(l)}
   WL.forEach((l,i)=>{const w=waves[i];if(!w||(run&&run.hidden&&!run.guess)){l.visible=false;return}l.visible=true;const r=Math.max(0.1,w.r*K);l.scale.set(r,1,r);l.position.set(X(w.x),8,Z(w.y));l.material.opacity=Math.max(0,0.75-w.r/1100)})}
 
+{const rc=new THREE.Raycaster(),m=new THREE.Vector2(),pl=new THREE.Plane(new THREE.Vector3(0,1,0),0),hit=new THREE.Vector3();let down=null;const el=renderer.domElement;
+ const at=e=>{const r=el.getBoundingClientRect();m.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1));rc.setFromCamera(m,cam);if(!rc.ray.intersectPlane(pl,hit))return null;return __armAt(hit.x/K+C,hit.z/K+C)};
+ el.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});
+ el.addEventListener("pointermove",e=>{if(e.buttons)return;const d=at(e);el.style.cursor=d?"pointer":"";__armTip(d,e)});
+ el.addEventListener("pointerleave",()=>__armTip(null));
+ el.addEventListener("pointerup",e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6){down=null;return}down=null;if(__armGo(at(e)))__armTip(null)})}
 function frame(){requestAnimationFrame(frame); if(mode!=="3d"||document.getElementById("tab1").hidden) return;
   updLights(); updHeat(); updCars(); updWaves(); if(inCar){if(!carCam()){const [p,q]=VIEWS.v3;cam.position.set(...p);cam.lookAt(...q)}}else ctl.update(); renderer.render(scene,cam)}
 frame();
