@@ -28,12 +28,12 @@ window.__hush=()=>{window.__hushers.forEach(f=>{try{f()}catch(e){}});
    整個網站只在最上層的視窗開一次，每個學習單分頁共用同一份；學習單分頁要等照片都載入好才打開。 */
 (()=>{if(window.__bigInst)return;window.__bigInst=1;
 let LS;try{LS=window.localStorage}catch(e){return}
-let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG&&w.location.origin===location.origin){T=w;break}}}catch(e){}   // 往上找已經開好的那一份
+let T=window;try{let w=window;while(w!==w.parent){w=w.parent;if(w.__BIG){T=w;break}}}catch(e){}   // 往上找已經開好的那一份（別的網站的框會讀不到，就停）   // 往上找已經開好的那一份
 const P=Storage.prototype,oG=P.getItem,oS=P.setItem,oR=P.removeItem;
 const MIN=20000,MARK="\u0001idb:",isM=v=>typeof v==="string"&&v.startsWith(MARK);
 /* 單獨打開學習單（不是從主頁面）：先把這一頁停下來，等照片從 IndexedDB 載入好，再把同一頁放進全螢幕的框裡打開，照片就都看得到 */
 let SELF=false;
-if(T===window&&!window.__bigHost){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
+if(T===window&&!window.__bigHost&&window.top===window){try{for(let i=0;i<LS.length;i++){if(isM(oG.call(LS,LS.key(i)))){SELF=true;break}}}catch(e){}
   if(SELF){try{document.write('<plaintext hidden style="display:none">')}catch(e){SELF=false}}}
 if(T===window){
   const map=new Map(),ver=new Map();let db=null;
@@ -100,19 +100,40 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
     const fb=W.firebase;if(!fb.apps.length)fb.initializeApp(CFG);
     await fb.auth().signInAnonymously();
     const db=fb.firestore(),root=db.collection("teams").doc("ritz"),D=root.collection("docs"),C=root.collection("chunks"),CH=250000;
-    const meta=new Map(),subs=new Set();let loaded=false;
+    const HI=root.collection("hist"),HC=root.collection("hchunks"),KEEP=12;   // 舊版本：每張學習單留最近 12 份
+    const meta=new Map(),who=new Map(),subs=new Set(),lastSnap=new Map();let loaded=false;
+    let DEV="";try{DEV=W.localStorage.getItem("wwt-dev")||"";if(!DEV){DEV="d"+Math.random().toString(36).slice(2,10);W.localStorage.setItem("wwt-dev",DEV)}}catch(e){DEV="d"+Math.random().toString(36).slice(2,10)}
+    const NAME=()=>{const u=navigator.userAgent;return /iPhone/.test(u)?"iPhone":/iPad/.test(u)?"iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows 電腦":"電腦"};
+    async function snap(key,data,ts,dev,dn,why){ts=+ts>1e12?+ts:Date.now();const id=key+"~"+ts,n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
+      for(let i=0;i<n;i++)b.set(HC.doc(id+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
+      b.set(HI.doc(id),{key,ts:+ts,n,len:data.length,dev:dev||"",dn:dn||"",why:why||"",at:fb.firestore.FieldValue.serverTimestamp()});
+      await timeout(b.commit(),30000,"hist "+key);lastSnap.set(key,Date.now());
+      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>y.ts-x.ts);   // 太多就把最舊的刪掉
+        for(const o of L.slice(KEEP)){const d=db.batch();for(let i=0;i<(o.n||1);i++)d.delete(HC.doc(o.id+"~"+i));d.delete(HI.doc(o.id));await d.commit()}}catch(e){}}
+    async function lastSnapOf(key){if(lastSnap.has(key))return lastSnap.get(key);
+      try{const L=(await HI.where("key","==",key).get()).docs.map(d=>+(d.data().ts||0));const t=L.length?Math.max(...L):0;lastSnap.set(key,t);return t}catch(e){return Date.now()}}
     const api={
-      async save(key,data,ts){data=String(data??"");const n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
+      async save(key,data,ts){data=String(data??"");
+        /* 存之前先留一份舊版本：上一次是別台電腦存的（換電腦了），先把雲端那一份留起來；同一台每 10 分鐘也留一份 */
+        try{const pw=who.get(key);
+          if(pw&&pw.dev&&pw.dev!==DEV&&meta.has(key)){const old=await api.load(key);if(old&&old.data)await snap(key,old.data,old.ts,pw.dev,pw.dn,"換電腦之前")}
+          else if(Date.now()-(await lastSnapOf(key))>600000&&data.length)setTimeout(()=>snap(key,data,+ts||Date.now(),DEV,NAME(),"每 10 分鐘").catch(()=>{}),0)}catch(e){}
+        const n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
         for(let i=0;i<n;i++)b.set(C.doc(key+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
-        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:data.length,at:fb.firestore.FieldValue.serverTimestamp()});
-        await timeout(b.commit(),20000,"save "+key);meta.set(key,+ts||Date.now())},
+        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:data.length,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()});
+        await timeout(b.commit(),20000,"save "+key);meta.set(key,+ts||Date.now());who.set(key,{dev:DEV,dn:NAME()})},
+      /* 舊版本清單、拿回某一版 */
+      async hist(key){const L=(await timeout(HI.where("key","==",key).get(),20000,"hist")).docs.map(d=>({id:d.id,...d.data()}));return L.sort((x,y)=>y.ts-x.ts)},
+      async histLoad(id){const m=await HI.doc(id).get();if(!m.exists)return null;const {n,ts,key}=m.data();
+        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>HC.doc(id+"~"+i).get())),30000,"hchunks");return {key,ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+      snap:(key,data,ts,why)=>snap(key,data,ts,DEV,NAME(),why),dev:DEV,
       async load(key){const m=await timeout(D.doc(key).get(),20000,"load "+key);if(!m.exists)return null;const {ts,n}=m.data();
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       ts:key=>meta.get(key),loaded:()=>loaded,
       watch(cb){subs.add(cb);if(loaded){for(const [k,t] of meta)cb(k,t);cb(null)}return()=>subs.delete(cb)}};
     const tell=(...a)=>subs.forEach(f=>{try{f(...a)}catch(e){subs.delete(f)}});   // 已經關掉的分頁會出錯，就把它拿掉
-    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.type==="removed")return;const k=c.doc.id,t=+(c.doc.data().ts||0);meta.set(k,t);ch.push([k,t])});
+    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.type==="removed")return;const k=c.doc.id,x=c.doc.data(),t=+(x.ts||0);meta.set(k,t);who.set(k,{dev:x.dev||"",dn:x.dn||""});ch.push([k,t])});
       const first=!loaded;loaded=true;ch.forEach(([k,t])=>tell(k,t));if(first)tell(null)},e=>console.warn("[firebase]",e));
     return api})(),15000,"connect");
   W.__FBP.catch(e=>console.warn("[firebase] 連不上，改用 Google 試算表：",e&&e.message||e));
@@ -191,6 +212,28 @@ addEventListener("visibilitychange",()=>{if(fbDead&&document.visibilityState==="
 addEventListener("pagehide",()=>{if(dirty.size)push(true);if(gasQ.size)gasFlush(true)});
 addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty.size)push(true)});
 addEventListener("storage",e=>{if(!TEAM&&e.key==="wwt-kid"&&e.newValue!==kid)location.reload()});
+/* 舊版本：雲端替這一頁的資料留了最近幾份，選一份就能拿回來（拿回之前，現在這一份也會先留起來） */
+async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove();return}
+  P=document.createElement("div");P.id="ksHP";P.setAttribute("role","dialog");P.setAttribute("aria-label","舊版本");
+  P.style.cssText="position:absolute;right:0;top:calc(100% + 6px);width:min(360px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);color:var(--ink,#000);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:left;font-size:14px";
+  document.getElementById("kidBar").appendChild(P);P.innerHTML="讀取中…";
+  if(!fb){P.innerHTML="還沒連上雲端，等一下再試。";return}
+  const keys=[...used].filter(k=>!/#/.test(k)),T=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`};
+  const lab=k=>/-img$/.test(k)?"照片":"紀錄",sz=n=>n>1e6?(n/1e6).toFixed(1)+" MB":Math.max(1,Math.round(n/1000))+" KB";
+  let L=[];try{for(const k of keys)L.push(...(await fb.hist(k)).map(o=>Object.assign(o,{k})))}catch(e){P.innerHTML="讀不到舊版本，等一下再試。";return}
+  L.sort((x,y)=>y.ts-x.ts);
+  P.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🕘 舊版本</b><button type="button" data-x style="font:inherit;border:0;background:none;cursor:pointer;font-size:18px" aria-label="關閉">✕</button></div>
+    <div style="font-size:13px;color:var(--muted,#666);margin-bottom:8px">不小心被蓋掉時，選一份拿回來。換電腦存檔之前、和每 10 分鐘，雲端會自動留一份。</div>
+    ${L.length?L.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line,#eee)"><div style="flex:1"><b>${T(o.ts)}</b>${keys.length>1?`（${lab(o.k)}）`:""}<br><span style="font-size:12px;color:var(--muted,#666)">${o.dn||""}${o.why?"・"+o.why:""}・${sz(o.len||0)}</span></div><button type="button" data-i="${i}" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">拿回這一版</button></div>`).join(""):"<div>還沒有舊版本（存過幾次之後就會有）。</div>"}`;
+  P.querySelector("[data-x]").addEventListener("click",()=>P.remove());
+  P.querySelectorAll("[data-i]").forEach(b=>b.addEventListener("click",async()=>{const o=L[+b.dataset.i];
+    if(!confirm(`要把「${lab(o.k)}」換回 ${T(o.ts)} 那一版嗎？\n（現在這一份會先留起來，之後還可以換回來）`))return;
+    b.disabled=true;b.textContent="拿回中…";
+    try{const cur=g(nk(o.k));if(cur)await fb.snap(o.k,cur,+(g(nk(o.k)+"#ts")||Date.now()),"拿回舊版之前");
+      const r=await fb.histLoad(o.id);if(!r||!r.data)throw 0;
+      const now=Date.now();s(nk(o.k),r.data);s(nk(o.k)+"#ts",String(now));await fb.save(o.k,r.data,now);
+      show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
+    catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -201,8 +244,9 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
-  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button></div>`;
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
     document.body.appendChild(W);
+    W.querySelector("#ksHist").addEventListener("click",histPanel);
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
     show(st||(url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
