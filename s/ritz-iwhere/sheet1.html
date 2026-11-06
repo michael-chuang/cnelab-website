@@ -433,7 +433,7 @@ function makeGallery(el,get,set){if(!el)return;
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;

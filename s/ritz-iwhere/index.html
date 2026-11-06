@@ -2349,7 +2349,7 @@ function makeGallery(el,get,set){if(!el)return;
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
@@ -3513,7 +3513,7 @@ function makeGallery(el,get,set){if(!el)return;
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
@@ -4229,8 +4229,8 @@ td.no{color:var(--b);font-weight:700}
   </div>
 </section>
 
-<section>
-  <h2>三、路口要幾支麥克風？</h2>
+<section hidden data-noword>
+  <h2>（不用）路口要幾支麥克風？</h2>
   <p class="lead">如果路口也要像耳朵一樣聽出救護車在哪裡，要裝幾支麥克風？先給你 2 支。拖曳麥克風和救護車，按「鳴笛」看聲音先到哪一支，系統會畫出它猜的方向。</p>
   <div class="sim">
     <div class="stage map" id="mapStage"><canvas id="map" aria-label="路口俯視圖：可以拖曳麥克風和救護車"></canvas><div class="hud2 light" id="mapHud"></div></div>
@@ -4248,19 +4248,18 @@ td.no{color:var(--b);font-weight:700}
   <div class="card"><h3>試試看，記下來</h3>
     <ul class="note"><li>把兩支麥克風拉得很近、再拉得很遠，時間差有什麼變化？</li><li>救護車換到別條路，2 支麥克風還分得出來嗎？</li><li>加到 3 支、4 支，怎麼擺才分得出四條路？3 支排成一直線可以嗎？</li></ul>
   </div>
-  <p class="cap">表 3-3　麥克風的數量和擺法</p>
+  <p class="cap">（不用）麥克風的數量和擺法</p>
   <div class="tbl"><table id="t33"><thead><tr><th>麥克風幾支</th><th>怎麼擺</th><th>救護車在哪條路</th><th>系統找到幾個可能的方向</th><th>分得出是哪條路嗎？</th></tr></thead><tbody></tbody></table></div>
   <div class="card qa"><label for="q31">兩支麥克風要怎麼擺，時間差才會比較大？</label><input type="text" id="q31" class="wide">
     <label for="q32">為什麼 2 支麥克風有時候分不出救護車在哪條路？</label><input type="text" id="q32" class="wide"></div>
 </section>
 
 <section>
-  <div class="card" id="gal3"></div>
-</section>
-
-<section>
-  <h2>四、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
+  <h2>三、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
   <p class="lead">用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。</p>
+  <div class="card"><h3>小模型路口（3D）</h3><p class="note" style="margin:0 0 8px">實驗要搭的樣子：ReSpeaker 陣列式麥克風在路口正中央，接到電腦的「頻率雷達」；救護車上綁著藍牙喇叭。可以拖曳轉動、按左下角 📷 截圖，截圖會放進下面的「模型截圖」。</p>
+    <iframe id="modelFrame" title="小模型路口 3D" style="width:100%;height:520px;border:0;border-radius:12px;background:#eee" loading="lazy"></iframe></div>
+  <div class="card" id="gal3"></div>
   <div class="two">
     <div class="card"><h3>步驟</h3><ol id="stepList3">
       <li>搭好小模型路口，ReSpeaker 放在路口正中央的壓克力板上，用 USB 線接電腦。</li>
@@ -4278,18 +4277,366 @@ td.no{color:var(--b);font-weight:700}
       <p class="note">只用 1 支時，雷達沒有時間差可以算，可能沒有方向，就在表上勾「雷達沒有方向」。</p></div>
   </div>
   <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
-  <p class="cap" id="t34cap">表 3-4　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
+  <p class="cap" id="t34cap">表 3-3　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
   <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
-  <p class="cap">表 3-5　四種麥克風數量的比較（自動算）</p>
+  <p class="cap">表 3-4　四種麥克風數量的比較（自動算）</p>
   <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
   <div class="two">
     <div class="card"><svg id="cAcc" viewBox="0 0 420 300" role="img" aria-label="正確率長條圖"></svg><p class="cap">圖 3-2　選對路的正確率</p></div>
     <div class="card"><svg id="cErr" viewBox="0 0 420 300" role="img" aria-label="平均角度差長條圖"></svg><p class="cap">圖 3-3　平均角度差（越小越準）</p></div>
   </div>
 </section>
+<script type="text/plain" id="modelSrc"><title>小模型路口 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout：整頁 3D 場景，左上角標題與說明，右下角視角按鈕 */
+:root{ --fg:#10202c; --muted:#3c5262; --chip:rgba(255,255,255,.8); --line:rgba(16,32,44,.18); --accent:#2360c4; --bg:#cfe8f7; color-scheme:light }
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;overflow:hidden}
+#app{position:fixed;inset:0}
+.hud{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));pointer-events:none;display:flex;flex-direction:column;gap:4px}
+.hud h1{margin:0;font-size:clamp(18px,3vw,26px);font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.hud p{margin:0;color:var(--muted);font-size:13px;max-width:62ch}
+.ctrl{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ctrl button{font:inherit;font-size:14px;background:var(--chip);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;backdrop-filter:blur(6px)}
+.ctrl button:hover{background:#fff}
+.ctrl button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ctrl button:focus-visible{outline:2px solid #e3a008;outline-offset:2px}
+.tip{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:12px;pointer-events:none}
+</style>
+<div id="app"></div>
+<div class="hud">
+  <h1>小模型路口 3D</h1>
+  <p>用紙箱房子、紙膠帶道路、玩具小汽車和透明壓克力架擺出的小路口。陣列式麥克風（ReSpeaker）放在壓克力板正中央，藍牙喇叭綁在玩具救護車上移動。</p>
+</div>
+<div class="ctrl" id="ctrl"><button data-v="v1">斜上方</button><button data-v="v2">俯視</button><button data-v="v3">車子視角</button><button data-v="v4">麥克風特寫</button><button data-v="spin">自動旋轉：關</button></div>
+<div class="tip">拖曳旋轉・滾輪或兩指縮放</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">%%ENDSCRIPT%%>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js">%%ENDSCRIPT%%>
+<script>
+/* PANPAD START */
+/* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
+  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+    try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
+    try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
+function svgSnap(svg,scale=2){return new Promise(ok=>{const vb=(svg.getAttribute("viewBox")||"0 0 600 400").split(/\s+/).map(Number),w=vb[2]*scale,h=vb[3]*scale;
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");c.setAttribute("width",w);c.setAttribute("height",h);
+  const cs=getComputedStyle(document.documentElement);c.style.fontFamily="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif";
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;const g=cv.getContext("2d");g.fillStyle=cs.getPropertyValue("--paper").trim()||"#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);ok(cv.toDataURL("image/png"))};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c))})}
+function makePad(host,opt){if(getComputedStyle(host).position==="static")host.style.position="relative";
+  const pad=document.createElement("div"),pos=opt.corner||"bl",V=pos[0]==="t"?"top":"bottom",H=pos[1]==="l"?"left":"right";
+  pad.setAttribute("role","group");pad.setAttribute("aria-label","移動畫面");
+  const B=[["u","▲","畫面往上"],["l","◀","畫面往左"],["c","⟲","回到一開始的畫面"],["r","▶","畫面往右"],["d","▼","畫面往下"],["zi","＋","拉近（放大）"],["zo","－","拉遠（縮小）"]].filter(b=>!opt.keys||opt.keys.includes(b[0]));
+  if(opt.snap)B.push(["sn","📷","截圖，存成圖片"]);const only=B.length===1;
+  pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
+  pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
+  pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
+  host.appendChild(pad);(window.__padReg=window.__padReg||[]).push({host,opt});   // 匯出 Word 時用來拍畫面
+  let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
+  pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
+    b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>{if(!u)return;saveSnap(u,opt.name);window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:opt.name,host}}))});return}
+      opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
+  return pad}
+function addPanPad(host,cam,ctl,corner,snap,name){
+  let home=null;const keep=()=>{if(!home)home=[cam.position.clone(),ctl.target.clone()]};setTimeout(keep,0);
+  const rt=new THREE.Vector3(),up=new THREE.Vector3(),off=new THREE.Vector3();
+  function step(k,f){keep();cam.updateMatrixWorld();
+    if(k==="c"){cam.position.copy(home[0]);ctl.target.copy(home[1]);ctl.update();return}
+    if(k==="zi"||k==="zo"){off.copy(cam.position).sub(ctl.target);let L=off.length()*Math.pow(k==="zi"?0.8:1.25,f);
+      L=Math.max(ctl.minDistance||0.01,Math.min(ctl.maxDistance===Infinity?1e9:ctl.maxDistance,L));cam.position.copy(ctl.target).add(off.setLength(L));ctl.update();return}
+    const s=cam.position.distanceTo(ctl.target)*0.12*f;rt.setFromMatrixColumn(cam.matrixWorld,0);up.setFromMatrixColumn(cam.matrixWorld,1);
+    off.set(0,0,0).addScaledVector(rt,k==="r"?s:k==="l"?-s:0).addScaledVector(up,k==="u"?s:k==="d"?-s:0);   // ▶＝鏡頭往右看
+    cam.position.add(off);ctl.target.add(off);ctl.update()}
+  return makePad(host,{corner,step,snap,name})}
+/* PANPAD END */
+/* ================= 小模型路口 3D：紙箱房子＋紙膠帶道路＋玩具小汽車（1 單位＝1 cm） ================= */
+function initModel3D(host){
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.domElement.style.cssText="width:100%;height:100%;display:block";
+host.insertBefore(renderer.domElement,host.firstChild);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(42,1,1,5000);
+const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enableDamping=true; ctl.maxPolarAngle=Math.PI*0.49; ctl.minDistance=20; ctl.maxDistance=400;
+addPanPad(host,cam,ctl,"bl",()=>{renderer.render(scene,cam);return renderer.domElement.toDataURL("image/png")},"實驗模型");
+ctl.autoRotate=false; ctl.autoRotateSpeed=0.5;
+function resize(){const r=host.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(host); resize();
+
+/* ---------- 室內：木頭地板上的手作路口 ---------- */
+function canvasTex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
+scene.background=canvasTex(4,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,"#e9e3d8");gr.addColorStop(1,"#cfc4b2");g.fillStyle=gr;g.fillRect(0,0,w,h)});
+scene.fog=new THREE.Fog(0xddd4c6,380,900);
+const clouds=[];
+scene.add(new THREE.HemisphereLight(0xfffaf0,0x8a7a62,0.7));
+const sun=new THREE.DirectionalLight(0xfff3dd,0.75); sun.position.set(-120,240,90); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-140,right:140,top:140,bottom:-140,near:10,far:700}); sun.shadow.bias=-0.0005; scene.add(sun);
+
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.85,metalness:0.02},o));
+function box(w,h,d,mat,x,y,z,parent=scene,shadow=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y+h/2,z);m.castShadow=shadow;m.receiveShadow=true;parent.add(m);return m}
+function cyl(r,h,mat,x,y,z,seg=16,parent=scene){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),mat);m.position.set(x,y+h/2,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+
+// 木頭地板
+const wood=canvasTex(512,512,(g,w,h)=>{const C=["#c9a57a","#c29d72","#cfac82","#bf986c","#c7a276"];for(let i=0;i<8;i++){g.fillStyle=C[i%5];g.fillRect(0,i*64,w,64);g.fillStyle="rgba(0,0,0,.10)";g.fillRect(0,i*64,w,2);
+  for(let k=0;k<7;k++){g.strokeStyle="rgba(90,60,30,.10)";g.beginPath();g.moveTo(0,i*64+6+k*8);g.bezierCurveTo(w*.3,i*64+2+k*8,w*.6,i*64+12+k*8,w,i*64+6+k*8);g.stroke()}
+  g.fillStyle="rgba(0,0,0,.08)";g.fillRect((i*137)%w,i*64,2,64)}});
+wood.wrapS=wood.wrapT=THREE.RepeatWrapping; wood.repeat.set(7,7);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(800,800),new THREE.MeshStandardMaterial({map:wood,roughness:0.7})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+
+/* ---------- 道路：黑色珍珠板＋紙膠帶畫線（寬 20 cm、長 230 cm） ---------- */
+const L=100, RW=10, RL=115;
+const board=new THREE.MeshStandardMaterial({color:0x2f3133,roughness:0.95});
+box(2*RL,0.4,2*RW,board,0,0,0,scene,false); box(2*RW,0.4,2*RL,board,0,0,0,scene,false);
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+const tapeW=new THREE.MeshStandardMaterial({color:0xf2eedf,roughness:0.9}), tapeY=new THREE.MeshStandardMaterial({color:0xf2c230,roughness:0.9}), tapeR=new THREE.MeshStandardMaterial({color:0xe23b3b,roughness:0.9});
+// 一段紙膠帶：稍微歪一點、長短不一，看起來像手貼的
+function tape(x,z,len,along,mat,w=1.5){const m=new THREE.Mesh(new THREE.BoxGeometry(along==="x"?len:w,0.08,along==="x"?w:len),mat);m.position.set(x+(rnd()-.5)*0.3,0.45,z+(rnd()-.5)*0.3);m.rotation.y=(rnd()-.5)*0.03;m.receiveShadow=true;scene.add(m);return m}
+function tapeLine(a,b,fixed,along,mat,dash=0){ // a→b 沿著 x 或 z，一段約 18 cm 接起來
+  let p=a;while(p<b){const seg=Math.min(b-p,dash||16+rnd()*4);const c=p+seg/2;along==="x"?tape(c,fixed,seg+0.6,"x",mat):tape(fixed,c,seg+0.6,"z",mat);p+=seg+(dash?dash*0.8:0)}}
+const IN=RW+12; // 路口範圍（斑馬線外）
+for(const s of [-1,1]){
+  tapeLine(IN,RL-1,0,"x",tapeY,0); tapeLine(-80,-IN,0,"x",tapeY,0);         // 臺灣大道中線（黃，西邊還在貼）
+  tapeLine(IN,RL-1,0,"z",tapeY,0); tapeLine(-RL+1,-IN,0,"z",tapeY,0);         // 惠中路中線
+  tapeLine(-RL+1,-IN+2,s*(RW-1.2),"x",tapeW,0); tapeLine(IN-2,RL-1,s*(RW-1.2),"x",tapeW,0);   // 路邊白線
+  tapeLine(-RL+1,-IN+2,s*(RW-1.2),"z",tapeW,0); tapeLine(IN-2,s>0?75:RL-1,s*(RW-1.2),"z",tapeW,0);
+}
+// 斑馬線（白膠帶一條一條）＋停止線
+for(let i=-RW+1.6;i<RW-1;i+=2.6){tape(i,RW+5,6,"z",tapeW,1.4);tape(i,-RW-5,6,"z",tapeW,1.4);tape(RW+5,i,6,"x",tapeW,1.4);tape(-RW-5,i,6,"x",tapeW,1.4)}
+tape(-RW/2,-RW-10,RW,"x",tapeW);tape(RW/2,RW+10,RW,"x",tapeW);tape(RW+10,-RW/2,RW,"z",tapeW);tape(-RW-10,RW/2,RW,"z",tapeW);
+// 正在貼膠帶：一卷膠帶立在線的尾巴（拉出一段），旁邊放一把剪刀
+function tapeRoll(x,z,axis,mat){const g=new THREE.Group();
+  const prof=(r0,r1,h)=>[new THREE.Vector2(r0,-h/2),new THREE.Vector2(r1,-h/2),new THREE.Vector2(r1,h/2),new THREE.Vector2(r0,h/2),new THREE.Vector2(r0,-h/2)];
+  const roll=new THREE.Mesh(new THREE.LatheGeometry(prof(2.6,4.2,1.5),48),mat);roll.castShadow=true;g.add(roll);
+  const core=new THREE.Mesh(new THREE.LatheGeometry(prof(2.25,2.6,1.6),48),M(0xb98a55));g.add(core);
+  g.rotation.set(axis==="x"?Math.PI/2:0,0,axis==="x"?0:Math.PI/2); // 輪子立起來，沿著線滾
+  g.position.set(x,4.6,z);scene.add(g);return g}
+function scissors(x,z,rot,hc,open=0.2){const g=new THREE.Group(),steel=M(0xc4c9cf,{metalness:0.75,roughness:0.28}),hm=M(hc,{roughness:0.5});
+  for(const s of [-1,1]){const b=new THREE.Group();b.rotation.z=s*open;g.add(b);
+    ext([[0,-0.5*s],[7.5,-0.05*s],[7.4,0.15*s],[0,0.45*s]],0.2,steel,0.04,b);
+    const h=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.42,10,24),hm);h.position.set(-2.3,1.0*s,0);h.castShadow=true;b.add(h);
+    const n=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.5,0.5),hm);n.position.set(-0.7,0.45*s,0);b.add(n)}
+  const pin=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.7,12),steel);pin.rotation.x=Math.PI/2;g.add(pin);
+  g.rotation.set(-Math.PI/2,0,rot);g.position.set(x,0.62,z);scene.add(g);return g}
+tapeRoll(-86,0,"x",tapeY); tape(-83,0,6,"x",tapeY); scissors(-81.6,4.2,Math.PI/2,0xe8483f,0.24);   // 黃色中線貼到一半：剪刀正在剪
+tapeRoll(RW-1.2,81,"z",tapeW); tape(RW-1.2,78,6,"z",tapeW); scissors(RW-1.2+4.2,76.4,Math.PI,0x2f6fd6,0.24); // 白色邊線貼到一半：剪刀正在剪
+
+/* ---------- 透明壓克力架＋陣列式麥克風（ReSpeaker） ---------- */
+const acrylic=new THREE.MeshPhysicalMaterial({color:0xdff3ff,transparent:true,opacity:0.28,roughness:0.05,metalness:0,clearcoat:1,clearcoatRoughness:0.05,depthWrite:false});
+const acrylicEdge=new THREE.LineBasicMaterial({color:0x7fc4ee,transparent:true,opacity:0.95});
+function acrylicBox(w,h,d,x,y,z){const g=new THREE.BoxGeometry(w,h,d);const m=new THREE.Mesh(g,acrylic);m.position.set(x,y+h/2,z);m.renderOrder=2;scene.add(m);
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(g),acrylicEdge);e.position.copy(m.position);scene.add(e);return m}
+for(const sx of [-1,1]) for(const sz of [-1,1]) acrylicBox(2,24.4,2,sx*14,0.6,sz*14);
+acrylicBox(32,0.6,32,0,25,0);
+cyl(9.5,3.2,M(0x1c1d20,{roughness:0.45}),0,25.6,0,64); cyl(9.7,0.6,M(0x0e0f11,{roughness:0.5}),0,25.6,0,64);
+const sticker=canvasTex(256,256,(g)=>{g.fillStyle="#1c1d20";g.beginPath();g.arc(128,128,100,0,7);g.fill();g.strokeStyle="#ddd";g.lineWidth=3;g.beginPath();g.arc(128,128,96,0,7);g.stroke();
+  for(let d=0;d<360;d+=10){const a=(d-90)*Math.PI/180,r0=d%30?88:80;g.strokeStyle="#ddd";g.lineWidth=d%30?1:2;g.beginPath();g.moveTo(128+Math.cos(a)*r0,128+Math.sin(a)*r0);g.lineTo(128+Math.cos(a)*96,128+Math.sin(a)*96);g.stroke()}
+  g.textAlign="center";g.textBaseline="middle";
+  [45,135,225,315].forEach((d,k)=>{const a=(d-90)*Math.PI/180,x=128+Math.cos(a)*48,y=128+Math.sin(a)*48;g.save();g.translate(x,y);g.rotate((d+180)*Math.PI/180);g.beginPath();g.arc(0,0,17,0,7);g.fillStyle="#fff";g.fill();g.lineWidth=2.5;g.strokeStyle="#111";g.stroke();g.fillStyle="#111";g.font="bold 22px sans-serif";g.fillText(String(k+1),0,1);g.restore()});
+  [[0,"0°"],[90,"90°"],[180,"180°"],[270,"270°"]].forEach(([d,t])=>{const a=(d-90)*Math.PI/180;g.save();g.translate(128+Math.cos(a)*68,128+Math.sin(a)*68);g.rotate((d+180)*Math.PI/180);g.font="bold 15px sans-serif";g.fillStyle="#eee";g.fillText(t,0,0);g.restore()})});
+const st=new THREE.Mesh(new THREE.CircleGeometry(11,64),new THREE.MeshBasicMaterial({map:sticker,transparent:true})); st.rotation.x=-Math.PI/2; st.position.set(0,28.85,0); scene.add(st);
+// USB 線：從 ReSpeaker 沿著壓克力柱下來，貼著路邊走到地上的 MacBook
+const usbCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,27.4,9.4),new THREE.Vector3(-4,26.6,12.8),new THREE.Vector3(-10,26,14),new THREE.Vector3(-14.6,22,14.6),new THREE.Vector3(-14.8,6,14.8),new THREE.Vector3(-15.5,0.4,17),
+  new THREE.Vector3(-16.5,0.4,32),new THREE.Vector3(-17,0.4,44),new THREE.Vector3(-24,0.4,50),new THREE.Vector3(-36,0.4,47),new THREE.Vector3(-44,0.6,46)]);
+scene.add(new THREE.Mesh(new THREE.TubeGeometry(usbCurve,120,0.3,8),M(0x222222)));
+/* ---------- 筆電（放在地上，螢幕朝孩子這邊，畫面是頻率雷達） ---------- */
+{const lap=new THREE.Group();lap.position.set(-58,0,54);lap.rotation.y=Math.PI/4;scene.add(lap);
+ const alu=new THREE.MeshStandardMaterial({color:0xc9ccd1,metalness:0.6,roughness:0.35});
+ const base=new THREE.Mesh(new THREE.BoxGeometry(30,1.2,21),alu);base.position.y=0.6;base.castShadow=base.receiveShadow=true;lap.add(base);
+ const kb=new THREE.Mesh(new THREE.PlaneGeometry(26,9),M(0x1e2126,{roughness:0.6}));kb.rotation.x=-Math.PI/2;kb.position.set(0,1.22,-1.5);lap.add(kb);
+ const pad=new THREE.Mesh(new THREE.PlaneGeometry(11,6.5),M(0xb9bdc3,{roughness:0.4}));pad.rotation.x=-Math.PI/2;pad.position.set(0,1.22,6.2);lap.add(pad);
+ const lid=new THREE.Group();lid.position.set(0,1.2,-10.4);lid.rotation.x=-0.32;lap.add(lid);  // 螢幕往後仰
+ const back=new THREE.Mesh(new THREE.BoxGeometry(30,20,0.6),alu);back.position.set(0,10,0);back.castShadow=true;lid.add(back);
+ const scr=canvasTex(512,340,(g,W,H)=>{g.fillStyle="#0f1424";g.fillRect(0,0,W,H);g.fillStyle="#e8ebf2";g.font="bold 26px 'Noto Sans TC',sans-serif";g.fillText("頻率雷達",20,38);
+   const cx=W/2,cy=H/2+20,R=120;for(let r=40;r<=R;r+=40){g.strokeStyle="rgba(150,180,255,.45)";g.lineWidth=2;g.beginPath();g.arc(cx,cy,r,0,7);g.stroke()}
+   g.fillStyle="rgba(255,80,70,.55)";g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,R,-0.35-Math.PI/2+0.9,0.35-Math.PI/2+0.9);g.closePath();g.fill();
+   g.strokeStyle="#ff5a4a";g.lineWidth=5;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(-Math.PI/2+0.9)*R,cy+Math.sin(-Math.PI/2+0.9)*R);g.stroke();
+   g.fillStyle="#9ba5b7";g.font="18px sans-serif";g.textAlign="center";g.fillText("0°",cx,cy-R-8);g.fillText("90°",cx+R+22,cy+6)});
+ const sm=new THREE.Mesh(new THREE.PlaneGeometry(27.5,17.5),new THREE.MeshBasicMaterial({map:scr}));sm.position.set(0,10.3,0.31);lid.add(sm);
+ // 斜放在西南角，螢幕朝向路口和觀看的人
+}
+
+/* ---------- 紅綠燈（玩具紅綠燈：站在路口轉角，燈頭伸到車道上方） ---------- */
+const SIGS=[];
+function signal(px,pz,hx,hz,axis,face){
+  const pm=M(0x6b737a,{metalness:0.5,roughness:0.4});
+  cyl(0.6,16,pm,px,0,pz,12); cyl(1.6,0.6,M(0x3a3f44),px,0,pz,16);
+  const hor=Math.abs(hx-px)>0.1, len=Math.hypot(hx-px,hz-pz)+2;
+  box(hor?len:0.5,0.5,hor?0.5:len,pm,(px+hx)/2,15.6,(pz+hz)/2);
+  box(hor?5.4:1.8,1.8,hor?1.8:5.4,M(0x1d2124),hx,12.8,hz);
+  const lamps=["red","yellow","green"].map((c,i)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(0.62,14,12),new THREE.MeshStandardMaterial({color:0x2a2f33}));
+    const k=i-1; m.position.set(hx+(hor?k*1.6:0)+face[0],13.7,hz+(hor?0:k*1.6)+face[1]); scene.add(m); const m2=new THREE.Mesh(m.geometry,m.material); m2.position.set(hx+(hor?k*1.6:0)-face[0],13.7,hz+(hor?0:k*1.6)-face[1]); scene.add(m2); return {m,c}});
+  SIGS.push({axis,lamps});
+}
+signal(-24,RW+3,-24,5,"EW",[-0.95,0]); signal(24,-RW-3,24,-5,"EW",[0.95,0]); signal(-RW-3,-24,-5,-24,"NS",[0,-0.95]); signal(RW+3,24,5,24,"NS",[0,0.95]);
+const LCOL={red:0xff3b30,yellow:0xffc21a,green:0x2ee07c};
+function lightsAt(t){const c=t%20; const ew=c<7?"green":c<9?"yellow":"red", ns=c<10?"red":c<17?"green":c<19?"yellow":"red"; return {EW:ew,NS:ns}}
+function updSignals(t){const S=lightsAt(t);for(const s of SIGS){for(const {m,c} of s.lamps){const on=S[s.axis]===c;m.material.color.setHex(on?LCOL[c]:0x2a2f33);m.material.emissive.setHex(on?LCOL[c]:0);m.material.emissiveIntensity=on?1.6:0}}}
+
+/* ================= 紙箱房子：瓦楞紙箱＋麥克筆畫窗戶＋膠帶 ================= */
+function cardTex(w,h,opt={}){return canvasTex(256,Math.max(64,Math.round(256*h/w)),(g,W,H)=>{
+  const base=opt.base||"#c79b68";g.fillStyle=base;g.fillRect(0,0,W,H);
+  for(let x=0;x<W;x+=5){g.fillStyle=x%10?"rgba(255,255,255,.04)":"rgba(0,0,0,.05)";g.fillRect(x,0,2,H)}      // 瓦楞紋
+  g.fillStyle="rgba(0,0,0,.06)";for(let i=0;i<40;i++){g.fillRect(Math.random()*W,Math.random()*H,2,2)}
+  if(opt.win){const [cols,rows]=opt.win,mx=W*0.12,my=H*(opt.top||0.1),cw=(W-2*mx)/cols,rh=(H*(1-(opt.top||0.1))-my-(opt.doorH?H*opt.doorH:H*0.06))/rows;
+    for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){const x=mx+i*cw+cw*0.18,y=my+j*rh+rh*0.18,ww=cw*0.64,hh=rh*0.6;
+      g.fillStyle=opt.glass||"#9cc7e8";g.fillRect(x,y,ww,hh);g.strokeStyle="#1d1d1d";g.lineWidth=3;g.lineJoin="round";
+      g.beginPath();g.moveTo(x+Math.random()*2,y);g.lineTo(x+ww,y+Math.random()*2);g.lineTo(x+ww-Math.random()*2,y+hh);g.lineTo(x,y+hh-Math.random()*2);g.closePath();g.stroke();
+      g.beginPath();g.moveTo(x+ww/2,y);g.lineTo(x+ww/2,y+hh);g.stroke()}}
+  if(opt.door){const dw=W*0.22,dh=H*(opt.doorH||0.22);g.fillStyle=opt.doorC||"#7a4a2a";g.fillRect(W/2-dw/2,H-dh,dw,dh);g.strokeStyle="#1d1d1d";g.lineWidth=3;g.strokeRect(W/2-dw/2,H-dh,dw,dh)}
+  if(opt.sign){const sh=Math.max(28,H*0.1),sy=opt.signY!=null?H*opt.signY:H-(opt.doorH||0.22)*H-sh-8;g.fillStyle=opt.signBg||"#e8483f";g.fillRect(W*0.1,sy,W*0.8,sh);g.strokeStyle="#1d1d1d";g.lineWidth=3;g.strokeRect(W*0.1,sy,W*0.8,sh);
+    g.fillStyle=opt.signFg||"#fff";g.font=`bold ${Math.round(sh*0.62)}px 'Noto Sans TC','PingFang TC',sans-serif`;g.textAlign="center";g.textBaseline="middle";g.fillText(opt.sign,W/2,sy+sh/2+2)}
+  if(opt.tape){g.fillStyle="rgba(214,170,110,.85)";g.fillRect(0,0,W,H*0.07)}})}
+function topTex(){return canvasTex(256,256,(g,W,H)=>{g.fillStyle="#c49766";g.fillRect(0,0,W,H);g.strokeStyle="rgba(0,0,0,.25)";g.lineWidth=2;g.beginPath();g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
+  g.fillStyle="rgba(214,170,110,.9)";g.fillRect(0,H/2-22,W,44);g.fillStyle="rgba(255,255,255,.18)";g.fillRect(0,H/2-22,W,6)})}
+const TOP=topTex();
+// 一個紙箱：x,z 是中心，front 是面對道路的方向（"+x","-x","+z","-z"）
+function carton({x,z,w,d,h,front,face={},side={},tint}){
+  const fm=new THREE.MeshStandardMaterial({map:cardTex(front.endsWith("x")?d:w,h,face),roughness:0.9}),
+        sm=new THREE.MeshStandardMaterial({map:cardTex(front.endsWith("x")?w:d,h,Object.assign({win:face.win,tape:false},side)),roughness:0.9}),
+        bm=new THREE.MeshStandardMaterial({map:cardTex(front.endsWith("x")?d:w,h,{win:face.win}),roughness:0.9}),
+        tm=new THREE.MeshStandardMaterial({map:TOP,roughness:0.9}), um=M(0xb08a5c);
+  if(tint){[fm,sm,bm].forEach(m=>m.color.set(tint))}
+  // BoxGeometry 材質順序：+x,-x,+y,-y,+z,-z
+  const mats={"+x":[fm,bm,tm,um,sm,sm],"-x":[bm,fm,tm,um,sm,sm],"+z":[sm,sm,tm,um,fm,bm],"-z":[sm,sm,tm,um,bm,fm]}[front];
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mats);m.position.set(x,h/2,z);m.rotation.y=(rnd()-.5)*0.04;m.castShadow=m.receiveShadow=true;scene.add(m);return m}
+// 毛根／絨毛球做的樹：衛生紙捲筒樹幹＋綠色絨毛球
+function pomTree(x,z,s=1){cyl(1.4*s,7*s,M(0xc8a77c),x,0,z,16);const g=[0x3f9a46,0x58b24f,0x2e8a3e][Math.floor(rnd()*3)];
+  for(const [a,b,c,r] of [[0,10,0,4.2],[2.2,8.6,1,3],[-2,8.8,-1,3.1],[0.5,12.6,-0.6,2.8]]){const m=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),M(g,{roughness:1}));m.position.set(x+a*s,b*s,z+c*s);m.castShadow=true;scene.add(m)}}
+
+// 東北角：早餐店（鞋盒）＋高的公寓（餅乾盒）
+carton({x:28,z:-27,w:28,d:22,h:15,front:"+z",face:{win:[3,1],door:true,sign:"早餐店",signBg:"#e8483f",doorH:0.4,top:0.12}});
+carton({x:52,z:-30,w:14,d:12,h:36,front:"+z",face:{win:[2,5],door:true,sign:"公寓",signBg:"#2f6fd6",signY:0.03,doorH:0.12,top:0.18}});
+// 西北角：大樓（大紙箱）
+carton({x:-30,z:-30,w:24,d:24,h:42,front:"+z",face:{win:[3,6],door:true,sign:"銀行",signBg:"#1f6f4a",signY:0.02,doorH:0.1,top:0.14,glass:"#8fc1e6"},side:{}});
+carton({x:-56,z:-24,w:16,d:14,h:18,front:"+x",face:{win:[2,2],door:true,sign:"藥局",signBg:"#2c8f5a",signY:0.02,doorH:0.25,top:0.2}});
+// 西南角：廟（紙箱塗紅＋紙板屋頂）
+{const tm=carton({x:-30,z:30,w:26,d:16,h:12,front:"-z",tint:0xd9574a,face:{door:true,doorC:"#f2c14e",doorH:0.55,sign:"福德宮",signBg:"#1f3d7a",signFg:"#f2c14e",signY:0.06}});
+ const roof=new THREE.Mesh(new THREE.CylinderGeometry(0.01,1,1,4,1),M(0xe07b2a,{roughness:0.8}));roof.scale.set(22,9,13);roof.rotation.y=Math.PI/4;
+ const shape=new THREE.Shape([new THREE.Vector2(-15,0),new THREE.Vector2(15,0),new THREE.Vector2(0,8)]);const rg=new THREE.ExtrudeGeometry(shape,{depth:20,bevelEnabled:false});rg.translate(0,0,-10);
+ const rf=new THREE.Mesh(rg,M(0xe07b2a,{roughness:0.85}));rf.position.set(-30,12,30);rf.castShadow=true;scene.add(rf);
+ for(const sx of [-1,1]){const l=new THREE.Mesh(new THREE.SphereGeometry(1.3,14,12),new THREE.MeshStandardMaterial({color:0xff3b30,emissive:0x8a1a10,emissiveIntensity:0.5}));l.scale.y=1.3;l.position.set(-30+sx*8,9,21);scene.add(l)}}
+// 東南角：公園（綠色不織布）＋絨毛球樹＋便利商店
+{const felt=new THREE.Mesh(new THREE.BoxGeometry(34,0.3,34),M(0x6cbf5a,{roughness:1}));felt.position.set(36,0.15,36);felt.receiveShadow=true;felt.rotation.y=0.02;scene.add(felt);
+ const pond=new THREE.Mesh(new THREE.CircleGeometry(6,32),M(0x5aa9d6,{roughness:0.3}));pond.rotation.x=-Math.PI/2;pond.position.set(42,0.35,42);scene.add(pond);
+ [[26,27],[30,48],[48,28],[38,36]].forEach(([a,b])=>pomTree(a,b,0.9));
+ carton({x:60,z:26,w:14,d:16,h:14,front:"-x",face:{win:[2,1],door:true,sign:"便利商店",signBg:"#2f6fd6",doorH:0.4,top:0.15}});}
+// 路邊幾棵樹
+[[-46,-16],[-70,16],[16,-48],[-16,62],[70,-16]].forEach(([a,b])=>pomTree(a,b,0.8));
+
+/* ================= 玩具小汽車（合金壓鑄風格：亮面烤漆、圓潤車身、銀色輪框） ================= */
+const paint=c=>new THREE.MeshPhysicalMaterial({color:c,metalness:0.35,roughness:0.26,clearcoat:1,clearcoatRoughness:0.06});
+const darkGlass=new THREE.MeshPhysicalMaterial({color:0x1b2731,metalness:0.2,roughness:0.06,clearcoat:1});
+const chrome=new THREE.MeshStandardMaterial({color:0xdfe3e6,metalness:0.9,roughness:0.18});
+const rubber=M(0x151515,{roughness:0.8}), chassis=M(0x2b2b2b,{roughness:0.6});
+const tail=new THREE.MeshStandardMaterial({color:0xd0212a,emissive:0x550000,roughness:0.3});
+function ext(pts,depth,m,bev=0.2,g){const s=new THREE.Shape(pts.map(p=>new THREE.Vector2(p[0],p[1])));const geo=new THREE.ExtrudeGeometry(s,{depth:Math.max(0.01,depth-2*bev),bevelEnabled:true,bevelThickness:bev,bevelSize:bev,bevelSegments:3,curveSegments:4});
+  geo.translate(0,0,-(depth-2*bev)/2);const me=new THREE.Mesh(geo,m);me.castShadow=true;me.receiveShadow=true;if(g)g.add(me);return me}
+function part(g,w,h,d,m,x,y,z){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);me.castShadow=true;g.add(me);return me}
+function wheels(g,xs,half,r=0.72){for(const x of xs)for(const s of [-1,1]){const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,0.62,20),rubber);t.rotation.x=Math.PI/2;t.position.set(x,r,s*half);t.castShadow=true;g.add(t);
+  const h=new THREE.Mesh(new THREE.CylinderGeometry(r*0.56,r*0.56,0.7,16),chrome);h.rotation.x=Math.PI/2;h.position.set(x,r,s*half);g.add(h)}}
+function lights(g,xf,xr,y,half){for(const s of [-1,1]){part(g,0.12,0.28,0.6,chrome,xf,y,s*half);part(g,0.12,0.28,0.5,tail,xr,y,s*half)}}
+function sideGlass(g,x,y,len,h,half){for(const s of [-1,1]) part(g,len,h,0.06,darkGlass,x,y,s*half)}
+function textTex(t,bg,fg,w=128,h=48,font="bold 30px sans-serif"){return canvasTex(w,h,(c)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);c.fillStyle=fg;c.font=font;c.textAlign="center";c.textBaseline="middle";c.fillText(t,w/2,h/2+2)})}
+function sedan(color,taxi=false){const g=new THREE.Group(), p=paint(color), W=3.0;
+  part(g,6.4,0.4,2.5,chassis,0,0.62,0);
+  ext([[-3.3,0.7],[3.3,0.7],[3.35,1.2],[3.05,1.5],[-3.1,1.6],[-3.35,1.25]],W,p,0.22,g);
+  ext([[1.5,1.6],[0.7,2.32],[-1.15,2.38],[-2.3,1.66]],W*0.84,darkGlass,0.15,g);
+  part(g,1.95,0.18,W*0.86,p,-0.22,2.5,0);
+  for(const s of [-1,1]) part(g,0.18,0.75,0.08,p,-0.25,2.0,s*(W*0.42+0.12));   // B 柱
+  lights(g,3.56,-3.56,1.3,0.95); wheels(g,[2.15,-2.15],1.35);
+  if(taxi){const sg=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.5,0.55),[0,0,0,0,1,1].map(i=>i?new THREE.MeshBasicMaterial({map:textTex("TAXI","#fff","#d22",128,48)}):M(0xffffff)));sg.position.set(-0.2,2.85,0);sg.rotation.y=Math.PI/2;g.add(sg)}
+  return g}
+function van(color,amb=false){const g=new THREE.Group(), p=paint(color), W=3.2;
+  part(g,6.8,0.4,2.7,chassis,0,0.62,0);
+  ext([[-3.4,0.7],[3.4,0.7],[3.45,1.35],[3.15,1.8],[-3.4,1.8]],W,p,0.22,g);
+  ext([[2.45,1.8],[1.85,3.5],[-3.4,3.55],[-3.4,1.8]],W,p,0.22,g);
+  const ws=part(g,0.08,1.45,W*0.82,darkGlass,2.38,2.68,0); ws.rotation.z=0.33;
+  sideGlass(g,1.3,2.75,1.1,0.9,W/2+0.24);
+  if(!amb) sideGlass(g,-1.4,2.75,3.0,0.9,W/2+0.24);
+  lights(g,3.68,-3.66,1.4,1.0); wheels(g,[2.3,-2.3],1.45,0.74);
+  return g}
+function bus(){const g=new THREE.Group(), p=paint(0xf4f4f0), W=3.4;
+  part(g,13,0.4,3.0,chassis,0,0.62,0);
+  ext([[-6.6,0.7],[6.6,0.7],[6.65,3.85],[-6.65,3.9]],W,p,0.25,g);
+  sideGlass(g,-0.5,2.85,10.8,1.25,W/2+0.27); part(g,0.08,1.6,W*0.8,darkGlass,6.92,2.7,0);
+  for(const s of [-1,1]) part(g,13.2,0.35,0.06,paint(0x2f9e57),0,1.55,s*(W/2+0.27));
+  const ds=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.5,2),new THREE.MeshBasicMaterial({map:textTex("300","#111","#ffa21a",128,48)}));ds.position.set(6.95,3.75,0);g.add(ds);
+  lights(g,6.92,-6.92,1.2,1.1); wheels(g,[4.4,-4.2],1.5,0.8);
+  return g}
+function truck(cabC,boxC){const g=new THREE.Group(), W=3.2;
+  part(g,7.4,0.4,2.7,chassis,0,0.62,0);
+  ext([[1.9,0.7],[3.5,0.7],[3.55,1.9],[3.15,3.3],[1.9,3.4]],W,paint(cabC),0.2,g);
+  const ws=part(g,0.08,1.2,W*0.8,darkGlass,3.48,2.65,0); ws.rotation.z=0.28;
+  sideGlass(g,2.6,2.65,0.9,0.8,W/2+0.22);
+  ext([[-3.7,0.95],[1.6,0.95],[1.6,3.9],[-3.7,3.9]],W+0.2,paint(boxC),0.18,g);
+  lights(g,3.74,-3.9,1.3,1.0); wheels(g,[2.6,-2.4],1.45,0.76);
+  return g}
+const CS=1.6; // 玩具車放大一點（約 11 cm 長）
+function place(g,x,z,dir){g.scale.setScalar(CS);g.rotation.y={E:0,W:Math.PI,N:Math.PI/2,S:-Math.PI/2}[dir];g.position.set(x,0.4,z);scene.add(g);return g}
+// 等紅燈的車：東向（z=5）、西向（z=-5）、南向（x=-5）、北向（x=5）
+place(sedan(0xd8342b),-31,5,"E"); place(sedan(0xf6c400,true),-44,5,"E"); place(sedan(0x7d4fc4),-57,5,"E");
+place(sedan(0x2f6fd6),27,-5,"W"); place(sedan(0x2fa35a),40,-5,"W");
+place(sedan(0xf2f2ee),-5,-31,"S"); place(truck(0x2f6fd6,0xf2f2ee),-5,-44.5,"S"); place(bus(),-5,-64,"S");
+place(sedan(0xff8a3d),5,27,"N"); place(sedan(0x3fb7c9),5,40,"N"); place(van(0x9aa3a8),5,53,"N");
+function moto(x,z,rotY,color=0xffd23b){const g=new THREE.Group();
+  ext([[-1.2,0.55],[1.2,0.55],[1.2,1.3],[-0.4,1.3],[-1.2,1.0]],0.9,paint(color),0.15,g);
+  for(const x2 of [-0.95,0.95]){const t=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.35,14),rubber);t.rotation.x=Math.PI/2;t.position.set(x2,0.45,0);g.add(t)}
+  const h=new THREE.Mesh(new THREE.SphereGeometry(0.5,14,12),paint(0xffffff));h.position.set(-0.2,2.35,0);g.add(h);
+  part(g,0.6,1.1,0.7,paint(0x34495e),-0.2,1.75,0);
+  g.scale.setScalar(CS);g.rotation.y=rotY;g.position.set(x,0.4,z);g.traverse(o=>o.castShadow=true);scene.add(g)}
+moto(-22.5,7.6,0);moto(-22.5,2.6,0,0x6cbf6a);moto(-7.6,-22.5,-Math.PI/2,0xe8483f);moto(-2.6,-22.5,-Math.PI/2);
+
+// 救護車（白色廂型車＋紅色線條＋警示燈＋車頂的藍牙喇叭）
+const amb=place(van(0xf7f7f5,true),70,-5,"W");
+for(const s of [-1,1]) part(amb,7.0,0.38,0.06,paint(0xd32f2f),0,1.55,s*1.85);
+const crossT=canvasTex(64,64,(c)=>{c.fillStyle="#fff";c.fillRect(0,0,64,64);c.fillStyle="#d32f2f";c.fillRect(24,8,16,48);c.fillRect(8,24,48,16)});
+for(const s of [-1,1]){const cr=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),new THREE.MeshBasicMaterial({map:crossT}));cr.position.set(-1.6,2.75,s*1.86);if(s<0)cr.rotation.y=Math.PI;amb.add(cr)}
+function lampM(c){return new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:1.5})}
+const lbR=part(amb,0.7,0.45,1.1,lampM(0xff2a2a),1.4,3.95,-0.62), lbB=part(amb,0.7,0.45,1.1,lampM(0x2a6bff),1.4,3.95,0.62);
+const spk=part(amb,3.2,2.4,2.4,M(0x2a2e33,{roughness:0.6}),-1.4,4.95,0);
+const grill=new THREE.Mesh(new THREE.CircleGeometry(0.85,24),M(0x111111));grill.position.set(-1.4,4.95,1.21);amb.add(grill);
+
+const waves=[];const circ=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;circ.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)))}
+for(let i=0;i<5;i++){const w=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circ),new THREE.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:0.8}));w.position.set(70,9,-5);w.userData.ph=i/5;scene.add(w);waves.push(w)}
+
+/* ---------- 文字標籤 ---------- */
+const LABELS=[];
+function label(text,x,y,z,size=10,color="#10202c"){const c=document.createElement("canvas"),g=c.getContext("2d");const F="bold 64px 'Noto Sans TC','PingFang TC',sans-serif";g.font=F;
+  const lines=text.split("\n"),w=Math.max(...lines.map(l=>g.measureText(l).width))+48;c.width=w;c.height=80*lines.length+24;g.font=F;
+  g.fillStyle="rgba(255,255,255,.88)";const r=24;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,c.height,r);g.arcTo(w,c.height,0,c.height,r);g.arcTo(0,c.height,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
+  g.fillStyle=color;g.textBaseline="top";lines.forEach((l,i)=>g.fillText(l,24,16+i*80));
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.scale.set(size*c.width/c.height,size,1);s.position.set(x,y,z);s.renderOrder=10;scene.add(s);LABELS.push(s);return s}
+label("陣列式麥克風",0,40,0,7,"#1f4fa8"); label("救護車＋藍牙喇叭",70,22,-5,6,"#b3122e");
+label("電腦",-58,30,54,5,"#1f4fa8");
+
+/* ---------- 視角、動畫 ---------- */
+const views={v1:[[92,76,124],[-8,8,6]],v2:[[0,250,1],[0,0,0]],v3:[[-80,9,12],[40,12,-3]],v4:[[42,52,52],[0,24,0]]};
+function go(k){const [p,t]=views[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();LABELS.forEach(l=>l.visible=(k==="v1"||k==="v2"))}
+go("v1");
+let active=true; const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick); if(!active) return; const t=clock.getElapsedTime();
+  waves.forEach(w=>{const p=(t*0.35+w.userData.ph)%1,r=4+p*90;w.scale.set(r,1,r);w.material.opacity=0.8*(1-p)});
+  const on=Math.floor(t*6)%2; lbR.material.emissiveIntensity=on?2:0.2; lbB.material.emissiveIntensity=on?0.2:2;
+  clouds.forEach((c,i)=>{c.position.x+=0.03*(i%2?1:-1)});
+  updSignals(t); ctl.update(); renderer.render(scene,cam)}
+tick();
+return {cam,ctl,go, spin(v){ctl.autoRotate=v===undefined?!ctl.autoRotate:v;return ctl.autoRotate}, setActive(v){active=v;if(v)resize()}};
+}
+
+const model=initModel3D(document.getElementById("app"));
+document.getElementById("ctrl").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.v==="spin"){const on=model.spin();b.textContent="自動旋轉："+(on?"開":"關");b.classList.toggle("on",on)} else model.go(b.dataset.v)});
+%%ENDSCRIPT%%>
+<\/script>
 
 <section>
-  <h2>五、結果與結論</h2>
+  <h2>四、結果與結論</h2>
   <div class="card qa"><ol>
     <li><label for="c1">兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？</label><input type="text" id="c1" class="wide"></li>
     <li><label for="c2">不用三角函數，怎麼從時間差找出角度？</label><input type="text" id="c2" class="wide"></li>
@@ -4840,7 +5187,7 @@ function makeGallery(el,get,set){if(!el)return;
       const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
         const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
       const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
-  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  addEventListener("pp-snap",async e=>{if(window.__galModelOnly&&!(e.detail&&e.detail.model))return;const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
@@ -4932,6 +5279,12 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 setTimeout(()=>makeEquip($("eqPics3"),$("equipList3"),()=>S.eq,(L)=>{S.eq=L;S.equipHTML=$("equipList3").innerHTML;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
+window.__galModelOnly=true;   // 學習單三的「模型截圖」只收小模型路口的截圖
+/* 小模型路口：看到才載入；模型裡按 📷 的截圖，放進「模型截圖」 */
+(()=>{const f=$("modelFrame"),src=$("modelSrc");if(!f||!src)return;let done=false;
+  const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
+    f.srcdoc=src.textContent.replace(/%%ENDSCRIPT%%/g,"</"+"script")};
+  try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){go();o.disconnect()}},{rootMargin:"400px"}).observe(f)}catch(e){go()}})();
 setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
 const USE0={1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"};
@@ -4986,7 +5339,7 @@ function stats(n){const R=S.exp[n].map(rowCalc),done=S.exp[n].filter((r,i)=>R[i]
   return {done,ok,acc:done?ok/done*100:null,err:errs.length?errs.reduce((a,b)=>a+b,0)/errs.length:null}}
 function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
   document.querySelectorAll("#nTabs button").forEach(b=>{const on=+b.dataset.n===n;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
-  $("t34cap").textContent=`表 3-4　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
+  $("t34cap").textContent=`表 3-3　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
   S.exp[n].forEach((r,i)=>{const tr=tb.insertRow();
     tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>x),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" placeholder="${esc(S.setup.road[r.road]??"")}" aria-label="真實角度"></td>
       <td><input type="number" step="1" data-k="ra" value="${esc(r.ra)}" aria-label="雷達角度" ${r.nodir?"disabled":""}>${n===1?`<br><label class="nodir"><input type="checkbox" data-k="nodir" ${r.nodir?"checked":""}>雷達沒有方向</label>`:""}</td>
@@ -5050,18 +5403,14 @@ btn.addEventListener("click",async()=>{
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
     B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
-    B.push(H("三、路口要幾支麥克風？"));B.push(...await wordFigs(secBy("三、"),[]));
-    const r33=S.t33.filter(r=>r.n||r.how||r.road||r.cand||r.ok).map(r=>[r.n,r.how,r.road,r.cand,r.ok]);
-    B.push(cap("表 3-3、麥克風的數量和擺法"));B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));
-    B.push(P("兩支麥克風怎麼擺，時間差才會比較大？"+(S.q31||"＿＿")));B.push(P("為什麼 2 支麥克風有時候分不出在哪條路？"+(S.q32||"＿＿")));
-    B.push(...await wordGal(S.gal));B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordFigs(secBy("四、"),["cAcc","cErr"]));
+    B.push(H("三、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordGal(S.gal));B.push(...await wordFigs(secBy("三、"),["cAcc","cErr"]));
     B.push(cap("場景設定：雷達上的角度"));B.push(table(["","角度（度）／點選"],[...ROADN.map(r=>[r+"路",S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時點選`,S.setup.use[n]])]));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
-      B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
-    B.push(cap("表 3-5、四種麥克風數量的比較"));B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
+      B.push(cap(`表 3-3-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
+    B.push(cap("表 3-4、四種麥克風數量的比較"));B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
     for(const [k,t] of [["acc","圖 3-2、選對路的正確率"],["err","圖 3-3、平均角度差（越小越準）"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);
       B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(s,420,300),transformation:{width:360,height:257}})]}));B.push(cap(t))}
-    B.push(H("五、結果與結論"));
+    B.push(H("四、結果與結論"));
     B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 不用三角函數，怎麼從時間差找出角度？"+(S.c2||"＿＿")));
     B.push(P(`3. 麥克風越多，正確率越 ${S.c3a||"＿"}，角度差越 ${S.c3b||"＿"}。`));B.push(P("4. 我的假設對嗎？至少要幾支、怎麼擺？"+(S.c4||"＿＿")));B.push(P("5. 結論：給智慧路口的建議："+(S.c5||"＿＿＿＿")));
     if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(B);return}
