@@ -2199,7 +2199,7 @@ svg text{font-family:var(--body)}
     <svg id="prot" viewBox="0 0 600 340" role="img" aria-label="角度差點圖：先選要點哪一個，再點量角器上的角度" style="cursor:crosshair;touch-action:manipulation"></svg>
     <p class="cap">圖 1-1　<b>自己點點看</b>：先在上面選「未遮蔽 1」，再到量角器上它的角度差那裡點一下（左右都可以點）；點完會自動換下一個。角度差幾度，就點在幾度的地方。左邊 <b style="color:var(--a)">未遮蔽</b>，右邊 <b style="color:var(--b)">戴耳機</b>。點越靠近中間的 0°，指得越準。</p>
   </div>
-  <div class="row"><button id="addSub">💾 保存這位受試者（加到表 1-2）</button><button id="clr1">清空表 1-1，換下一位</button><button id="plClr">清除圖上的點</button><button id="demo">填入範例數據看看</button></div>
+  <div class="row"><button id="addSub">💾 保存這位受試者（加到表 1-2）</button><button id="clr1">🧹 清空表 1-1 和圖 1-1，換下一位</button><button id="demo">填入範例數據看看</button></div>
   <p class="note" id="addMsg" aria-live="polite"></p>
   <div class="card" id="subsCard"><h3>💾 已保存的受試者（每一位的量角器圖）</h3><p class="note" style="margin:0 0 8px">做完一位，按「保存這位受試者」，會把他的平均加到表 1-2，同時把圖 1-1 <b>截圖</b>存在這裡，可以寫圖片描述。按「叫出來」可以再看或修改，改完再按一次保存。</p><div id="subs" class="subsgrid"></div></div>
 </section>
@@ -2319,7 +2319,6 @@ $("prot").addEventListener("click",e=>{const s=$("prot"),m=s.getScreenCTM();if(!
   const k=plSel[0],i=+plSel.slice(1);S.pl[k][i]=d;
   const order=[...[...Array(N)].map((_,j)=>"a"+j),...[...Array(N)].map((_,j)=>"b"+j)],nx=order.slice(order.indexOf(plSel)+1).concat(order).find(q=>S.pl[q[0]][+q.slice(1)]===null);
   if(nx)plSel=nx;save();buildChips();drawProt()});
-$("plClr").addEventListener("click",()=>{if(!confirm("要清除圖 1-1 上的點嗎？"))return;S.pl=blankPL();plSel="a0";save();buildChips();drawProt()});
 /* 表 1-2＋圖 1-2 */
 function buildT2(){setTimeout(renderSubs,0);const tb=$("t2").querySelector("tbody");tb.innerHTML="";
   S.t2.forEach((r,i)=>{const tr=document.createElement("tr");
@@ -2351,7 +2350,7 @@ function protShot(T1,PL){return new Promise(ok=>{const sv=document.createElement
 $("addSub").addEventListener("click",async()=>{const a=t1Avg("a"),b=t1Avg("b");if(a===null&&b===null)return;
   const rec={name:S.who||("受試者 "+(S.t2.length+1)),a:a===null?"":f1(a),b:b===null?"":f1(b),t1:JSON.parse(JSON.stringify(S.t1)),pl:JSON.parse(JSON.stringify(S.pl)),img:await protShot(S.t1,S.pl)};
   const ix=S.editIdx!=null&&S.t2[S.editIdx]?S.editIdx:-1;if(ix>=0){rec.cap=S.t2[ix].cap||"";S.t2[ix]=rec}else S.t2.push(rec);S.editIdx=null;save();buildT2();
-  $("addMsg").textContent=(ix>=0?`已更新「${rec.name}」的紀錄。`:`已保存「${rec.name}」，也加到表 1-2 了。`)+"可以按「清空表 1-1，換下一位」。"});
+  $("addMsg").textContent=(ix>=0?`已更新「${rec.name}」的紀錄。`:`已保存「${rec.name}」，也加到表 1-2 了。`)+"可以按「🧹 清空表 1-1 和圖 1-1，換下一位」。"});
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function renderSubs(){const box=$("subs");if(!box)return;box.innerHTML="";const L=S.t2.map((r,i)=>[r,i]).filter(([r])=>r.t1);
   if(!L.length){box.innerHTML='<p class="note" style="margin:0">還沒有保存的受試者。</p>';return}
@@ -2364,7 +2363,7 @@ function renderSubs(){const box=$("subs");if(!box)return;box.innerHTML="";const 
     bt.querySelector("[data-load]").addEventListener("click",()=>{S.t1=JSON.parse(JSON.stringify(r.t1));S.pl=r.pl?JSON.parse(JSON.stringify(r.pl)):{a:r.t1.a.map(dUse),b:r.t1.b.map(dUse)};S.who=r.name;$("who").value=r.name;S.editIdx=i;save();buildT1();buildChips();calcT1();renderSubs();$("addMsg").textContent=`正在看「${r.name}」的紀錄，改完按「保存這位受試者」會更新。`;$("t1").scrollIntoView({behavior:"smooth"})});
     bt.querySelector("[data-rm]").addEventListener("click",()=>{if(!confirm(`要刪掉「${r.name}」的紀錄嗎？（表 1-2 那一列也會刪掉）`))return;S.t2.splice(i,1);if(S.editIdx===i)S.editIdx=null;save();buildT2()});
     box.appendChild(c)}}
-$("clr1").addEventListener("click",()=>{S.t1=blank();S.pl=blankPL();plSel="a0";S.editIdx=null;renderSubs();S.who="";$("who").value="";save();buildT1();buildChips();calcT1()});
+$("clr1").addEventListener("click",()=>{const has=["a","b"].some(k=>S.t1[k].some(x=>x.r||x.p||x.d)||S.pl[k].some(v=>v!==null));if(has&&S.editIdx==null&&!confirm("表 1-1 和圖 1-1 都會清空。這位受試者保存了嗎？（還沒保存就先按「💾 保存這位受試者」）\n\n按「確定」清空，換下一位。"))return;S.t1=blank();S.pl=blankPL();plSel="a0";S.editIdx=null;renderSubs();S.who="";$("who").value="";save();buildT1();buildChips();calcT1()});
 $("addRow").addEventListener("click",()=>{S.t2.push({name:"",a:"",b:""});save();buildT2()});
 $("demo").addEventListener("click",()=>{S.who="範例";$("who").value="範例";
   S.t1={a:[["40","46"],["95","88"],["130","118"],["15","10"],["160","152"]].map(([r,p])=>({r,p})),b:[["70","92"],["20","45"],["150","126"],["100","70"],["35","20"]].map(([r,p])=>({r,p}))};for(const k of ["a","b"])S.t1[k].forEach(x=>x.d=f1(dRow(x)));S.pl={a:S.t1.a.map(dRow),b:S.t1.b.map(dRow)};save();buildT1();buildChips();calcT1()});
