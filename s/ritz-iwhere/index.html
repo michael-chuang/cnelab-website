@@ -2047,6 +2047,14 @@ svg text{font-family:var(--body)}
 .qa{display:flex;flex-direction:column;gap:10px}
 .qa li{line-height:2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 模型截圖＋實驗照片 */
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
+.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
+.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
+.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 </style>
 
 <div class="wrap">
@@ -2055,19 +2063,6 @@ svg text{font-family:var(--body)}
   <h1 data-sync-ro="wwt-fw-h1q">為什麼光靠駕駛的耳朵不夠？</h1>
   <p class="lead">比較 <span class="tag a">未遮蔽</span>（正常聽）和 <span class="tag b">有遮蔽</span>（戴耳機，像關緊車窗的車廂）：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。</p>
 </header>
-
-<section>
-  <h2>先在 3D 裡做一次</h2>
-  <div class="sim sim1">
-    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
-    <div class="stage" id="stage">
-      <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
-      <div class="gear" id="gearBar"><button id="gMask" class="on" aria-pressed="true">🙈 眼罩</button><button id="gEar" aria-pressed="false">🎧 耳機</button></div>
-    </div>
-    <div class="result" id="result">在地板上點一下，播音員就走過去，播放警笛。</div>
-    </div>
-  </div>
-</section>
 
 <section>
   <h2>實驗方法</h2>
@@ -2088,6 +2083,23 @@ svg text{font-family:var(--body)}
     <li><b style="color:var(--a)">A 未遮蔽</b>做 5 次，每次換不同位置（前、後、左、右都要有）；<b style="color:var(--b)">B 戴上耳機</b>（耳罩式隔音耳機）後再做 5 次，位置跟 A 一樣。</li>
     <li>換下一位受試者，重複第 3～10 步。</li>
   </ol></div>
+</section>
+
+<section>
+  <h2>先在 3D 裡做一次</h2>
+  <div class="sim sim1">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+    <div class="stage" id="stage">
+      <div class="views" id="views"><button data-v="side" class="on">斜上方</button><button data-v="top">俯視</button><button data-v="kid">受試者後面</button></div>
+      <div class="gear" id="gearBar"><button id="gMask" class="on" aria-pressed="true">🙈 眼罩</button><button id="gEar" aria-pressed="false">🎧 耳機</button></div>
+    </div>
+    <div class="result" id="result">在地板上點一下，播音員就走過去，播放警笛。</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="card" id="gal1"></div>
 </section>
 
 <section>
@@ -2148,6 +2160,7 @@ const KEY="ws1-occlusion-v2";
 const blank=()=>({a:[...Array(N)].map(()=>({r:"",p:""})),b:[...Array(N)].map(()=>({r:"",p:""}))});
 let S={who:"",t1:blank(),t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+setTimeout(()=>makeGallery(document.getElementById("gal1"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
 const num=v=>v===""||v===undefined||v===null||isNaN(+v)?null:+v;
@@ -2233,6 +2246,38 @@ new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement
 
 /* PANPAD START */
 /* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+/* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
+const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
+function makeGallery(el,get,set){if(!el)return;
+  const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
+    ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
+    ${isModel?"":`<input type="file" accept="image/*" id="gf_${id}" hidden>`}
+    <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
+    <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
+  function draw(){const g=galFix(get());
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+      f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
+      const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
+        const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  draw();return draw}
+/* Word：把模型截圖和實驗照片放進去 */
+async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
+  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  return out}
+/* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
 async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
@@ -2281,7 +2326,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
-      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>{if(!u)return;saveSnap(u,opt.name);window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:opt.name,host}}))});return}
       opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
     ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
   return pad}
@@ -2526,6 +2571,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("貳、實驗方法"));
     body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
+    body.push(...await wordGal(S.gal));
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
@@ -2780,6 +2826,14 @@ svg text{font-family:var(--body)}
 .qa{display:flex;flex-direction:column;gap:10px}
 .qa li{line-height:2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 模型截圖＋實驗照片 */
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
+.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
+.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
+.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 /* 彩虹彈簧＋學習單二專用 */
 .stage{background:#0f1424}
 .hud{position:absolute;left:12px;top:10px;color:#fff;font-size:14px;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none}
@@ -2956,6 +3010,10 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 </section>
 
 <section>
+  <div class="card" id="gal2"></div>
+</section>
+
+<section>
   <h2>二、認識「頻譜」</h2>
   <p class="lead">一個聲音裡面混了很多種頻率，就像一把混在一起的串珠。先抓一把、拍照，用眼睛猜猜看；再把同顏色排成一排、拍照、數一數。</p>
   <div class="two">
@@ -3083,7 +3141,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
-      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>{if(!u)return;saveSnap(u,opt.name);window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:opt.name,host}}))});return}
       opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
     ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
   return pad}
@@ -3306,6 +3364,38 @@ requestAnimationFrame(frame);
 })();
 <\/script>
 <script>
+/* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
+const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
+function makeGallery(el,get,set){if(!el)return;
+  const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
+    ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
+    ${isModel?"":`<input type="file" accept="image/*" id="gf_${id}" hidden>`}
+    <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
+    <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
+  function draw(){const g=galFix(get());
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+      f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
+      const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
+        const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  draw();return draw}
+/* Word：把模型截圖和實驗照片放進去 */
+async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
+  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  return out}
+/* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
 async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
@@ -3357,6 +3447,7 @@ for(const [id,k] of [["equipList2","equipHTML"],["stepList2","stepsHTML"]]){cons
   e.addEventListener("input",()=>{if(!e.querySelector("li"))e.innerHTML="<li></li>";S[k]=clean(e.innerHTML);save()})}
 {const ord=c=>{const i=BEADS.findIndex(b=>b[1]===c);return i<0?99:i};S.beads.sort((a,b)=>ord(a.c)-ord(b.c))}
 try{IMG=JSON.parse(localStorage.getItem(KEY+"-img")||"{}")||{}}catch(e){IMG={}}
+makeGallery($("gal2"),()=>IMG.gal,g=>{IMG.gal=g;return saveImg()});
 {let mig=false;S.t23.forEach((r,i)=>{if(!r.id){mig=true;r.id=rid();for(const k of ["w","s"]){if(IMG["t23"+k+i]){IMG["t23"+k+"_"+r.id]=IMG["t23"+k+i];delete IMG["t23"+k+i]}}}});if(mig){save();saveImg()}}   // 每一列有自己的代號，刪掉別列時照片不會跑掉
 {let ch=false;S.t24=(S.t24||[]).filter(r=>r.s||r.url||r.hz||r.lo||r.hi||r.form);S.t24.forEach((r,i)=>{if(!r.id){ch=true;r.id=rid()}if(!r.s){r.s="警笛"+(i+1);ch=true}});
   if(!S.t24.length&&S.sirens.trim()){S.sirens.split(/[、，,；;\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,10).forEach(s=>{if(!S.t24.some(r=>r.s===s))S.t24.push({id:rid(),s,url:"",hz:"",lo:"",hi:"",form:""})});ch=true}
@@ -3602,6 +3693,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
+    B.push(...await wordGal(IMG.gal));
     B.push(H("二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[]));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
@@ -3850,6 +3942,14 @@ svg text{font-family:var(--body)}
 .qa{display:flex;flex-direction:column;gap:10px}
 .qa li{line-height:2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 模型截圖＋實驗照片 */
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
+.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
+.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
+.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 /* 學習單三專用 */
 input.wide{max-width:none!important;width:100%;text-align:left!important}
 label{display:block;margin-top:6px}
@@ -3979,6 +4079,10 @@ td.no{color:var(--b);font-weight:700}
 </section>
 
 <section>
+  <div class="card" id="gal3"></div>
+</section>
+
+<section>
   <h2>四、動手實驗：ReSpeaker 用 1～4 支麥克風</h2>
   <p class="lead">用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。</p>
   <div class="two">
@@ -4059,7 +4163,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
-      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>{if(!u)return;saveSnap(u,opt.name);window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:opt.name,host}}))});return}
       opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
     ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
   return pad}
@@ -4540,6 +4644,38 @@ makePad(host,{corner:"br",keys:[],name:"學習單三_路口麥克風",snap:()=>c
 window.__map={get mics(){return mics},set mics(v){mics=v;changed()},get amb(){return amb},set amb(v){amb=v;changed()},play:()=>$("mPlay").click(),candidates};
 })();
 
+/* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
+const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
+function makeGallery(el,get,set){if(!el)return;
+  const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const slot=(o,id,title,empty,isModel)=>`<figure class="galf" data-id="${id}"><figcaption><b>${title}</b></figcaption>
+    ${o.src?`<img src="${o.src}" alt="${title}">`:`<label class="galempty"${isModel?"":` for="gf_${id}"`}>${empty}</label>`}
+    ${isModel?"":`<input type="file" accept="image/*" id="gf_${id}" hidden>`}
+    <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title} 的圖片描述">${esc(o.cap)}</textarea>
+    <div class="galbtn">${isModel?"":`<label class="xbtn" for="gf_${id}">${o.src?"換一張":"＋ 拍照或選照片"}</label>`}${o.src?`<button type="button" class="xbtn" data-del>🗑 刪掉</button>`:""}</div></figure>`;
+  function draw(){const g=galFix(get());
+    el.innerHTML=`<h3>📷 模型截圖和實驗照片</h3><p class="note">按模型畫面左下角的 📷，截圖會放在第 1 格（1 張，再按會換新的）；另外 3 格放<b>實際做實驗的照片</b>。每張都寫一下圖片描述，之後可以放進「科展作品說明」。</p>
+      <div class="galgrid">${slot(g.m,"m","模型截圖","按模型畫面左下角的 📷",true)}${g.p.slice(0,3).map((o,i)=>slot(o,"p"+i,`實驗照片 ${i+1}`,"點這裡拍照或選照片",false)).join("")}</div>`;
+    el.querySelectorAll(".galf").forEach(f=>{const id=f.dataset.id,o=id==="m"?g.m:g.p[+id.slice(1)];
+      f.querySelector("textarea").addEventListener("input",e=>{o.cap=e.target.value;set(g)});
+      const fi=f.querySelector('input[type=file]');if(fi)fi.addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;
+        const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});o.src=await galShrink(u);if(set(g)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()});
+      const d=f.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張嗎？"))return;o.src="";set(g);draw()})})}
+  addEventListener("pp-snap",async e=>{const g=galFix(get());g.m.src=await galShrink(e.detail.u);set(g);draw()});
+  draw();return draw}
+/* Word：把模型截圖和實驗照片放進去 */
+async function wordGal(g){const out=[];g=galFix(g);if(!window.docx)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+  const all=[["模型截圖",g.m],...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  out.push(new Paragraph({children:[new TextRun({text:"模型截圖和實驗照片",bold:true,size:24})],spacing:{before:160,after:100}}));
+  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  return out}
+/* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
 async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
@@ -4578,6 +4714,7 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
   exp:{1:[],2:[],3:[],4:[]},setup:null,c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
 const USE0={1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"};
 S.setup=Object.assign({road:{北:"",東:"",南:"",西:""},mic:{1:"",2:"",3:"",4:""},use:{...USE0}},S.setup||{});
@@ -4698,7 +4835,7 @@ btn.addEventListener("click",async()=>{
     const r33=S.t33.filter(r=>r.n||r.how||r.road||r.cand||r.ok).map(r=>[r.n,r.how,r.road,r.cand,r.ok]);
     B.push(cap("表 3-3、麥克風的數量和擺法"));B.push(table(["麥克風幾支","怎麼擺","救護車在哪條路","可能的方向有幾個","分得出是哪條路嗎？"],r33.length?r33:[["","","","",""]]));
     B.push(P("兩支麥克風怎麼擺，時間差才會比較大？"+(S.q31||"＿＿")));B.push(P("為什麼 2 支麥克風有時候分不出在哪條路？"+(S.q32||"＿＿")));
-    B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordFigs(secBy("四、"),["cAcc","cErr"]));
+    B.push(...await wordGal(S.gal));B.push(H("四、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordFigs(secBy("四、"),["cAcc","cErr"]));
     B.push(cap("場景設定：雷達上的角度"));B.push(table(["","角度（度）／點選"],[...ROADN.map(r=>[r+"路",S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時點選`,S.setup.use[n]])]));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
       B.push(cap(`表 3-4-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
@@ -4933,6 +5070,14 @@ svg text{font-family:var(--body)}
 .qa{display:flex;flex-direction:column;gap:10px}
 .qa li{line-height:2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 模型截圖＋實驗照片 */
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.galf{margin:0;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper)}
+.galf figcaption{font-size:14px}.galf img{width:100%;border-radius:8px;display:block}
+.galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
+.galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
+.galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 /* 作品說明（初審）：照學校附件 2 的表格 */
 .form{padding:0;overflow:hidden}
 .ftitle{font-family:var(--display);font-size:clamp(17px,2.6vw,22px);text-align:center;padding:12px;border-bottom:1px solid var(--ink)}
@@ -5061,13 +5206,15 @@ function buildMems(){const box=$("mems");box.innerHTML="";S.mems.forEach((m,i)=>
 buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.length-1]||{};S.mems.push({yr:l.yr||"",cls:"",nm:""});save();buildMems();$("mems").lastChild.querySelector('[data-f="cls"]').focus()});
 ["motivePics","goalPics","toolsPics","procPics","resPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
 /* 每一格都可以「📷 從情境截圖選」：情境1、情境2、實驗模型按 📷 截下來的圖（含孩子寫的描述） */
-(()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}return ["tab1","tab2","tab3"].flatMap(t=>o[t]||[])};
+(()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(e){return {}}};
+    const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
+    return [...W,...["tab1","tab2","tab3"].flatMap(t=>o[t]||[])]};
   document.querySelectorAll('label.addpic').forEach(lab=>{const k=lab.querySelector("input").dataset.k;
-    const b=document.createElement("button");b.type="button";b.className="imp shotbtn";b.textContent="📷 從情境截圖選";lab.after(b);
+    const b=document.createElement("button");b.type="button";b.className="imp shotbtn";b.textContent="📷 從截圖和照片選";lab.after(b);
     const pan=document.createElement("div");pan.className="shotpick";pan.hidden=true;b.after(pan);
     b.addEventListener("click",()=>{if(!pan.hidden){pan.hidden=true;return}const L=shots();
       pan.innerHTML=L.length?`<p class="note" style="margin:0 0 6px">點一張，就放進這一格（可以選好幾張）：</p><div class="sp">${L.map((s,i)=>`<button type="button" data-i="${i}" title="${esc(s.cap||"")}"><img src="${s.src}" alt=""><span>${esc(s.from||"")}${s.cap?"｜"+esc(s.cap):""}</span></button>`).join("")}</div>`
-        :`<p class="note" style="margin:0">還沒有截圖。到「🚦 情境1」「🚗 情境2」「📦 實驗模型」按畫面左下角的 📷，截圖會放在畫面下面，就可以在這裡選。</p>`;
+        :`<p class="note" style="margin:0">還沒有截圖或照片。到「🚦 情境1」「🚗 情境2」「📦 實驗模型」或三張學習單按畫面左下角的 📷（學習單裡也可以放實驗照片），就可以在這裡選。</p>`;
       pan.querySelectorAll("[data-i]").forEach(x=>x.addEventListener("click",()=>{const s=L[+x.dataset.i];if(S[k].some(p=>p.src===s.src)){x.classList.add("on");return}
         S[k].push({src:s.src,cap:s.cap||""});save();showPics(k);x.classList.add("on")}));pan.hidden=false})})})();
 /* 研究目的：把「研究架構」那一頁的架構圖拍下來，放進研究目的的圖（只有在網站裡才拍得到） */

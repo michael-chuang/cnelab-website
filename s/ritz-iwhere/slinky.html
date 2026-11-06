@@ -209,7 +209,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
-      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>u&&saveSnap(u,opt.name));return}
+      if(k==="sn"){Promise.resolve(opt.snap()).then(u=>{if(!u)return;saveSnap(u,opt.name);window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:opt.name,host}}))});return}
       opt.step(k,1);if(k!=="c"){stop();dl=setTimeout(()=>{tm=setInterval(()=>opt.step(k,0.25),40)},350)}});
     ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,stop));b.addEventListener("click",e=>e.stopPropagation())});
   return pad}
