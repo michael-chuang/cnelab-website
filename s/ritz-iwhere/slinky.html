@@ -205,7 +205,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
   pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
   pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
-  host.appendChild(pad);
+  host.appendChild(pad);(window.__padReg=window.__padReg||[]).push({host,opt});   // 匯出 Word 時用來拍畫面
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";

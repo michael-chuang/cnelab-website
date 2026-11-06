@@ -158,6 +158,7 @@ ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
 /* 3D */
 .sim{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
 .sim.sim1{grid-template-columns:minmax(0,1fr)}
+.sim.sim1 .stage{max-width:640px;margin:0 auto}   /* 和 3D 街景差不多大 */
 @media (max-width:860px){.sim{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.stage{aspect-ratio:1/1}}
 .stage{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;overflow:hidden;background:#dfe8ee}
@@ -395,6 +396,32 @@ new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement
 
 /* PANPAD START */
 /* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
+/* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
+const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
+async function wordFigs(sec,skip=[]){const out=[];if(!sec||!window.docx)return out;
+  const {Paragraph,TextRun,ImageRun,AlignmentType}=window.docx;
+  const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
+  const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
+  const done=new Set();let n=0;
+  const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,size:o.size||22,color:o.color,italics:o.it})],alignment:o.align,spacing:{after:o.after??100}});
+  const size=u=>new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth||1,i.naturalHeight||1]);i.onerror=()=>ok([4,3]);i.src=u});
+  const buf=async u=>new Uint8Array(await (await fetch(u)).arrayBuffer());
+  const capOf=(el,host)=>{const a=(el&&el.getAttribute&&el.getAttribute("aria-label"))||"";if(a)return a.replace(/：可以.*$/,"");
+    const c=(host||el).closest(".card,.stage,.sim,section"),h=c&&c.querySelector("h3");return h?h.textContent.trim():sec.querySelector("h2").textContent.trim()};
+  async function img(u,cap){if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
+    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
+    n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
+  const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
+  for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
+    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(skip.includes(e.id)||e.closest("button,.drop,.photo,.pics,.chip,[data-noword]"))continue;
+    const r=reg.find(x=>x.host.contains(e));
+    if(r){if(done.has(r.host))continue;done.add(r.host);try{await img(await r.opt.snap(),capOf(r.host.querySelector("canvas,svg"),r.host))}catch(err){}continue}
+    const b=e.getBoundingClientRect();if(b.width<160||b.height<90)continue;
+    try{if(e.tagName.toLowerCase()==="canvas")await img(e.toDataURL("image/png"),capOf(e));
+      else if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e))}catch(err){}}
+  return out}
+/* WORDFIG END */
 function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
   fetch(dataURL).then(r=>r.blob()).then(async blob=>{
     try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
@@ -413,7 +440,7 @@ function makePad(host,opt){if(getComputedStyle(host).position==="static")host.st
   pad.style.cssText=`position:absolute;${pos[0]==="m"?"top:50%;transform:translateY(-50%)":V+":10px"};${H}:10px;z-index:6;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(4,32px);gap:3px;${only?"":"grid-template-areas:\"zi u zo\" \"l c r\" \"sn d .\";"}${only?"grid-template-columns:32px;grid-template-rows:32px;":""}opacity:.6;transition:opacity .2s`;
   pad.innerHTML=B.map(([k,t,a])=>`<button type="button" data-pp="${k}" aria-label="${a}" title="${a}" style="${only?"":"grid-area:"+k+";"}width:32px;height:32px;padding:0;border-radius:8px;font-size:${k==="c"||k==="sn"?16:14}px;line-height:1;background:rgba(255,255,255,.28);color:rgba(24,35,43,.8);border:1px solid rgba(255,255,255,.6);cursor:pointer;touch-action:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">${t}</button>`).join("");
   pad.addEventListener("pointerenter",()=>pad.style.opacity="1");pad.addEventListener("pointerleave",()=>pad.style.opacity=".6");
-  host.appendChild(pad);
+  host.appendChild(pad);(window.__padReg=window.__padReg||[]).push({host,opt});   // 匯出 Word 時用來拍畫面
   let tm=null,dl=null;const stop=()=>{clearTimeout(dl);clearInterval(tm);tm=dl=null};
   pad.querySelectorAll("button").forEach(b=>{const k=b.dataset.pp;
     b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();pad.style.opacity="1";
@@ -661,6 +688,7 @@ btn.addEventListener("click",async()=>{
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
     body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
+    {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
