@@ -214,6 +214,7 @@ svg text{font-family:var(--body)}
 .galempty{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;padding:8px}
 .galf textarea{width:100%;box-sizing:border-box;min-height:3.2em}
 .galbtn{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.eqlist{display:flex;flex-direction:column;gap:8px}.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:var(--paper)}.eqph{flex:0 0 auto;width:88px;height:66px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);overflow:hidden}.eqph span{font-size:12px}.eqph img{width:100%;height:100%;object-fit:cover}.eqrow .eqname{flex:1;min-width:6em;max-width:none;text-align:left}
 .eqgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.addeq{display:inline-block;margin-top:10px;cursor:pointer;padding:8px 16px!important;border:2px dashed var(--accent,#2f7d5b)!important;border-radius:999px;color:var(--accent,#2f7d5b);font-size:15px!important;font-weight:600}
 
 </style>
@@ -325,7 +326,7 @@ const KEY="ws1-occlusion-v2";
 const blank=()=>({a:[...Array(N)].map(()=>({r:"",p:""})),b:[...Array(N)].map(()=>({r:"",p:""}))});
 let S={who:"",t1:blank(),t2:[],hyp:"",q2:"",q3:"",concl:"",date:"",rec:"",ann2:"",log:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
-setTimeout(()=>makePhotos(document.getElementById("eqPics1"),()=>S.eqPics||(S.eqPics=[]),L=>{S.eqPics=L;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
+setTimeout(()=>makeEquip(document.getElementById("eqPics1"),document.getElementById("equipList"),()=>S.eq,(L)=>{S.eq=L;S.equipHTML=document.getElementById("equipList").innerHTML;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 setTimeout(()=>makeGallery(document.getElementById("gal1"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
@@ -463,6 +464,27 @@ async function wordPhotos(L,title){const out=[];if(!Array.isArray(L)||!L.length)
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
     if(o.cap)out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:160},children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]}))}
   return out}
+
+/* 器材清單：每一樣器材一列，可以改名字、各自拍一張照片、刪掉，也可以「＋ 新增器材」 */
+function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  let L=get();if(!Array.isArray(L)){   // 第一次：把清單裡用「、」「＋」連在一起的器材拆開，一樣一列（括號裡的不拆）
+    const sp=s=>{const out=[];let cur="",d=0;for(const ch of s){if("（(".includes(ch))d++;if("）)".includes(ch))d--;if(d<=0&&"、＋".includes(ch)){if(cur.trim())out.push(cur.trim());cur=""}else cur+=ch}if(cur.trim())out.push(cur.trim());return out};
+    L=[...ul.querySelectorAll("li")].flatMap(li=>sp(li.textContent)).map(name=>({name,src:""}));set(L)}
+  ul.hidden=true;ul.style.display="none";ul.contentEditable="false";
+  const sync=()=>{ul.innerHTML=L.filter(x=>x.name.trim()).map(x=>`<li>${esc(x.name.trim())}</li>`).join("")||"<li></li>";return set(L)};
+  function draw(){el.innerHTML=`<div class="eqlist">${L.map((o,i)=>`<div class="eqrow" data-i="${i}">
+      <label class="eqph" for="eqf_${el.id}_${i}" title="${o.src?"換一張照片":"拍這個器材"}">${o.src?`<img src="${o.src}" alt="${esc(o.name)}">`:"📷<span>拍照</span>"}</label><input type="file" accept="image/*" id="eqf_${el.id}_${i}" hidden>
+      <input type="text" class="eqname" value="${esc(o.name)}" placeholder="器材名稱" aria-label="器材名稱">
+      ${o.src?`<button type="button" class="xbtn" data-unpic title="把照片拿掉">移除照片</button>`:""}<button type="button" class="xbtn" data-del title="刪掉這個器材">🗑</button></div>`).join("")}</div>
+    <button type="button" class="addeq" data-add>＋ 新增器材</button>`;
+    el.querySelectorAll(".eqrow").forEach(r=>{const i=+r.dataset.i,o=L[i];
+      r.querySelector(".eqname").addEventListener("input",e=>{o.name=e.target.value;sync()});
+      r.querySelector("input[type=file]").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const u=await new Promise(ok=>{const rd=new FileReader();rd.onload=()=>ok(rd.result);rd.readAsDataURL(f)});
+        o.src=await galShrink(u,1000);if(sync()===false)alert("照片太多，這台電腦存不下了，先拿掉幾張。");draw()});
+      const up=r.querySelector("[data-unpic]");if(up)up.addEventListener("click",()=>{o.src="";sync();draw()});
+      r.querySelector("[data-del]").addEventListener("click",()=>{if((o.name||o.src)&&!confirm(`要刪掉「${o.name||"這個器材"}」嗎？`))return;L.splice(i,1);sync();draw()})});
+    el.querySelector("[data-add]").addEventListener("click",()=>{L.push({name:"",src:""});sync();draw();const ins=el.querySelectorAll(".eqname");ins[ins.length-1].focus()})}
+  sync();draw();return draw}
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
@@ -756,7 +778,7 @@ btn.addEventListener("click",async()=>{
     body.push(H("壹、實驗目的"));
     body.push(P("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況：蒙上眼睛聽救護車警笛，用手指出聲音的方向，看指的方向和真正的方向差幾度。"));
     body.push(H("貳、實驗方法"));
-    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos(S.eqPics));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
+    body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
     body.push(...await wordGal(S.gal));
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
