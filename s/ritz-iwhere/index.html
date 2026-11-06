@@ -6233,7 +6233,7 @@ svg text{font-family:var(--body)}
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea>
       <button type="button" class="imp" id="impTree" hidden>📥 帶入研究架構圖</button>
       <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
-    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button></div></div>
+    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的三個實驗所需要的實驗器材</b>。</p><textarea id="tools" hidden aria-hidden="true"></textarea></div></div>
     <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的內容</b>：實驗步驟、表格、圖、照片和結論都會照學習單的樣子排好。</p></div></div>
     <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
@@ -6355,6 +6355,21 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 (()=>{const btn=$("export"),msg=$("expMsg");
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
+/* 使用器材：從三張學習單各自的器材清單（含器材照片）整理，分三個實驗 */
+async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
+  const qd=(k,d)=>{try{return localStorage.getItem(k)||d}catch(e){return d}};
+  const li=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
+  const WS=[["一","Why","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？",rd("ws1-occlusion-v2"),null,WSDEF[1]],["二","What","wwt-fw-h2q","警笛聲「長」什麼樣？",rd("ws2-fourier-v1"),rd("ws2-fourier-v1-img"),WSDEF[2]],["三","Where","wwt-fw-h3q","警笛聲從哪裡來？",rd("ws3-doa-v1"),null,WSDEF[3]]];
+  const out=[];
+  for(const [n,tag,qk,qdf,S2,IM,def] of WS){const eq=(IM&&IM.eq)||S2.eq;const L=Array.isArray(eq)?eq.filter(x=>x&&x.name&&x.name.trim()):li(S2.equipHTML,def.eq).map(name=>({name,src:""}));
+    out.push(new X.Paragraph({spacing:{before:120,after:60},children:[new X.TextRun({text:`實驗${n}（${tag}）：${qd(qk,qdf)}`,bold:true,size:24})]}));
+    L.forEach(x=>out.push(new X.Paragraph({spacing:{after:40},children:[new X.TextRun({text:"・"+x.name.trim(),size:22})]})));
+    const ph=L.filter(x=>x.src);
+    if(ph.length){const cells=[];for(const x of ph){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=x.src});
+        const data=new Uint8Array(await (await fetch(x.src)).arrayBuffer()),W=130;
+        cells.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}),new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:100},children:[new X.TextRun({text:x.name.trim(),size:18,color:"5B6872"})]}))}
+      out.push(...cells)}}
+  return out}
 /* 研究過程：直接把學習單（一）～（三）整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
 async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
   const X=window.docx,toU8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d).slice();if(ArrayBuffer.isView(d))return new Uint8Array(d.buffer,d.byteOffset,d.byteLength).slice();return d};
@@ -6390,7 +6405,7 @@ btn.addEventListener("click",async()=>{
       row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
-      row("使用器材","（此實驗所需的器材）",lines(S.tools),1400),
+      row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
       row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",((await wsCompile(s=>msg.textContent=s))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",lines(S.result),2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
