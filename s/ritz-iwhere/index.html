@@ -3920,7 +3920,7 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
 function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
   const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
-  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面角落的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
     <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
       ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
       <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
@@ -5392,7 +5392,7 @@ const col=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim
 const OG="#e07a10",PX=10;                        // 1 公分＝10 px
 const L={x:220,y:142},Rr={x:420,y:142},HC={x:320,y:142};   // 上面：兩隻耳朵相距 20 公分
 const O={x:320,y:492},RAD=200;                    // 下面：半圓（半徑 20 公分）
-let th=40,anim=null;const HR=122;   // 拖曳喇叭的軌道半徑
+let th=40,anim=null;window.__triTh=()=>th;const HR=122;   // 拖曳喇叭的軌道半徑
 const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
 // 每一步的時間（秒）
 const SEQ=[2.2,1.4,1.6,1.8,1.4,1.8];const T0=SEQ.reduce((a,b,i)=>(a.push((a[i-1]||0)+b),a),[]);
@@ -5441,7 +5441,8 @@ function draw(t){ // t：動畫時間；null＝全部畫完
     const px=-s.y,py=s.x,hp=(k,w)=>`${x2+s.x*k+px*w},${y2+s.y*k+py*w}`;
     E("polygon",{points:`${x2-s.x*3},${y2-s.y*3} ${hp(17,12)} ${hp(17,-12)}`,fill:ink,stroke:paper,"stroke-width":2.5,"stroke-linejoin":"round"},AG)}
    E("rect",{x:-15,y:-13,width:30,height:24,rx:5,fill:"#3a4148",stroke:paper,"stroke-width":2},g);E("circle",{cx:0,cy:2,r:7,fill:"#15181b",stroke:"#9aa3aa","stroke-width":2},g);
-   E("text",{x:th>=0?Math.min(hx+20,440):Math.max(hx-20,200),y:hy-14,"text-anchor":th>=0?"start":"end","font-size":14,"font-weight":700,fill:ink},top,`聲音：${angTxt()}`)}
+   const lowT=hy-14<22;   /* 喇叭在最上面（正前方附近）時，字放到喇叭右邊，才不會被切掉 */
+   E("text",{x:lowT?hx+26:th>=0?Math.min(hx+20,440):Math.max(hx-20,200),y:lowT?hy+5:hy-14,"text-anchor":lowT||th>=0?"start":"end","font-size":14,"font-weight":700,fill:ink},top,`聲音：${angTxt()}`)}
   E("text",{x:626,y:250,"text-anchor":"end","font-size":12.5,fill:mut},top,"拖曳喇叭，換聲音的方向");
   // 多走的路（從遠的耳朵沿 s 方向到浪線）＋三角形（跟下面量角器的三角形一模一樣）
   const seg=k=>({x1:far.x,y1:far.y,x2:far.x+s.x*dpx*k,y2:far.y+s.y*dpx*k});
@@ -5700,7 +5701,7 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
 function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
   const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
-  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面角落的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
     <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
       ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
       <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
@@ -5766,6 +5767,12 @@ function draw31(){let el=document.getElementById("fig31");const sl=document.quer
   el.innerHTML=S.fig31?`<div class="note" style="margin:0 0 4px">同一個時候的「圖 3-1　兩隻耳朵收到的聲音」（也會放進報告）：</div><img src="${S.fig31}" alt="圖 3-1 兩隻耳朵收到的聲音" style="width:100%;border:1px solid var(--line,#ddd);border-radius:8px">`:""}
 addEventListener("pp-snap",e=>{if(!e.detail||e.detail.name!=="學習單三_兩隻耳朵")return;S.fig31=S31();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}setTimeout(draw31,300)});
 setTimeout(()=>{if(!S.gal1||!(S.gal1.ms||{})["學習單三_兩隻耳朵"]||!S.gal1.ms["學習單三_兩隻耳朵"].src)S.fig31=S.fig31||"";draw31()},50);
+setTimeout(()=>{const t=$("tri");makeShotSlots(t&&t.closest(".tri-card"),"學習單三_找角度","從時間差找出角度",[
+   {key:"f",title:"聲音從正前方來（0°）",hint:"把喇叭拖到正前方 0°"},
+   {key:"r45",title:"聲音從右邊 45° 來",hint:"把喇叭拖到右邊 45°"},
+   {key:"r90",title:"聲音從右邊 90° 來",hint:"把喇叭拖到右邊 90°"}],
+  ()=>{const a=window.__triTh?window.__triTh():0;return a<22.5?"f":a<67.5?"r45":"r90"},
+  ()=>S.gal2,g=>{S.gal2=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}})},0);   // 三張：正前方、右 45°、右 90°
 setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
 const USE0={1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"};
@@ -5880,7 +5887,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));B.push(...await wordGal(S.gal1,"兩隻耳朵聽聲音的截圖"));if(S.fig31){const [w,h]=await new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,1]);i.src=S.fig31});B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(S.fig31)).arrayBuffer()),transformation:{width:440,height:Math.round(440*h/w)}})]}));B.push(cap("圖 3-1、兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"))}
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
-    B.push(H("二、從時間差找出角度"));B.push(...await wordFigs(secBy("二、"),[]));
+    B.push(H("二、從時間差找出角度"));B.push(...await wordFigs(secBy("二、"),[]));B.push(...await wordGal(S.gal2,"從時間差找出角度的截圖"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
     B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
