@@ -2887,6 +2887,7 @@ btn.addEventListener("click",async()=>{
     body.push(P("器材：",{bold:true}));[...document.querySelectorAll("#equipList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>body.push(P("• "+x)));body.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));body.push(P("實驗步驟：",{bold:true}));[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.trim()).filter(Boolean).forEach((x,i)=>body.push(P(`${i+1}. ${x}`)));
     {const fx=await wordFigs(secBy("先在 3D"));if(fx.length){body.push(P("在 3D 裡模擬的畫面：",{bold:true}));body.push(...fx)}}
     body.push(...await wordGal(S.gal));
+    if(window.__L)body.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     body.push(H("參、每位受試者的紀錄（表 1-1、圖 1-1）"));
     if(!subs.length) body.push(P("（還沒有輸入資料）"));
     for(const [i,x] of subs.entries()){
@@ -4222,6 +4223,7 @@ btn.addEventListener("click",async()=>{
     B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
       if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
     B.push(...await wordGal(IMG.gal,"模型截圖"));
+    if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     B.push(H("二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[]));
     for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
@@ -5854,6 +5856,7 @@ btn.addEventListener("click",async()=>{
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
     B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
     B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
+    if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     B.push(H("三、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordGal(S.gal));B.push(...await wordFigs(secBy("三、"),["cAcc","cErr"]));
     B.push(cap("場景設定：雷達上的角度"));B.push(table(["","角度（度）／點選"],[...ROADN.map(r=>[r+"路",S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時點選`,S.setup.use[n]])]));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?r.road+"路":"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?c.rr+"路":c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
@@ -6234,8 +6237,8 @@ svg text{font-family:var(--body)}
       <button type="button" class="imp" id="impTree" hidden>📥 帶入研究架構圖</button>
       <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的三個實驗所需要的實驗器材</b>。</p><textarea id="tools" hidden aria-hidden="true"></textarea></div></div>
-    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的內容</b>：實驗步驟、表格、圖、照片和結論都會照學習單的樣子排好。</p></div></div>
-    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button></div></div>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗過程</b>：研究問題、器材、實驗步驟、模型截圖和實驗照片都會照學習單的樣子排好。</p></div></div>
+    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗結果</b>：表格、圖、分析和結論都會照學習單的樣子排好。</p><textarea id="result" hidden aria-hidden="true"></textarea></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
   </div>
 </section>
@@ -6362,7 +6365,7 @@ async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(loca
   const WS=[["一","Why","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？",rd("ws1-occlusion-v2"),null,WSDEF[1]],["二","What","wwt-fw-h2q","警笛聲「長」什麼樣？",rd("ws2-fourier-v1"),rd("ws2-fourier-v1-img"),WSDEF[2]],["三","Where","wwt-fw-h3q","警笛聲從哪裡來？",rd("ws3-doa-v1"),null,WSDEF[3]]];
   const out=[];
   for(const [n,tag,qk,qdf,S2,IM,def] of WS){const eq=(IM&&IM.eq)||S2.eq;const L=Array.isArray(eq)?eq.filter(x=>x&&x.name&&x.name.trim()):li(S2.equipHTML,def.eq).map(name=>({name,src:""}));
-    out.push(new X.Paragraph({spacing:{before:120,after:60},children:[new X.TextRun({text:`實驗${n}（${tag}）：${qd(qk,qdf)}`,bold:true,size:24})]}));
+    out.push(new X.Paragraph({spacing:{before:120,after:60},children:[new X.TextRun({text:qd(qk,qdf),bold:true,size:24})]}));
     L.forEach(x=>out.push(new X.Paragraph({spacing:{after:40},children:[new X.TextRun({text:"・"+x.name.trim(),size:22})]})));
     const ph=L.filter(x=>x.src);
     if(ph.length){const cells=[];for(const x of ph){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=x.src});
@@ -6371,19 +6374,20 @@ async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(loca
       out.push(...cells)}}
   return out}
 /* 研究過程：直接把學習單（一）～（三）整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
+let WC=null;
 async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
   const X=window.docx,toU8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d).slice();if(ArrayBuffer.isView(d))return new Uint8Array(d.buffer,d.byteOffset,d.byteLength).slice();return d};
   const L=Object.assign({},X,{ImageRun:function(o){return new X.ImageRun(Object.assign({},o,{data:toU8(o.data)}))}});
-  const out=[],WS=[["一","Why","tab4","__ws1Show","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？"],["二","What","tab5","__ws2Show","wwt-fw-h2q","警笛聲「長」什麼樣？"],["三","Where","tab6","__ws3Show","wwt-fw-h3q","警笛聲從哪裡來？"]];
-  for(const [n,tag,tab,show,qk,qd] of WS){say(`正在整理學習單（${n}）……`);
+  const out={proc:[],res:[]},WS=[["一","Why","tab4","__ws1Show","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？"],["二","What","tab5","__ws2Show","wwt-fw-h2q","警笛聲「長」什麼樣？"],["三","Where","tab6","__ws3Show","wwt-fw-h3q","警笛聲從哪裡來？"]];
+  for(const [n,tag,tab,show,qk,qd] of WS){let q0=qd;try{q0=localStorage.getItem(qk)||qd}catch(e){}say(`正在整理「${q0}」……`);
     try{if(P[show])P[show](true);const f=P.document.querySelector("#"+tab+" iframe");let w=null;
       for(let i=0;i<150;i++){try{w=f&&f.contentWindow;if(w&&w.__wsBlocks&&w.docx)break}catch(e){}await new Promise(r=>setTimeout(r,200))}
       if(!w||!w.__wsBlocks)throw "沒載入";
       const b=await w.__wsBlocks(L);let q=qd;try{q=localStorage.getItem(qk)||qd}catch(e){}
-      out.push(new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:`實驗${n}（${tag}）：${q}`,bold:true,size:26})]}));
-      out.push(...b.slice(2))}
-    catch(e){out.push(new X.Paragraph({children:[new X.TextRun({text:`（學習單（${n}）沒有整理進來，請到那一張學習單按「匯出 Word」）`,color:"AA0000"})]}))}}
-  out.push(new X.Paragraph({children:[]}));return out}
+      const hd=()=>new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:q,bold:true,size:26})]}),blk=b.slice(2),sp=blk.findIndex(x=>x&&x.__split);
+      out.proc.push(hd(),...(sp<0?blk:blk.slice(0,sp)));out.res.push(hd(),...(sp<0?[]:blk.slice(sp+1)))}
+    catch(e){const m=()=>new X.Paragraph({children:[new X.TextRun({text:`（${q0} 沒有整理進來，請到那一張學習單按「匯出 Word」）`,color:"AA0000"})]});out.proc.push(m());out.res.push(m())}}
+  return out}
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
@@ -6406,8 +6410,8 @@ btn.addEventListener("click",async()=>{
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",((await wsCompile(s=>msg.textContent=s))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
-      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",lines(S.result),2000),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",(((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
+      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
       sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2：",{size:22}),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[2300,7600],layout:D.TableLayoutType.FIXED,rows})]}]});
