@@ -5227,9 +5227,7 @@ svg text{font-family:var(--body)}
       <div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><textarea id="tools" rows="5" aria-label="使用器材"></textarea><button type="button" class="imp" data-imp="tools">📥 從學習單（一）～（三）帶入器材</button>
       <div class="pics" data-k="toolsPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="toolsPics" multiple hidden></label></div></div>
-    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0 0 6px;background:var(--panel2,#eef6f1);padding:8px 10px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的內容</b>：實驗步驟、表格、圖、照片和結論都會照學習單的樣子排好。下面可以再補充自己的說明（可以不寫）。</p>
-      <textarea id="proc" rows="5" aria-label="研究過程（補充說明）" placeholder="補充說明（可以不寫）"></textarea>
-      <div class="pics" data-k="procPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="procPics" multiple hidden></label></div></div>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的內容</b>：實驗步驟、表格、圖、照片和結論都會照學習單的樣子排好。</p></div></div>
     <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><textarea id="result" rows="10" aria-label="結果"></textarea><button type="button" class="imp" data-imp="result">📥 從學習單帶入結論</button>
       <div class="pics" data-k="resPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="resPics" multiple hidden></label></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
@@ -5252,7 +5250,7 @@ const WSDEF={"1": {"eq": ["大型量角器（放在地上）、童軍繩 2 條�
 const $=id=>document.getElementById(id);
 const KEY="ws4-entry-v1";
 const KINDS=["物理","化學","生物","地球科學","數學","生活與應用科學"];
-const FIELDS=["title","subtitle","motive","goal","tools","proc","result","refs"];
+const FIELDS=["title","subtitle","motive","goal","tools","result","refs"];
 let S={kinds:[],procPics:[],resPics:[],motivePics:[],goalPics:[],toolsPics:[]};FIELDS.forEach(k=>S[k]="");
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
@@ -5283,7 +5281,7 @@ function buildMems(){const box=$("mems");box.innerHTML="";S.mems.forEach((m,i)=>
   d.querySelectorAll("input").forEach(e=>e.addEventListener("input",()=>{m[e.dataset.f]=e.value;save()}));
   const x=d.querySelector(".xbtn");if(x)x.addEventListener("click",()=>{if((m.yr||m.cls||m.nm)&&!confirm("要刪掉這一位嗎？"))return;S.mems.splice(i,1);save();buildMems()});box.appendChild(d)})}
 buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.length-1]||{};S.mems.push({yr:l.yr||"",cls:"",nm:""});save();buildMems();$("mems").lastChild.querySelector('[data-f="cls"]').focus()});
-["motivePics","goalPics","toolsPics","procPics","resPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
+["motivePics","goalPics","toolsPics","resPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
 /* 每一格都可以「📷 從情境截圖選」：情境1、情境2、實驗模型按 📷 截下來的圖（含孩子寫的描述） */
 (()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(e){return {}}};
     const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
@@ -5387,7 +5385,7 @@ btn.addEventListener("click",async()=>{
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics(S.motivePics)],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(S.goalPics)],1800),
       row("使用器材","（此實驗所需的器材）",[...lines(S.tools),...await pics(S.toolsPics)],1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...(S.proc.trim()?lines(S.proc):[]),...await pics(S.procPics),...((await wsCompile(s=>msg.textContent=s))||[])],2400),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",((await wsCompile(s=>msg.textContent=s))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),2400),
       row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...lines(S.result),...await pics(S.resPics)],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
