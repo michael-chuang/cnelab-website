@@ -689,7 +689,7 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
-    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;

@@ -2762,7 +2762,7 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
-    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
@@ -4225,7 +4225,7 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
-    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
@@ -6128,7 +6128,7 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
-    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
@@ -6823,6 +6823,16 @@ svg text{font-family:var(--body)}
 
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"><\/script>
 <script>
+async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：上面一列照片、下面一列名字（跟手動排的一樣） */
+  const {Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X;const half=Math.floor(total/2),W=Math.round(half/15*0.92);
+  const B={style:BorderStyle.SINGLE,size:6,color:"444444"},BD={top:B,bottom:B,left:B,right:B};
+  const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
+  const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
+  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
+    rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
+  return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
 /* 討論過程紀錄：最多 20 張照片，每張有日期、討論了什麼。全隊一份（ws6-talk-v1），照片放 IndexedDB、同步到雲端 */
 const $=id=>document.getElementById(id),KEY="ws6-talk-v1",MAX=20;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -6834,7 +6844,7 @@ function shrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.on
 function draw(){const L=S.L;$("tkCount").textContent=`（${L.length}／${MAX}）`;const add=$("tkAdd");add.hidden=L.length>=MAX;
   $("tkList").innerHTML=L.map((o,i)=>`<div class="tkrow" data-i="${i}">
     <label class="tkph${o.src?" has":""}" for="tkf${i}" title="${o.src?"換一張照片":"拍照或選照片"}">${o.src?`<img src="${o.src}" alt="第 ${i+1} 次討論的照片">`:"📷<span>拍照</span>"}</label><input type="file" accept="image/*" id="tkf${i}" hidden>
-    <div class="tkside"><div class="tktop"><b>第 ${i+1} 次</b>
+    <div class="tkside"><div class="tktop">
       <div class="tkbtns"><button type="button" data-up ${i?"":"disabled"} aria-label="往上移">▲</button><button type="button" data-dn ${i<L.length-1?"":"disabled"} aria-label="往下移">▼</button>${o.src?'<button type="button" data-unpic>移除照片</button>':""}<button type="button" data-del aria-label="刪掉這一次">🗑</button></div></div>
       <textarea placeholder="這次討論了什麼？決定了什麼？" aria-label="第 ${i+1} 次：討論了什麼">${esc(o.cap)}</textarea></div></div>`).join("")||'<p class="note" style="margin:0">還沒有紀錄。按下面的「＋ 新增一次討論」。</p>';
   $("tkList").querySelectorAll(".tkrow").forEach(r=>{const i=+r.dataset.i,o=S.L[i];
@@ -6858,11 +6868,8 @@ $("export").addEventListener("click",async()=>{const msg=$("expMsg"),btn=$("expo
   try{const X=window.docx,{Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType}=X;
     const P=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??120},children:[new TextRun({text:t,bold:o.bold,size:o.size||24,color:o.color})]});
     const B=[P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展討論紀錄",{align:AlignmentType.CENTER,size:22,color:"5B6872"}),P("討論過程紀錄",{align:AlignmentType.CENTER,bold:true,size:36,after:240})];
-    if(!S.L.length)B.push(P("（還沒有照片）"));
-    for(const [i,o] of S.L.filter(o=>o.src||o.cap).entries()){const [w,h]=o.src?await new Promise(ok=>{const im=new Image();im.onload=()=>ok([im.naturalWidth,im.naturalHeight]);im.onerror=()=>ok([4,3]);im.src=o.src}):[4,3];
-      B.push(P(`第 ${i+1} 次`,{bold:true,size:26,after:80}));
-      if(o.src)B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:420,height:Math.round(420*h/w)}})]}));
-      B.push(P(o.cap?"討論內容："+o.cap:"討論內容：＿＿＿＿＿＿",{after:280}))}
+    if(!S.L.some(o=>o.src||o.cap))B.push(P("（還沒有紀錄）"));
+    const L=S.L.filter(o=>o.src||o.cap);if(L.length)B.push(await photoTable(X,L.map(o=>({src:o.src,cap:o.cap||""})),9000));
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:B}]});
     const blob=await Packer.toBlob(doc),fn="科展討論過程紀錄.docx";let done=false;
     try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
@@ -7433,10 +7440,7 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 /* 研究過程最後面：「討論過程紀錄」分頁的每一次討論（日期、照片、討論內容） */
 async function talkBlocks(){const X=window.docx,{Paragraph,TextRun,ImageRun,AlignmentType}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&(o.src||o.cap));if(!L.length)return [];
   const out=[new Paragraph({spacing:{before:200,after:80},children:[new TextRun({text:"討論過程紀錄",bold:true,size:26})]})];
-  for(const [i,o] of L.entries()){out.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:`第 ${i+1} 次`,bold:true,size:22})]}));
-    if(o.src){const [w,h]=await new Promise(ok=>{const im=new Image();im.onload=()=>ok([im.naturalWidth,im.naturalHeight]);im.onerror=()=>ok([4,3]);im.src=o.src});
-      out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:300,height:Math.round(300*h/w)}})]}))}
-    if(o.cap)out.push(new Paragraph({spacing:{after:120},children:[new TextRun({text:o.cap,size:22})]}))}
+  out.push(await window.__photoTable(X,L.map(o=>({src:o.src,cap:o.cap||""})),7300),new Paragraph({spacing:{after:80},children:[]}));
   return out}
 window.__talkBlocks=talkBlocks;
   const ls=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -7484,9 +7488,10 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
-    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+window.__photoTable=photoTable;
 async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
   const qd=(k,d)=>{try{return localStorage.getItem(k)||d}catch(e){return d}};
   const li=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
