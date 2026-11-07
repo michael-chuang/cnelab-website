@@ -664,10 +664,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
-  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
 
 /* 器材照片：可以拍好幾張（最多 6 張），每張寫一下是什麼 */
@@ -692,6 +689,13 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
+  const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
+  if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
+  if(L.length>1)return [await photoTable(X,L,total),new X.Paragraph({spacing:{after:120},children:[]})];
+  const o=L[0],[w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+  const out=[new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:W1,height:Math.round(W1*h/w)}})]})];
+  if(o.cap)out.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:200},children:[new X.TextRun({text:o.cap,size:20,color:"5B6872"})]}));return out}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
   if(title)out.push(new X.Paragraph({children:[new X.TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
   out.push(await photoTable(X,L,9000),new X.Paragraph({spacing:{after:120},children:[]}));return out}

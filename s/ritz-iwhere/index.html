@@ -2737,10 +2737,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
-  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
 
 /* 器材照片：可以拍好幾張（最多 6 張），每張寫一下是什麼 */
@@ -2765,6 +2762,13 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
+  const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
+  if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
+  if(L.length>1)return [await photoTable(X,L,total),new X.Paragraph({spacing:{after:120},children:[]})];
+  const o=L[0],[w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+  const out=[new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:W1,height:Math.round(W1*h/w)}})]})];
+  if(o.cap)out.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:200},children:[new X.TextRun({text:o.cap,size:20,color:"5B6872"})]}));return out}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
   if(title)out.push(new X.Paragraph({children:[new X.TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
   out.push(await photoTable(X,L,9000),new X.Paragraph({spacing:{after:120},children:[]}));return out}
@@ -4200,10 +4204,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
-  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
 
 /* 器材照片：可以拍好幾張（最多 6 張），每張寫一下是什麼 */
@@ -4228,6 +4229,13 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
+  const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
+  if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
+  if(L.length>1)return [await photoTable(X,L,total),new X.Paragraph({spacing:{after:120},children:[]})];
+  const o=L[0],[w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+  const out=[new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:W1,height:Math.round(W1*h/w)}})]})];
+  if(o.cap)out.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:200},children:[new X.TextRun({text:o.cap,size:20,color:"5B6872"})]}));return out}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
   if(title)out.push(new X.Paragraph({children:[new X.TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
   out.push(await photoTable(X,L,9000),new X.Paragraph({spacing:{after:120},children:[]}));return out}
@@ -4593,7 +4601,7 @@ btn.addEventListener("click",async()=>{
     B.push(...await wordGal(IMG.gal,"模型截圖"));
     if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     B.push(H("二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[]));
-    for(const [k,t] of [["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]]) if(IMG[k]){B.push(await pic(IMG[k],380));B.push(cap(t))}
+    B.push(...await photoBlocks([["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]].map(([k,t])=>({src:IMG[k],cap:t}))));
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
     B.push(cap("表 2-1、我的這一把串珠"));B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));
     const bs=off("0 0 560 300");drawBeads(bs,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bs,560,300),transformation:{width:450,height:241}})]}));
@@ -4602,14 +4610,14 @@ btn.addEventListener("click",async()=>{
     B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
     B.push(H("三、看看自己的聲音頻譜"));B.push(...await wordFigs(secBy("三、"),[]));
     B.push(cap("表 2-2、我的聲音：波形和頻譜"));{const rows=S.t23.filter(r=>r.v);B.push(table(["我發出的聲音","波形規律嗎？","頻譜的尖尖山峰","主要頻率（Hz）"],rows.length?rows.map(r=>[r.v,r.reg,r.peak,r.peak==="很明顯"?r.hz:"—"]):[["","","",""]]));}
-    for(const r of S.t23){if(!r.v)continue;B.push(P(sent23(r)));for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t23"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.v} 的${n}`))}}}
-    for(const [k,c] of [["ph3","cap3"],["ph4","cap4"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")))}
+    for(const r of S.t23){if(!r.v)continue;B.push(P(sent23(r)));B.push(...await photoBlocks([["w","波形"],["s","頻譜"]].map(([k,n])=>({src:IMG["t23"+k+"_"+r.id],cap:`${r.v} 的${n}`})),9000,300))}
+    B.push(...await photoBlocks([["ph3","cap3"],["ph4","cap4"]].map(([k,c])=>({src:IMG[k],cap:"截圖："+(S[c]||"")})),9000,300));
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
     B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(...await wordFigs(secBy("四、"),[]));
     {const sr=S.t24.filter(r=>r.s).map(r=>[r.s,r.url,r.hz,rng24(r),r.form]);
     B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));
-    for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));for(const [k,n] of [["w","波形"],["s","頻譜"]]){const id="t24"+k+"_"+r.id;if(IMG[id]){B.push(await pic(IMG[id],300));B.push(cap(`${r.s} 的${n}`))}}}}
-    for(const [k,c] of [["ph5","cap5"],["ph6","cap6"]]) if(IMG[k]){B.push(await pic(IMG[k],300));B.push(cap("截圖："+(S[c]||"")+" 的頻譜"))}
+    for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));B.push(...await photoBlocks([["w","波形"],["s","頻譜"]].map(([k,n])=>({src:IMG["t24"+k+"_"+r.id],cap:`${r.s} 的${n}`})),9000,300))}}
+    B.push(...await photoBlocks([["ph5","cap5"],["ph6","cap6"]].map(([k,c])=>({src:IMG[k],cap:"截圖："+(S[c]||"")+" 的頻譜"})),9000,300));
     B.push(H("五、臺灣對警笛聲的規定"));B.push(...await wordFigs(secBy("五、"),["law"]));
     B.push(cap("表 2-4、法規對警報聲的規定"));B.push(table(["車種","頻率範圍（Hz）","節奏（怎麼變、多久變一次）"],S.t25.map(r=>[r.c,r.lr,r.lt])));
     const ls=off("0 0 640 350");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,350),transformation:{width:480,height:263}})]}));
@@ -6103,10 +6111,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
-  for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:t+(o.cap?"："+o.cap:""),size:20,color:"5B6872"})]}))}
+  out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
 
 /* 器材照片：可以拍好幾張（最多 6 張），每張寫一下是什麼 */
@@ -6131,6 +6136,13 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
+  const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
+  if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
+  if(L.length>1)return [await photoTable(X,L,total),new X.Paragraph({spacing:{after:120},children:[]})];
+  const o=L[0],[w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+  const out=[new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:W1,height:Math.round(W1*h/w)}})]})];
+  if(o.cap)out.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:200},children:[new X.TextRun({text:o.cap,size:20,color:"5B6872"})]}));return out}
 async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
   if(title)out.push(new X.Paragraph({children:[new X.TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
   out.push(await photoTable(X,L,9000),new X.Paragraph({spacing:{after:120},children:[]}));return out}
@@ -6833,6 +6845,13 @@ async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：�
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
+  const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
+  if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
+  if(L.length>1)return [await photoTable(X,L,total),new X.Paragraph({spacing:{after:120},children:[]})];
+  const o=L[0],[w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+  const out=[new X.Paragraph({alignment:X.AlignmentType.CENTER,children:[new X.ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:W1,height:Math.round(W1*h/w)}})]})];
+  if(o.cap)out.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{after:200},children:[new X.TextRun({text:o.cap,size:20,color:"5B6872"})]}));return out}
 /* 討論過程紀錄：最多 20 張照片，每張有日期、討論了什麼。全隊一份（ws6-talk-v1），照片放 IndexedDB、同步到雲端 */
 const $=id=>document.getElementById(id),KEY="ws6-talk-v1",MAX=20;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -7532,7 +7551,8 @@ btn.addEventListener("click",async()=>{
     const sceneShots=use=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const out=[];
       for(const [tab,L] of Object.entries(SL))for(const [k,title,u] of L){const x=o.slots&&o.slots[tab]&&o.slots[tab][k];if(u===use&&x&&x.src)out.push({src:x.src,cap:(tab==="tab1"?"情境1：":"情境2：")+title+(x.cap?"。"+x.cap:"")})}return out};
     const withScene=(arr,use)=>{const mine=arr||[],seen=new Set(mine.map(p=>p.src));return [...mine,...sceneShots(use).filter(p=>!seen.has(p.src))]};
-    async function pics(arr){const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
+    async function pics(arr){arr=(arr||[]).filter(p=>p&&p.src);if(arr.length>1)return [await window.__photoTable(window.docx,arr.map(p=>({src:p.src,cap:p.cap||""})),7300),para("")];   // 兩張以上排成表格
+      const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
       out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:120},children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:W,height:H}})]}));
       if(p.cap)out.push(para(p.cap,{align:AlignmentType.CENTER,size:20,color:"444444",after:120}))}return out}
     const body=(kids)=>new TableCell({width:{size:7600,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:120,right:120},children:kids.length?kids:[para("")]});
