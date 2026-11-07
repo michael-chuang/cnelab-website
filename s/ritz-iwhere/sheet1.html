@@ -662,7 +662,7 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
 async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
-  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n,o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
+  const all=[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,o])=>["模型截圖："+n.replace(/^學習單.?_/,""),o]),...g.p.map((o,i)=>[`實驗照片 ${i+1}`,o])].filter(([,o])=>o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   for(const [t,o] of all){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     const W=380,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
@@ -682,13 +682,19 @@ function makePhotos(el,get,set,max=6){if(!el)return;const esc=s=>String(s??"").r
       for(const file of [...e.target.files].slice(0,max-L.length)){const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});L.push({src:await galShrink(u,1000),cap:""})}
       if(set(L)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()})}
   draw();return draw}
-async function wordPhotos(L,title){const out=[];if(!Array.isArray(L)||!L.length)return out;const X=window.__L||window.docx;if(!X)return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=X;
-  if(title)out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
-  for(const o of L){if(!o.src)continue;const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const W=240,data=new Uint8Array(await (await fetch(o.src)).arrayBuffer());
-    out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data,transformation:{width:W,height:Math.round(W*h/w)}})]}));
-    if(o.cap)out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:160},children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]}))}
-  return out}
+async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：上面一列照片、下面一列名字（跟手動排的一樣） */
+  const {Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X;const half=Math.floor(total/2),W=Math.round(half/15*0.92);
+  const B={style:BorderStyle.SINGLE,size:6,color:"444444"},BD={top:B,bottom:B,left:B,right:B};
+  const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
+    const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
+  const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
+  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+    rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o?await img(o):new Paragraph("")])))}));
+    rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
+  return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+async function wordPhotos(L,title){const out=[];if(!Array.isArray(L))return out;L=L.filter(o=>o&&o.src);if(!L.length)return out;const X=window.__L||window.docx;if(!X)return out;
+  if(title)out.push(new X.Paragraph({children:[new X.TextRun({text:title,bold:true,size:22})],spacing:{before:100,after:60}}));
+  out.push(await photoTable(X,L,9000),new X.Paragraph({spacing:{after:120},children:[]}));return out}
 
 /* 器材清單：每一樣器材一列，可以改名字、各自拍一張照片、刪掉，也可以「＋ 新增器材」 */
 function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -726,7 +732,7 @@ function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>
 function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);let force=null;
   const cur=k=>{const g=galFix(get());g.ms=g.ms||{};const key=name+"："+slots.find(s=>s.key===k).title;return [g,g.ms[key]||(g.ms[key]={src:"",cap:""})]};
-  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面左下角的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
+  function draw(){el.innerHTML=`<h3>📷 ${title}的截圖（${slots.length} 張）</h3><p class="note" style="margin:0 0 8px">按上面畫面角落的 📷，會照現在的畫面自動放進對的格子；想放別格，先按那格的「下一張放這格」。</p>
     <div class="galgrid">${slots.map((s,i)=>{const [,o]=cur(s.key);return `<figure class="galf${force===s.key?" on":""}" data-k="${s.key}"><figcaption><b>${i+1}. ${s.title}</b><br><span class="note">${s.hint}</span></figcaption>
       ${o.src?`<img src="${o.src}" alt="${s.title}">`:`<div class="galempty">還沒有截圖</div>`}
       <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${s.title} 的圖片描述">${esc(o.cap)}</textarea>
