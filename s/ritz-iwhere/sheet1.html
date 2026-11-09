@@ -771,16 +771,16 @@ function makePhotos(el,get,set,max=6){if(!el)return;const esc=s=>String(s??"").r
       for(const file of [...e.target.files].slice(0,max-L.length)){const u=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});L.push({src:await galShrink(u,1000),cap:""})}
       if(set(L)===false)alert("照片太多，這台電腦存不下了，先刪掉幾張。");draw()})}
   draw();return draw}
-async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：上面一列照片、下面一列名字（跟手動排的一樣） */
-  const {Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X;const half=Math.floor(total/2),W=Math.round(half/15*0.92);
+async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 7.8 公分寬、照片 7.5 公分寬；上面一列照片、下面一列說明（10 pt） */
+  const {Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X;const half=4422,W=283;   // 7.8 cm = 4422 twip；7.5 cm ≈ 283 px
   const B={style:BorderStyle.SINGLE,size:6,color:"444444"},BD={top:B,bottom:B,left:B,right:B};
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
-    const H=Math.min(Math.round(W*h/w),Math.round(W*1.1)),WW=Math.round(H*w/h);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
-  const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:ch});
+    let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
+  const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
   const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
-    rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:22,color:"5B6872"})]})]))}))}
-  return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],rows})}
+    rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
+  return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
 async function photoBlocks(L,total=9000,W1=380){   /* 很多張照片：兩張以上排成表格；只有一張就置中放 */
   const X=window.__L||window.docx;L=(L||[]).filter(o=>o&&o.src);if(!X||!L.length)return [];
   if(window.__L)total=Math.min(total,7200);   // 放進「科展作品說明」的表格格子裡時，要窄一點
@@ -1164,7 +1164,7 @@ btn.addEventListener("click",async()=>{
     const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80},bullet:o.bullet?{level:0}:undefined});
     const H=(t)=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
-    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:22})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
     const table=(head,rows,ws)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,w:ws&&ws[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{w:ws&&ws[i],bold:r.bold}))}))]});
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const t1Rows=T1=>{const rows=[...Array(N)].map((_,i)=>{const a=T1.a[i],b=T1.b[i];return [i+1,a.r,a.p,f1(dUse(a)),b.r,b.p,f1(dUse(b))]});
