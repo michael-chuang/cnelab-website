@@ -207,6 +207,13 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
   window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
   window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
     if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
@@ -2189,6 +2196,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
   window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
   window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
     if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
@@ -2938,7 +2952,8 @@ function makeShotSlot(anchor,name,title,get,set,opt={}){if(!anchor)return;const 
       ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption>${galT(o.t,"截圖 "+(i+1),esc)} ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
         <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
         :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}
-      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.photos?`<div data-photos></div>`:""}`;
+      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.extra?`<div data-extra style="margin-top:10px"></div>`:""}${opt.photos?`<div data-photos style="margin-top:14px"></div>`:""}`;
+    if(opt.extra)try{opt.extra(el.querySelector("[data-extra]"))}catch(e){}
     el.querySelector("[data-snapmore]")?.addEventListener("click",()=>{const f=snapFn();f&&f()});
     if(opt.photos){const g0=galFix(get());if(!g0.__pinit){g0.p=g0.p.filter(o=>o&&(o.src||o.cap));while(g0.p.length<2)g0.p.push({src:"",cap:""});g0.__pinit=1;set(g0)}
       makePhotoList(el.querySelector("[data-photos]"),()=>galFix(get()).p,L=>{const g=galFix(get());g.p=L;return set(g)},{label:"實驗照片",title:`📸 ${title}的實驗照片`,max:GALMAX})}
@@ -3410,6 +3425,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
 (()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
@@ -4539,7 +4561,8 @@ function makeShotSlot(anchor,name,title,get,set,opt={}){if(!anchor)return;const 
       ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption>${galT(o.t,"截圖 "+(i+1),esc)} ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
         <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
         :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}
-      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.photos?`<div data-photos></div>`:""}`;
+      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.extra?`<div data-extra style="margin-top:10px"></div>`:""}${opt.photos?`<div data-photos style="margin-top:14px"></div>`:""}`;
+    if(opt.extra)try{opt.extra(el.querySelector("[data-extra]"))}catch(e){}
     el.querySelector("[data-snapmore]")?.addEventListener("click",()=>{const f=snapFn();f&&f()});
     if(opt.photos){const g0=galFix(get());if(!g0.__pinit){g0.p=g0.p.filter(o=>o&&(o.src||o.cap));while(g0.p.length<2)g0.p.push({src:"",cap:""});g0.__pinit=1;set(g0)}
       makePhotoList(el.querySelector("[data-photos]"),()=>galFix(get()).p,L=>{const g=galFix(get());g.p=L;return set(g)},{label:"實驗照片",title:`📸 ${title}的實驗照片`,max:GALMAX})}
@@ -5024,6 +5047,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
 (()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
@@ -6584,7 +6614,8 @@ function makeShotSlot(anchor,name,title,get,set,opt={}){if(!anchor)return;const 
       ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption>${galT(o.t,"截圖 "+(i+1),esc)} ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
         <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
         :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}
-      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.photos?`<div data-photos></div>`:""}`;
+      ${snapFn()?`<button type="button" class="addeq" data-snapmore style="margin-top:8px">📷 ${A.length?"再截一張":"截一張圖"}</button>`:""}${opt.extra?`<div data-extra style="margin-top:10px"></div>`:""}${opt.photos?`<div data-photos style="margin-top:14px"></div>`:""}`;
+    if(opt.extra)try{opt.extra(el.querySelector("[data-extra]"))}catch(e){}
     el.querySelector("[data-snapmore]")?.addEventListener("click",()=>{const f=snapFn();f&&f()});
     if(opt.photos){const g0=galFix(get());if(!g0.__pinit){g0.p=g0.p.filter(o=>o&&(o.src||o.cap));while(g0.p.length<2)g0.p.push({src:"",cap:""});g0.__pinit=1;set(g0)}
       makePhotoList(el.querySelector("[data-photos]"),()=>galFix(get()).p,L=>{const g=galFix(get());g.p=L;return set(g)},{label:"實驗照片",title:`📸 ${title}的實驗照片`,max:GALMAX})}
@@ -6671,11 +6702,10 @@ window.__galModelOnly=true;   // 實驗三的「模型截圖」只收小模型�
   const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{const st=f.contentDocument.createElement("style");st.textContent=".hud{display:none!important}";f.contentDocument.head.appendChild(st)}catch(e){}try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
     f.srcdoc=src.textContent.replace(/%%ENDSCRIPT%%/g,"</"+"script")};
   try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){go();o.disconnect()}},{rootMargin:"400px"}).observe(f)}catch(e){go()}})();
-setTimeout(()=>{const sc=document.querySelector(".scope-card");makeShotSlot(sc,"學習單三_兩隻耳朵","兩隻耳朵聽聲音",()=>S.gal1,g=>{S.gal1=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}},{photos:1})},0);   // 女孩／男孩聽音樂的截圖，放在波形下面
+setTimeout(()=>{const sc=document.querySelector(".scope-card");makeShotSlot(sc,"學習單三_兩隻耳朵","兩隻耳朵聽聲音",()=>S.gal1,g=>{S.gal1=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}},{photos:1,extra:()=>setTimeout(draw31,0)})},0);   // 女孩／男孩聽音樂的截圖，放在波形下面
 /* 按 📷 時，同時把「圖 3-1 兩隻耳朵收到的聲音」存成一張圖，放進研究過程 */
 const S31=()=>{const c=$("hScope");if(!c||!c.width)return "";const o=document.createElement("canvas");o.width=c.width;o.height=c.height;const g=o.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,o.width,o.height);g.drawImage(c,0,0);return o.toDataURL("image/jpeg",0.85)};
-function draw31(){let el=document.getElementById("fig31");const sl=document.querySelector(".scope-card + .shotslot");if(!sl)return;
-  if(!el){el=document.createElement("div");el.id="fig31";el.style.marginTop="10px";sl.appendChild(el)}
+function draw31(){const el=document.querySelector(".scope-card + .shotslot [data-extra]");if(!el)return;   // 波形放在 3D 截圖正下方、實驗照片前面
   el.innerHTML=S.fig31?`<div class="note" style="margin:0 0 4px">同一個時候的「圖 3-1　兩隻耳朵收到的聲音」（也會放進報告）：</div><img src="${S.fig31}" alt="圖 3-1 兩隻耳朵收到的聲音" style="width:100%;border:1px solid var(--line,#ddd);border-radius:8px">`:""}
 addEventListener("pp-snap",e=>{if(!e.detail||e.detail.name!=="學習單三_兩隻耳朵")return;S.fig31=S31();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}setTimeout(draw31,300)});
 setTimeout(()=>{if(!S.gal1||!(S.gal1.ms||{})["學習單三_兩隻耳朵"]||!S.gal1.ms["學習單三_兩隻耳朵"].src)S.fig31=S.fig31||"";draw31()},50);
@@ -6811,7 +6841,7 @@ btn.addEventListener("click",async()=>{
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
     B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
-    B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));B.push(...await wordGal(S.gal1,"兩隻耳朵聽聲音的截圖"));if(S.fig31){const [w,h]=await new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,1]);i.src=S.fig31});B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(S.fig31)).arrayBuffer()),transformation:{width:440,height:Math.round(440*h/w)}})]}));B.push(cap("圖 3-1、兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"))}
+    B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));B.push(...await wordGal(Object.assign({},S.gal1,{p:[]}),"兩隻耳朵聽聲音的截圖"));if(S.fig31){const [w,h]=await new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,1]);i.src=S.fig31});B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(S.fig31)).arrayBuffer()),transformation:{width:440,height:Math.round(440*h/w)}})]}));B.push(cap("圖 3-1、兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"))}B.push(...await photoBlocks(((S.gal1||{}).p||[]).map((o,i)=>({src:o&&o.src,cap:(o&&o.t||`實驗照片 ${i+1}`)+(o&&o.cap?"："+o.cap:"")})).filter(o=>o.src)));
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
     B.push(H("二、從時間差找出角度"));B.push(...await wordFigs(secBy("二、"),[]));B.push(...await wordGal(S.gal2,"從時間差找出角度的截圖"));B.push(...await wordGal(S.gal4,"換我試試的截圖"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
@@ -6935,6 +6965,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <script>window.KS_TEAM=1<\/script>
 <!-- KIDSYNC START -->
 <script>
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
 (()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
@@ -7499,6 +7536,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <script>window.KS_TEAM=1<\/script>
 <!-- KIDSYNC START -->
 <script>
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
 (()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
