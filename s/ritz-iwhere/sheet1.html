@@ -113,9 +113,31 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
     const meta=new Map(),who=new Map(),subs=new Set(),lastSnap=new Map();let loaded=false;
     let DEV="";try{DEV=W.localStorage.getItem("wwt-dev")||"";if(!DEV){DEV="d"+Math.random().toString(36).slice(2,10);W.localStorage.setItem("wwt-dev",DEV)}}catch(e){DEV="d"+Math.random().toString(36).slice(2,10)}
     const NAME=()=>{const u=navigator.userAgent;return /iPhone/.test(u)?"iPhone":/iPad/.test(u)?"iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows 電腦":"電腦"};
-    async function snap(key,data,ts,dev,dn,why){ts=+ts>1e12?+ts:Date.now();const id=key+"~"+ts,n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
+    /* 照片另外存（blobs）：同一張照片只上傳一次，學習單本身只留一個小記號，存檔就很快、也不會超過 Firestore 一次 10 MB 的上限 */
+    const BL=root.collection("blobs"),known=new Set(),bcache=new Map(),REF="wwtblob:",RX=/data:[a-z]+\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/=]{3000,}/g;
+    try{JSON.parse(W.localStorage.getItem("wwt-blobs")||"[]").forEach(h=>known.add(h))}catch(e){}
+    const saveKnown=()=>{try{W.localStorage.setItem("wwt-blobs",JSON.stringify([...known].slice(-4000)))}catch(e){}};
+    const hash=str=>{const c=seed=>{let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}
+      h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36)};
+      return c(1)+c(7)+str.length.toString(36)};
+    async function putBlob(h,str){if(known.has(h))return;
+      const m=await timeout(BL.doc(h).get(),20000,"blob?");
+      if(!m.exists){const n=Math.max(1,Math.ceil(str.length/CH));
+        for(let i=0;i<n;i+=3){const b=db.batch();for(let j=i;j<Math.min(n,i+3);j++)b.set(BL.doc(h+"~"+j),{d:str.slice(j*CH,(j+1)*CH)});await timeout(b.commit(),45000,"blob")}
+        await timeout(BL.doc(h).set({n,len:str.length,at:fb.firestore.FieldValue.serverTimestamp()}),20000,"blob meta")}   // 最後才寫這個：有它就代表照片完整
+      known.add(h);saveKnown()}
+    async function blobify(data){const found=new Map(),out=data.replace(RX,m=>{const h=hash(m);found.set(h,m);return REF+h});
+      for(const [h,str] of found){bcache.set(h,str);await putBlob(h,str)}return out}
+    async function getBlob(h){if(bcache.has(h))return bcache.get(h);
+      try{const m=await timeout(BL.doc(h).get(),20000,"blob");if(!m.exists)return null;const n=m.data().n||1;
+        const parts=await timeout(Promise.all([...Array(n)].map((_,i)=>BL.doc(h+"~"+i).get())),60000,"blob parts");
+        const str=parts.map(p=>p.exists?(p.data().d||""):"").join("");bcache.set(h,str);known.add(h);return str}catch(e){return null}}
+    async function unblob(data){const hs=[...new Set((data.match(/wwtblob:[a-z0-9]+/g)||[]).map(x=>x.slice(REF.length)))];if(!hs.length)return data;
+      const M=new Map();await Promise.all(hs.map(async h=>{const v=await getBlob(h);if(v)M.set(h,v)}));saveKnown();
+      return data.replace(/wwtblob:([a-z0-9]+)/g,(m,h)=>M.get(h)||m)}
+    async function snap(key,data0,ts,dev,dn,why){ts=+ts>1e12?+ts:Date.now();const data=await blobify(data0),id=key+"~"+ts,n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
       for(let i=0;i<n;i++)b.set(HC.doc(id+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
-      b.set(HI.doc(id),{key,ts:+ts,n,len:data.length,dev:dev||"",dn:dn||"",why:why||"",at:fb.firestore.FieldValue.serverTimestamp()});
+      b.set(HI.doc(id),{key,ts:+ts,n,len:data0.length,dev:dev||"",dn:dn||"",why:why||"",at:fb.firestore.FieldValue.serverTimestamp()});
       await timeout(b.commit(),30000,"hist "+key);lastSnap.set(key,Date.now());
       try{const L=(await HI.where("key","==",key).get()).docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>y.ts-x.ts);   // 太多就把最舊的刪掉
         for(const o of L.slice(KEEP)){const d=db.batch();for(let i=0;i<(o.n||1);i++)d.delete(HC.doc(o.id+"~"+i));d.delete(HI.doc(o.id));await d.commit()}}catch(e){}}
@@ -128,18 +150,19 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         try{const pw=who.get(key);
           if(pw&&pw.dev&&pw.dev!==DEV&&meta.has(key)){const old=await api.load(key);if(old&&old.data)await snap(key,old.data,old.ts,pw.dev,pw.dn,"換電腦之前")}
           else if(Date.now()-(await lastSnapOf(key))>600000&&data.length)setTimeout(()=>snap(key,data,+ts||Date.now(),DEV,NAME(),"每 10 分鐘").catch(()=>{}),0)}catch(e){}
+        const len0=data.length;data=await blobify(data);   // 照片先上傳（已經上傳過的就跳過）
         const n=Math.max(1,Math.ceil(data.length/CH)),b=db.batch();
         for(let i=0;i<n;i++)b.set(C.doc(key+"~"+i),{d:data.slice(i*CH,(i+1)*CH)});
-        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:data.length,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()});
-        await timeout(b.commit(),20000,"save "+key);meta.set(key,+ts||Date.now());who.set(key,{dev:DEV,dn:NAME()})},
+        b.set(D.doc(key),{ts:+ts||Date.now(),n,len:len0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()});
+        await timeout(b.commit(),30000,"save "+key);meta.set(key,+ts||Date.now());who.set(key,{dev:DEV,dn:NAME()})},
       /* 舊版本清單、拿回某一版 */
       async hist(key){const L=(await timeout(HI.where("key","==",key).get(),20000,"hist")).docs.map(d=>({id:d.id,...d.data()}));return L.sort((x,y)=>y.ts-x.ts)},
       async histLoad(id){const m=await HI.doc(id).get();if(!m.exists)return null;const {n,ts,key}=m.data();
-        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>HC.doc(id+"~"+i).get())),30000,"hchunks");return {key,ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+        const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>HC.doc(id+"~"+i).get())),30000,"hchunks");return {key,ts,data:await unblob(parts.map(p=>p.exists?(p.data().d||""):"").join(""))}},
       snap:(key,data,ts,why)=>snap(key,data,ts,DEV,NAME(),why),dev:DEV,
       async load(key){const m=await timeout(D.doc(key).get(),20000,"load "+key);if(!m.exists)return null;const {ts,n}=m.data();
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
-        return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+        return {ts,data:await unblob(parts.map(p=>p.exists?(p.data().d||""):"").join(""))}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
       async setLock(on,pin){if(!on&&!(await window.__wwtPin(pin)))throw new Error("pin");   // 鎖起來不用密碼；解鎖才要
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
@@ -200,6 +223,7 @@ window.__FB.then(a=>{fb=a;const un=a.watch(onRemote);addEventListener("pagehide"
 try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}   // 第一次：先把 Google 試算表裡比較新的拿下來，再交給 Firebase
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
+let FAILS=0;   // 連續失敗幾次才跳警告（偶爾慢一次不用嚇人）
 async function push(beacon){if(RO()){dirty.clear();show(LOCKMSG);return}if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
   if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
@@ -207,8 +231,9 @@ async function push(beacon){if(RO()){dirty.clear();show(LOCKMSG);return}if(!kid)
   if(fb){for(const k of keys){const ts=+(g(nk(k)+"#ts")||Date.now()),data=g(nk(k))||"";
       if(beacon){fb.save(k,data,ts).catch(()=>{});gasQ.add(k);continue}
       try{show("☁ 存到雲端中…");await fb.save(k,data,ts);dirty.delete(k);gasLater(k)}
-      catch(e){show("⚠ 沒連上雲端，已先存在這台電腦，等一下會再試");clearTimeout(tm);tm=setTimeout(push,15000);return}}
-    if(beacon){gasFlush(true);return}
+      catch(e){if(/locked/.test(e&&e.message)){dirty.clear();show(LOCKMSG);return}
+        FAILS++;show(FAILS>=3?"⚠ 沒連上雲端，已先存在這台電腦，等一下會再試":"☁ 網路比較慢，等一下自動再存一次…");clearTimeout(tm);tm=setTimeout(push,FAILS>=3?15000:5000);return}}
+    FAILS=0;if(beacon){gasFlush(true);return}
     const t=new Date();show(`☁ 已存到雲端 ${t.getHours()}:${String(t.getMinutes()).padStart(2,"0")}`);return}
   for(const k of keys){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});
     if(beacon){try{navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));dirty.delete(k)}catch(e){}continue}
