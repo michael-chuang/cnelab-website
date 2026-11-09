@@ -319,9 +319,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
     <button class="tab" data-tab="tab1" role="tab">🚦 情境1：路口</button>
     <button class="tab" data-tab="tab2" role="tab">🚗 情境2：駕駛</button>
     <button class="tab" data-tab="tab3" role="tab" hidden>📦 實驗模型</button>
-    <button class="tab" data-tab="tab4" role="tab">📝 學習單(一) Why 人因工程篇</button>
-    <button class="tab" data-tab="tab5" role="tab">📝 學習單(二) What 傅立葉轉換篇</button>
-    <button class="tab" data-tab="tab6" role="tab">📝 學習單(三) Where 聲源定位篇</button>
+    <button class="tab" data-tab="tab4" role="tab">📝 實驗一 Why 人因工程篇</button>
+    <button class="tab" data-tab="tab5" role="tab">📝 實驗二 What 傅立葉轉換篇</button>
+    <button class="tab" data-tab="tab6" role="tab">📝 實驗三 Where 聲源定位篇</button>
     <button class="tab" data-tab="tab8" role="tab">🗣 討論過程紀錄</button>
     <button class="tab" data-tab="tab7" role="tab">📋 科展作品說明(初審)</button>
   </div>
@@ -437,7 +437,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
         <div class="fw-v"></div>
         <div class="fw-node sub"><span class="q" style="background:var(--stop)">Why</span><div class="t"><span data-sync="wwt-fw-h1q">為什麼光靠駕駛的耳朵不夠？</span></div>
           <p><span data-sync="wwt-fw-h1" data-ml>假設一：關上車窗（用耳機模擬）後，聲音變小、變悶，指出警笛方向的角度差會變大，也更容易前後搞混，所以光靠駕駛的耳朵不夠。</span></p>
-          <div class="go"><button data-goto="tab4">📝 學習單(一)</button><button data-goto="tab2">🚗 情境2：駕駛</button></div></div>
+          <div class="go"><button data-goto="tab4">📝 實驗一</button><button data-goto="tab2">🚗 情境2：駕駛</button></div></div>
         <div class="fw-fill"></div>
       </div>
       <div class="fw-col fw-R">
@@ -452,11 +452,11 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
         <div class="fw-v"></div>
         <div class="fw-node sub"><span class="q" style="background:var(--amber)">What</span><div class="t"><span data-sync="wwt-fw-h2q">警笛聲「長」什麼樣？</span></div>
           <p><span data-sync="wwt-fw-h2" data-ml>假設二：警笛頻率特殊，傅立葉轉換能清楚將其與一般引擎低頻噪音分開。</span></p>
-          <div class="go"><button data-goto="tab5">📝 學習單(二)</button></div></div>
+          <div class="go"><button data-goto="tab5">📝 實驗二</button></div></div>
         <div class="fw-v"></div>
         <div class="fw-node sub"><span class="q" style="background:var(--accent)">Where</span><div class="t"><span data-sync="wwt-fw-h3q">警笛聲從哪裡來？</span></div>
           <p><span data-sync="wwt-fw-h3" data-ml>假設三：用 2 支麥克風模仿人的耳朵，這樣夠準確嗎？</span></p>
-          <div class="go"><button data-goto="tab6">📝 學習單(三)</button><button data-goto="tab1">🚦 情境1：路口</button></div></div>
+          <div class="go"><button data-goto="tab6">📝 實驗三</button><button data-goto="tab1">🚦 情境1：路口</button></div></div>
         <div class="fw-fill"></div>
       </div>
       <div class="fw-join"></div>
@@ -1972,7 +1972,7 @@ document.getElementById("mviews").addEventListener("click",e=>{const b=e.target.
 </script>
 <!-- TAB3 END -->
 <script>
-/* 「哪一種車？」按鈕加上車子的圖（跟學習單二的圖一樣；垃圾車是臺灣的黃色） */
+/* 「哪一種車？」按鈕加上車子的圖（跟實驗二的圖一樣；垃圾車是臺灣的黃色） */
 (()=>{const NS="http://www.w3.org/2000/svg",el=(n,a,p,txt)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;if(p)p.appendChild(e);return e};
 function vehIcon(s,k,cx,cy){   // 卡通風格的側面小車（車頭朝右），64×40
   const g=el("g",{transform:`translate(${cx-32},${cy-22})`},s),P=(d,a)=>el("path",Object.assign({d},a),g),R=a=>el("rect",a,g),C=a=>el("circle",a,g),ln="#3a3f45",glass="#8fd3f4",glassHi="#d6f1fc";
@@ -2081,7 +2081,7 @@ window.__saveFile=async(blob0,fn)=>{const blob=new Blob([await blob0.arrayBuffer
 <!-- SAVEFILE END -->
 <!-- TAB4 START -->
 <div class="wrap" id="tab4" hidden style="margin-top:20px">
-<iframe id="ws1frame" title="學習單(一) Why 人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws1frame" title="實驗一 Why 人因工程篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws1src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -3191,7 +3191,7 @@ addEventListener("resize",fit);})();
 <!-- TAB4 END -->
 <!-- TAB5 START -->
 <div class="wrap" id="tab5" hidden style="margin-top:20px">
-<iframe id="ws2frame" title="學習單(二) What 傅立葉轉換篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws2frame" title="實驗二 What 傅立葉轉換篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws2src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -3478,7 +3478,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout：一欄式學習單（二）。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+/* Layout：一欄式實驗二。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
 :root{
   --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
   --a:#2a6fb8;        /* 未遮蔽 */
@@ -3579,7 +3579,7 @@ svg text{font-family:var(--body)}
 #t1 td.num input{max-width:5.5em}
 #plChips .chip{padding:4px 10px;border-radius:999px;border:2px solid;background:var(--paper);font-size:13px;cursor:pointer}
 .subsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.subf{margin:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper);display:flex;flex-direction:column;gap:6px}.subf.on{outline:3px solid var(--a)}.subf svg{width:100%;height:auto}.subf figcaption{font-size:14px}
-/* 彩虹彈簧＋學習單二專用 */
+/* 彩虹彈簧＋實驗二專用 */
 .stage{background:#0f1424}
 .hud{position:absolute;left:12px;top:10px;color:#fff;font-size:14px;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none}
 .hud b{font-family:var(--num);font-size:22px}
@@ -3671,7 +3671,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <header>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（二）What 傅立葉轉換篇</div>
   <h1 data-sync-ro="wwt-fw-h2q">警笛聲「長」什麼樣？</h1>
-  <p class="lead">自然課學過：聲音是物體在振動。這張學習單先認識「頻率」（每秒振動幾次），再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
+  <p class="lead">自然課學過：聲音是物體在振動。這個實驗先認識「頻率」（每秒振動幾次），再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。</p>
 </header>
 
 <section>
@@ -4355,7 +4355,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   return out}
 /* WORDFIG END */
 
-/* ================= 學習單（二）：資料、表格、照片、圖、匯出 ================= */
+/* ================= 實驗二：資料、表格、照片、圖、匯出 ================= */
 const $=id=>document.getElementById(id);
 const KEY="ws2-fourier-v1";
 window.__hearStore={get:()=>{const S=window.__S2get&&window.__S2get();return S&&S.hear||null},set:v=>{const S=window.__S2get&&window.__S2get();if(S){S.hear=v;window.__save2()}}};   // ④ 聽力範圍存在學習單裡
@@ -4691,7 +4691,7 @@ addEventListener("resize",fit);})();
 <!-- TAB5 END -->
 <!-- TAB6 START -->
 <div class="wrap" id="tab6" hidden style="margin-top:20px">
-<iframe id="ws3frame" title="學習單(三) Where 聲源定位篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
+<iframe id="ws3frame" title="實驗三 Where 聲源定位篇" style="width:100%;border:0;display:block;min-height:600px;background:transparent"></iframe>
 </div>
 <script type="text/plain" id="ws3src"><!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style><script>
 /* 聲音解鎖：iPhone／iPad 靜音鍵、Safari 自動播放限制。第一次點畫面時，把聲音切到「播放」模式並喚醒所有 AudioContext */
@@ -4978,7 +4978,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout：一欄式學習單（三）。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
+/* Layout：一欄式實驗三。上面是 3D 實驗模擬（畫面＋右側控制），下面依序是步驟、表 1-1＋量角器點圖、表 1-2＋長條圖、結論 */
 :root{
   --bg:#eef2f4; --paper:#ffffff; --ink:#18232b; --muted:#5b6872; --line:#d3dbe0; --chip:#e6ecef;
   --a:#2a6fb8;        /* 未遮蔽 */
@@ -5079,7 +5079,7 @@ svg text{font-family:var(--body)}
 #t1 td.num input{max-width:5.5em}
 #plChips .chip{padding:4px 10px;border-radius:999px;border:2px solid;background:var(--paper);font-size:13px;cursor:pointer}
 .subsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.subf{margin:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--paper);display:flex;flex-direction:column;gap:6px}.subf.on{outline:3px solid var(--a)}.subf svg{width:100%;height:auto}.subf figcaption{font-size:14px}
-/* 學習單三專用 */
+/* 實驗三專用 */
 input.wide{max-width:none!important;width:100%;text-align:left!important}
 label{display:block;margin-top:6px}
 .card.qa label{margin-top:0}
@@ -5130,13 +5130,13 @@ td.no{color:var(--b);font-weight:700}
 <header>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗紀錄單（三）Where 聲源定位篇</div>
   <h1 data-sync-ro="wwt-fw-h3q">警笛聲從哪裡來？</h1>
-  <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這張學習單先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
+  <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這個實驗先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
 </header>
 
 <section>
   <div class="two">
     <div class="card"><h3>先想一想</h3>
-      <label for="p1">學習單（一）發現：戴上耳機後，指方向變得怎樣？</label><input type="text" id="p1" class="wide">
+      <label for="p1">實驗一發現：戴上耳機後，指方向變得怎樣？</label><input type="text" id="p1" class="wide">
       <label for="p2">你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？</label><input type="text" id="p2" class="wide">
       <label for="p3">我猜：路口至少要裝幾支麥克風，才分得出救護車從哪一條路來？</label>
       <div class="row" style="align-items:center"><select id="p3"><option value=""></option><option>1 支</option><option>2 支</option><option>3 支</option><option>4 支</option></select><input type="text" id="p4" class="wide" style="flex:1;min-width:12em"></div>
@@ -5152,7 +5152,7 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>一、兩隻耳朵的時間差</h2>
-  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小朋友播放古典樂（每點一次換一首）；再點一下就停。聲音像水波一樣一圈一圈傳出去（紅圈＝空氣擠在一起、藍圈＝空氣稀稀疏疏，和學習單二一樣），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
+  <p class="lead">在草地上點一下，喇叭就會走到那裡，放好就對著小朋友播放古典樂（每點一次換一首）；再點一下就停。聲音像水波一樣一圈一圈傳出去（紅圈＝空氣擠在一起、藍圈＝空氣稀稀疏疏，和實驗二一樣），看看它先碰到哪一隻耳朵（耳朵會跟著亮）。也可以拖著喇叭走。戴耳機聽，左右會更清楚。</p>
   <div class="stage wide" id="h3d"><canvas id="hc" aria-label="3D：小朋友站在草地上，喇叭發出的聲波傳到兩隻耳朵"></canvas>
     <div class="views"><button data-hv="front" class="on">從前面看</button><button data-hv="tilt">從後面看</button><button data-hv="top">從上面看</button></div>
     <div class="hud2" style="left:auto"><button id="kidBtn" class="stopbtn" type="button">👦 換成男生</button><button id="hStop" class="stopbtn" hidden>■ 停止聲音</button></div>
@@ -5744,8 +5744,8 @@ for(const s of [-1,1]){limb([s*9.4,-17.5,0],[s*12.2,-24,-0.5],3.3,shirtM);      
   add(new THREE.CylinderGeometry(2.6,2.4,52,12),skin,s*4.6,FLOOR+32,0);                                    // 腿
   add(new THREE.CylinderGeometry(2.8,2.7,8,12),white,s*4.6,FLOOR+8,0);                                     // 白襪
   add(new THREE.SphereGeometry(4.2,16,12),M(0x1c1c1e,{roughness:0.35}),s*4.6,FLOOR+2.4,-2,0.85,0.55,1.4)}  // 黑皮鞋
-/* 男生：和學習單（一）一樣的運動服（灰 polo＋紅領紅袖、深藍短褲、黑襪、黑色運動鞋、黑短髮），雙手垂下。
-   座標照學習單（一）的男生（腳在 0、脖子約 97），換算到這裡的大小 */
+/* 男生：和實驗一一樣的運動服（灰 polo＋紅領紅袖、深藍短褲、黑襪、黑色運動鞋、黑短髮），雙手垂下。
+   座標照實驗一的男生（腳在 0、脖子約 97），換算到這裡的大小 */
 grp=onlyB;
 {const BS=0.7,BY=104/97,mp=([x,y,z])=>[x*BS,FLOOR+y*BY,z*BS];
  const bp=(geo,mat,x,y,z,sx=1,sy=1,sz=1)=>add(geo,mat,x*BS,FLOOR+y*BY,z*BS,sx*BS,sy*BY,sz*BS);
@@ -5760,7 +5760,7 @@ grp=onlyB;
  bp(new THREE.TorusGeometry(5.2,1.6,10,24),redM,0,97.8,0).rotation.x=Math.PI/2;                             // 紅領子
  bp(new THREE.BoxGeometry(3,7,0.8),poloM,0,92,-12.2);for(const y of [94,91])bp(new THREE.SphereGeometry(0.6,8,6),white,0,y,-12.6);
  {const lg=bp(new THREE.PlaneGeometry(5.6,6.1),new THREE.MeshStandardMaterial({map:logoT3,transparent:true,alphaTest:0.4,roughness:0.6}),-5.6,86,-12.6);lg.rotation.y=Math.PI}
- // 黑短髮（照學習單（一），頭的大小換算 10/15）
+ // 黑短髮（照實驗一，頭的大小換算 10/15）
  const k=10/15;
  add(new THREE.SphereGeometry(15.9*k,40,30,0,Math.PI*2,0,Math.PI*0.47),hairM,0,0.4*k,0.4*k);
  add(new THREE.SphereGeometry(15.7*k,40,30,0,Math.PI,Math.PI*0.4,Math.PI*0.32),hairM,0,0,0.2*k);
@@ -5783,7 +5783,7 @@ function label(t,col,size=5.5){const c=document.createElement("canvas"),g=c.getC
   g.fillStyle="rgba(255,255,255,.92)";g.beginPath();g.roundRect?g.roundRect(0,0,w,80,22):g.rect(0,0,w,80);g.fill();g.font="bold 56px 'Noto Sans TC',sans-serif";g.fillStyle=col;g.textBaseline="middle";g.fillText(t,18,42);
   const tt=new THREE.CanvasTexture(c);tt.encoding=THREE.sRGBEncoding;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tt,depthTest:false}));s.scale.set(size*w/80,size,1);s.renderOrder=9;scene.add(s);return s}
 label("左耳","#2a6fb8").position.set(-EAR-9,9,0);label("右耳","#d9532c").position.set(EAR+9,9,0);
-/* 聲波：和喇叭、耳朵一樣高；紅＝空氣擠在一起（壓縮）、藍＝稀稀疏疏（稀疏），和學習單二一樣，連續漸層（shader：波前到哪、尾巴到哪） */
+/* 聲波：和喇叭、耳朵一樣高；紅＝空氣擠在一起（壓縮）、藍＝稀稀疏疏（稀疏），和實驗二一樣，連續漸層（shader：波前到哪、尾巴到哪） */
 const waveU={uFront:{value:-1},uTail:{value:-1},uLam:{value:LAM},uMax:{value:190},uOff:{value:new THREE.Vector2()}};
 const wave=new THREE.Mesh(new THREE.PlaneGeometry(640,640),new THREE.ShaderMaterial({uniforms:waveU,transparent:true,depthWrite:false,side:THREE.DoubleSide,stencilWrite:true,stencilRef:1,stencilFunc:THREE.NotEqualStencilFunc,
   vertexShader:"varying vec2 vP;void main(){vP=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
@@ -5872,7 +5872,7 @@ cv.addEventListener("pointerup",e=>{if(!down)return;const wasDrag=dragSpk,moved=
 const VIEWS={tilt:[[70,85,250],[0,-48,-8]],front:[[0,58,-345],[0,-62,0]],top:[[0,360,1],[0,-60,0]]};
 function view(k){const [p,t]=VIEWS[k];cam.position.set(...p);ctl.target.set(...t);ctl.update();document.querySelectorAll("[data-hv]").forEach(b=>b.classList.toggle("on",b.dataset.hv===k))}
 document.querySelectorAll("[data-hv]").forEach(b=>b.addEventListener("click",()=>view(b.dataset.hv)));
-/* 兩耳收到的聲音：波形曲線依數值上色（紅＝壓縮、藍＝稀疏），和學習單二一樣 */
+/* 兩耳收到的聲音：波形曲線依數值上色（紅＝壓縮、藍＝稀疏），和實驗二一樣 */
 const sc=$("hScope"),sg=sc.getContext("2d");let WIN=5;
 function earVal(t,dE){if(!running||t<t0)return null;const front=CV*(t-t0);if(front<dE)return null;if(tStop!==null&&t>=tStop&&CV*(t-tStop)>dE)return null;return Math.cos(2*Math.PI*(front-dE)/LAM)}
 function drawScope(t){const r=sc.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);if(sc.width!==Math.round(r.width*dpr)||sc.height!==Math.round(r.height*dpr)){sc.width=Math.round(r.width*dpr);sc.height=Math.round(r.height*dpr)}
@@ -6285,7 +6285,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   return out}
 /* WORDFIG END */
 
-/* ================= 學習單（三）：資料、表格、圖、匯出 ================= */
+/* ================= 實驗三：資料、表格、圖、匯出 ================= */
 const KEY="ws3-doa-v1";
 const POS=[["正前方（0°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
 const PRACT=[0.10,0.29,0.50];
@@ -6298,7 +6298,7 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
 setTimeout(()=>makeEquip($("eqPics3"),$("equipList3"),()=>S.eq,(L)=>{S.eq=L;S.equipHTML=$("equipList3").innerHTML;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
-window.__galModelOnly=true;   // 學習單三的「模型截圖」只收小模型路口的截圖
+window.__galModelOnly=true;   // 實驗三的「模型截圖」只收小模型路口的截圖
 /* 小模型路口：看到才載入；模型裡按 📷 的截圖，放進「模型截圖」 */
 (()=>{const f=$("modelFrame"),src=$("modelSrc");if(!f||!src)return;let done=false;
   const go=()=>{if(done)return;done=true;f.addEventListener("load",()=>{try{const st=f.contentDocument.createElement("style");st.textContent=".hud{display:none!important}";f.contentDocument.head.appendChild(st)}catch(e){}try{f.contentWindow.addEventListener("pp-snap",e=>dispatchEvent(new CustomEvent("pp-snap",{detail:Object.assign({},e.detail,{model:true})})))}catch(e){}});
@@ -7408,7 +7408,7 @@ svg text{font-family:var(--body)}
 <header>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　校內科學展覽（初審）</div>
   <h1>校內科學展覽作品說明（初審）</h1>
-  <p class="lead">照學校「附件 2」的格式，把三張學習單做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
+  <p class="lead">照學校「附件 2」的格式，把三個實驗做過的事整理成作品說明。寫完按最下面的按鈕，存成 Word 檔交給教務處。</p>
 </header>
 <section class="dates" aria-label="重要日期">
   <h3>📅 重要日期（115 學年校內科展）</h3>
@@ -7432,9 +7432,9 @@ svg text{font-family:var(--body)}
     <div class="frow"><div class="fh">研究目的<small>（對此研究想要知道什麼或可以得知什麼）</small></div><div class="fc"><textarea id="goal" rows="6" aria-label="研究目的"></textarea>
       <button type="button" class="imp" id="impTree" hidden>📥 帶入研究架構圖</button>
       <p class="note" style="margin:6px 0 0">🚦🚗 情境1、情境2 裡寫著「放在研究目的」的截圖，匯出 Word 時會自動放進這一格。</p><div class="pics" data-k="goalPics"></div><label class="addpic">＋ 加照片或圖<input type="file" accept="image/*" data-k="goalPics" multiple hidden></label></div></div>
-    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）整理好的三個實驗所需要的實驗器材</b>。</p><textarea id="tools" hidden aria-hidden="true"></textarea></div></div>
-    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗過程</b>：研究問題、器材、實驗步驟、模型截圖和實驗照片都會照學習單的樣子排好。</p></div></div>
-    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進學習單（一）～（三）的實驗結果</b>：表格、圖、分析和結論都會照學習單的樣子排好。</p><textarea id="result" hidden aria-hidden="true"></textarea></div></div>
+    <div class="frow"><div class="fh">使用器材<small>（此實驗所需的器材）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進實驗一～三整理好的三個實驗所需要的實驗器材</b>。</p><textarea id="tools" hidden aria-hidden="true"></textarea></div></div>
+    <div class="frow"><div class="fh">研究過程<small>（請寫出至少一整個實驗步驟及實驗紀錄描寫）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進實驗一～三的實驗過程</b>：研究問題、器材、實驗步驟、模型截圖和實驗照片都會照實驗紀錄的樣子排好。</p></div></div>
+    <div class="frow"><div class="fh">結果<small>（對實驗過程及紀錄列出你分析的結果或想法）</small></div><div class="fc"><p class="note" style="margin:0;background:var(--panel2,#eef6f1);padding:10px 12px;border-radius:8px">✨ 匯出 Word 時，這一格會<b>自動放進實驗一～三的實驗結果</b>：表格、圖、分析和結論都會照實驗紀錄的樣子排好。</p><textarea id="result" hidden aria-hidden="true"></textarea></div></div>
     <div class="frow"><div class="fh">參考資料及其他</div><div class="fc"><textarea id="refs" rows="5" aria-label="參考資料及其他"></textarea></div></div>
   </div>
 </section>
@@ -7489,7 +7489,7 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 ["motivePics","goalPics"].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[];showPics(k)});
 /* 每一格都可以「📷 從情境截圖選」：情境1、情境2、實驗模型按 📷 截下來的圖（含孩子寫的描述） */
 (()=>{const shots=()=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(e){return {}}};
-    const W=[["學習單（一）",J("ws1-occlusion-v2").gal],["學習單（二）",J("ws2-fourier-v1-img").gal],["學習單（三）",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,x])=>["模型截圖："+n,x]),...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
+    const W=[["實驗一",J("ws1-occlusion-v2").gal],["實驗二",J("ws2-fourier-v1-img").gal],["實驗三",J("ws3-doa-v1").gal]].flatMap(([n,g])=>g?[["模型截圖",g.m],...Object.entries(g.ms||{}).map(([n,x])=>["模型截圖："+n,x]),...(g.p||[]).map((x,i)=>["實驗照片 "+(i+1),x])].filter(([,x])=>x&&x.src).map(([t,x])=>({src:x.src,cap:x.cap||"",from:n+t})):[]);
     const SN={tab1:"情境1",tab2:"情境2"},SS=Object.entries(o.slots||{}).flatMap(([tab,m])=>Object.values(m||{}).filter(x=>x&&x.src).map(x=>({src:x.src,cap:x.cap||"",from:SN[tab]||tab})));
     return [...SS,...W,...["tab1","tab2","tab3"].flatMap(t=>Array.isArray(o[t])?o[t]:[])]};
   document.querySelectorAll('label.addpic').forEach(lab=>{const k=lab.querySelector("input").dataset.k;
@@ -7497,7 +7497,7 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
     const pan=document.createElement("div");pan.className="shotpick";pan.hidden=true;b.after(pan);
     b.addEventListener("click",()=>{if(!pan.hidden){pan.hidden=true;return}const L=shots();
       pan.innerHTML=L.length?`<p class="note" style="margin:0 0 6px">點一張，就放進這一格（可以選好幾張）：</p><div class="sp">${L.map((s,i)=>`<button type="button" data-i="${i}" title="${esc(s.cap||"")}"><img src="${s.src}" alt=""><span>${esc(s.from||"")}${s.cap?"｜"+esc(s.cap):""}</span></button>`).join("")}</div>`
-        :`<p class="note" style="margin:0">還沒有截圖或照片。到「🚦 情境1」「🚗 情境2」或三張學習單按畫面左下角的 📷（學習單裡也可以放實驗照片），就可以在這裡選。</p>`;
+        :`<p class="note" style="margin:0">還沒有截圖或照片。到「🚦 情境1」「🚗 情境2」或三個實驗按畫面左下角的 📷（實驗裡也可以放實驗照片），就可以在這裡選。</p>`;
       pan.querySelectorAll("[data-i]").forEach(x=>x.addEventListener("click",()=>{const s=L[+x.dataset.i];if(S[k].some(p=>p.src===s.src)){x.classList.add("on");return}
         S[k].push({src:s.src,cap:s.cap||""});save();showPics(k);x.classList.add("on")}));pan.hidden=false})})})();
 /* 研究目的：把「研究架構」那一頁的架構圖拍下來，放進研究目的的圖（只有在網站裡才拍得到） */
@@ -7516,7 +7516,7 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
     catch(e){console.warn("tree",e);b.textContent="拍不到架構圖，請再試一次"}
     finally{if(wasHidden){tab.hidden=true;tab.style.cssText=css}b.disabled=false;setTimeout(()=>b.textContent=old,2500)}})})();
 
-/* 從學習單（一）～（三）帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
+/* 從實驗一～三帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
 /* 研究過程最後面：「討論過程紀錄」分頁的每一次討論（日期、照片、討論內容） */
 async function talkBlocks(){const X=window.docx,{Paragraph,TextRun,ImageRun,AlignmentType}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&(o.src||o.cap));if(!L.length)return [];
@@ -7553,7 +7553,7 @@ window.__talkBlocks=talkBlocks;
       if(w.n==="三")c=[S.c1&&"兩隻耳朵（或兩支麥克風）靠"+S.c1+"知道聲音從哪一邊來。",S.c3a&&`麥克風越多，正確率越${S.c3a}，角度差越${S.c3b||"＿"}。`,S.c4,S.c5].filter(Boolean).join("\n");
       return `實驗${w.n}（${w.tag}）：${w.q}\n${c||"（還沒寫結論）"}`}).join("\n\n")}};
   document.querySelectorAll("[data-imp]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.imp,e=$(k),v=MAKE[k]();
-    if(e.value.trim()&&e.value.trim()!==v.trim()&&!confirm("這一格已經寫了東西。\n按「確定」：換成學習單的內容（原本寫的會被蓋掉）\n按「取消」：不改"))return;
+    if(e.value.trim()&&e.value.trim()!==v.trim()&&!confirm("這一格已經寫了東西。\n按「確定」：換成實驗的內容（原本寫的會被蓋掉）\n按「取消」：不改"))return;
     e.value=v;S[k]=v;save();e.dispatchEvent(new Event("input"))}));
 })();
 
@@ -7561,7 +7561,7 @@ window.__talkBlocks=talkBlocks;
 (()=>{const btn=$("export"),msg=$("expMsg");
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
-/* 使用器材：從三張學習單各自的器材清單（含器材照片）整理，分三個實驗 */
+/* 使用器材：從三個實驗各自的器材清單（含器材照片）整理，分三個實驗 */
 async function photoTable(X,L,total){   /* 器材照片排成兩欄的表格：上面一列照片、下面一列名字（跟手動排的一樣） */
   const {Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X;const half=Math.floor(total/2),W=Math.round(half/15*0.92);
   const B={style:BorderStyle.SINGLE,size:6,color:"444444"},BD={top:B,bottom:B,left:B,right:B};
@@ -7584,7 +7584,7 @@ async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(loca
     const ph=L.filter(x=>x.src).map(x=>({src:x.src,cap:x.name.trim()}));
     if(ph.length)out.push(await photoTable(X,ph,7300),new X.Paragraph({spacing:{after:80},children:[]}))}
   return out}
-/* 研究過程：直接把學習單（一）～（三）整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
+/* 研究過程：直接把實驗一～三整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
 let WC=null;
 async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
   const X=window.docx,toU8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d).slice();if(ArrayBuffer.isView(d))return new Uint8Array(d.buffer,d.byteOffset,d.byteLength).slice();return d};
@@ -7597,7 +7597,7 @@ async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document
       const b=await w.__wsBlocks(L);let q=qd;try{q=localStorage.getItem(qk)||qd}catch(e){}
       const hd=()=>new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:`【${tag}】${q}`,bold:true,size:26})]}),blk=b.slice(2),sp=blk.findIndex(x=>x&&x.__split);
       out.proc.push(hd(),...(sp<0?blk:blk.slice(0,sp)));out.res.push(hd(),...(sp<0?[]:blk.slice(sp+1)))}
-    catch(e){const m=()=>new X.Paragraph({children:[new X.TextRun({text:`（${q0} 沒有整理進來，請到那一張學習單按「匯出 Word」）`,color:"AA0000"})]});out.proc.push(m());out.res.push(m())}}
+    catch(e){const m=()=>new X.Paragraph({children:[new X.TextRun({text:`（${q0} 沒有整理進來，請到那一個實驗按「匯出 Word」）`,color:"AA0000"})]});out.proc.push(m());out.res.push(m())}}
   return out}
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
@@ -7628,8 +7628,8 @@ btn.addEventListener("click",async()=>{
       row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics([...(S.newsOff?[]:[{src:document.querySelector("#newsFig img").src,cap:"新聞畫面（模擬）：救護車被擋，塞在車陣中過不去"}]),...withScene(S.motivePics,"motive")])],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})]),...await window.__talkBlocks()],2400),
-      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三張學習單）",{color:"AA0000"})],2000),
+      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkBlocks()],2400),
+      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
       sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2：",{size:22}),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[2300,7600],layout:D.TableLayoutType.FIXED,rows})]}]});
@@ -7682,7 +7682,7 @@ document.querySelectorAll("button.tab").forEach(b=>b.addEventListener("click",()
 </script>
 <!-- TESTDATA START -->
 <script>
-/* TESTDATA：老師測試用。按一下填入「模擬資料＋模擬照片」，測試科展作品說明能不能把三張學習單、情境截圖、討論紀錄都合併進 Word。
+/* TESTDATA：老師測試用。按一下填入「模擬資料＋模擬照片」，測試科展作品說明能不能把三個實驗、情境截圖、討論紀錄都合併進 Word。
    測試模式時不會連雲端（不會蓋掉全隊真的資料）；按「清掉模擬資料」就把這台電腦原本的資料放回來，再重新連雲端。 */
 (()=>{const LS=localStorage,TEST="wwt-test",BK="wwt-test-backup";
 const isTest=()=>{try{return LS.getItem(TEST)==="1"}catch(e){return false}};
@@ -7705,7 +7705,7 @@ function prot(a,b){const w=600,h=340,c=document.createElement("canvas");c.width=
 const rid=()=>Math.random().toString(36).slice(2,9);
 function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.stringify(o));LS.setItem(k+"@_team#ts",String(T))};
   const eq=(L,h)=>L.map((name,i)=>({name,src:i<2?photo(name,h+i*25,640,480,"🧰"):""}));
-  /* 學習單（一） */
+  /* 實驗一 */
   const subj=(name,ra,pa,rb,pb)=>{const t1={a:ra.map((r,i)=>({r:String(r),p:String(pa[i])})),b:rb.map((r,i)=>({r:String(r),p:String(pb[i])}))};
     const d=(r,p)=>{let x=Math.abs(r-p);return x>180?360-x:x},A=ra.map((r,i)=>d(r,pa[i])),B=rb.map((r,i)=>d(r,pb[i])),av=L=>(L.reduce((s,x)=>s+x,0)/L.length).toFixed(1);
     return {name,a:av(A),b:av(B),t1,pl:{a:A,b:B},img:prot(A,B),cap:name+" 的圖 1-1（模擬）"}};
@@ -7713,8 +7713,8 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     t2:[subj("小明",[0,90,180,270,45],[5,80,170,285,50],[0,90,180,270,45],[20,60,140,300,80]),subj("小美",[30,120,210,300,0],[35,115,200,310,10],[30,120,210,300,0],[60,90,250,330,40]),subj("小華",[60,150,240,330,90],[55,160,250,320,95],[60,150,240,330,90],[95,120,200,290,130])],
     hyp:"戴上耳機以後，指的方向會差比較多。",q2:"在正後方的時候最容易指錯。",q3:"右邊的點離 0° 比較遠。",concl:"關上車窗（戴耳機）時，聽警笛判斷方向的誤差變大，所以駕駛需要別的幫忙。",
     eq:eq(["大型量角器（放在地上）","童軍繩 2 條","手機（播警笛）","分貝計 app","遮光眼罩","隔音耳機"],200),
-    gal:{m:{src:photo("學習單一 3D 模擬截圖",210,960,540,"🧑‍🦯"),cap:"3D 模擬：蒙眼聽聲音指方向"},p:[0,1,2].map(i=>({src:photo("學習單一 實驗照片 "+(i+1),20+i*40,960,720,"📸"),cap:["受試者蒙眼站在量角器圓心","播音員在 2 公尺外播警笛","記錄員讀角度"][i]}))}});
-  /* 學習單（二） */
+    gal:{m:{src:photo("實驗一 3D 模擬截圖",210,960,540,"🧑‍🦯"),cap:"3D 模擬：蒙眼聽聲音指方向"},p:[0,1,2].map(i=>({src:photo("實驗一 實驗照片 "+(i+1),20+i*40,960,720,"📸"),cap:["受試者蒙眼站在量角器圓心","播音員在 2 公尺外播警笛","記錄員讀角度"][i]}))}});
+  /* 實驗二 */
   const t23=[{id:rid(),v:"說「啊——」",reg:"規律",peak:"很明顯",hz:"220"},{id:rid(),v:"吹口哨",reg:"規律",peak:"很明顯",hz:"1500"},{id:rid(),v:"拍手",reg:"不規律",peak:"不明顯",hz:""}];
   const t24=[{id:rid(),s:"救護車",url:"https://www.youtube.com/（模擬）",hz:"750",lo:"650",hi:"1000",form:"高、低兩個音輪流"},{id:rid(),s:"消防車",url:"https://www.youtube.com/（模擬）",hz:"900",lo:"500",hi:"1300",form:"慢慢升高再降低"},{id:rid(),s:"警車",url:"https://www.youtube.com/（模擬）",hz:"1000",lo:"600",hi:"1500",form:"很快地升降"}];
   put("ws2-fourier-v1",{date:"2026-11-12",names:"小明、小美、小華",hyp:"警笛聲的頻率會一直變。",n1:"物體振動",n2:"空氣",n3:"振動的快慢（頻率）",n4:"振動的大小（振幅）",
@@ -7722,13 +7722,13 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     t25:[{c:"救護車",lr:"650～1000",lt:"高低音每 0.5 秒輪流一次"},{c:"消防車",lr:"500～1300",lt:"每 4 秒慢慢升降一次"},{c:"警車",lr:"600～1500",lt:"每 1 秒快速升降"}],
     cWhat:"三種警笛的頻率都在 500～1500 Hz，而且會一直變；電腦可以從頻率的變化分出是哪一種車。",
     hear:{rows:[{n:"大象 Elephant",lo:"16",hi:"12000"},{n:"狗 Dog",lo:"67",hi:"45000"},{n:"貓 Cat",lo:"45",hi:"64000"},{n:"老鼠 Mouse",lo:"1000",hi:"91000"},{n:"海豚 Dolphin",lo:"150",hi:"150000"},{n:"蝙蝠 Bat",lo:"2000",hi:"110000"}],src:"（模擬）網路資料"}});
-  const I2={eq:eq(["手機（Phyphox）","彩虹彈簧","喇叭","串珠"],120),gal:{m:{src:"",cap:""},p:[0,1,2].map(i=>({src:photo("學習單二 實驗照片 "+(i+1),160+i*30,960,720,"🔊"),cap:"用 Phyphox 錄警笛聲（模擬）"})),
+  const I2={eq:eq(["手機（Phyphox）","彩虹彈簧","喇叭","串珠"],120),gal:{m:{src:"",cap:""},p:[0,1,2].map(i=>({src:photo("實驗二 實驗照片 "+(i+1),160+i*30,960,720,"🔊"),cap:"用 Phyphox 錄警笛聲（模擬）"})),
     ms:{"喇叭推空氣":{src:photo("喇叭推空氣＋波形",230,960,600,"🔈"),cap:"喇叭前後振動，空氣一疏一密"},"彩虹彈簧：變出彈簧前":{src:photo("變出彈簧前",280,960,600,"〰️"),cap:"只有波形"},
       "彩虹彈簧：變出彈簧後（側面）":{src:photo("變出彈簧後（側面）",300,960,600,"🌈"),cap:"波形和彈簧一起轉"},"彩虹彈簧：正面看（圓）":{src:photo("正面看（圓）",320,960,600,"⭕"),cap:"正面看是一個圓"}}}};
   t23.forEach((r,i)=>{I2["t23w_"+r.id]=photo(r.v+" 的波形",60+i*30,960,480,"〰️");I2["t23s_"+r.id]=photo(r.v+" 的頻譜",90+i*30,960,480,"📊")});
   t24.forEach((r,i)=>{I2["t24w_"+r.id]=photo(r.s+" 的波形",i*40,960,480,"〰️");I2["t24s_"+r.id]=photo(r.s+" 的頻譜",20+i*40,960,480,"📊")});
   put("ws2-fourier-v1-img",I2);
-  /* 學習單（三） */
+  /* 實驗三 */
   const exp={};for(const n of [1,2,3,4])exp[n]=["北","北","東","東","南","南","西","西"].map((road,i)=>{const tr=({北:0,東:90,南:180,西:270}[road]+(i%2?8:-6)+360)%360;const err=[60,35,15,8][n-1];
     return n===1?{road,tr:String(tr),ra:"",nodir:true}:{road,tr:String(tr),ra:String((tr+(i%2?err:-err)+360)%360),nodir:false}});
   put("ws3-doa-v1",{date:"2026-11-14",names:"小明、小美、小華",p1:"指的方向變得比較不準。",p2:"兩隻耳朵聽到的時間不一樣。",p3:"4 支",p4:"四個方向都要聽得到。",
@@ -7737,7 +7737,7 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     setup:{road:{北:"0",東:"90",南:"180",西:"270"},mic:{1:"45",2:"135",3:"225",4:"315"},use:{1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"}},exp,
     c1:"靠聲音到兩隻耳朵（兩支麥克風）的時間差。",c2:"把多走的路畫在半圓上，用量角器量角度。",c3a:"高",c3b:"小",c4:"對，至少要 3 支，平均擺在四周。",c5:"智慧路口要裝 4 支麥克風的陣列，才能準確知道救護車從哪條路來。",
     eq:eq(["ReSpeaker 陣列式麥克風","筆電（頻率雷達）","手機（播警笛）","救護車玩具","紙箱房子","紙膠帶道路"],40),
-    gal:{m:{src:photo("小模型路口 3D 截圖",190,960,540,"🚦"),cap:"小模型路口的 3D 模型"},p:[0,1,2].map(i=>({src:photo("學習單三 實驗照片 "+(i+1),330+i*10,960,720,"🎤"),cap:["擺好小模型路口","手機放在救護車玩具後方播警笛","看頻率雷達指的方向"][i]}))},
+    gal:{m:{src:photo("小模型路口 3D 截圖",190,960,540,"🚦"),cap:"小模型路口的 3D 模型"},p:[0,1,2].map(i=>({src:photo("實驗三 實驗照片 "+(i+1),330+i*10,960,720,"🎤"),cap:["擺好小模型路口","手機放在救護車玩具後方播警笛","看頻率雷達指的方向"][i]}))},
     gal1:{m:{src:"",cap:""},p:[],ms:{"學習單三_兩隻耳朵":{src:photo("女孩聽音樂：右耳先聽到",100,960,540,"👧"),cap:"喇叭在 60°，右耳先聽到，左耳晚了 0.50 毫秒"}}},
     fig31:photo("圖 3-1 兩隻耳朵收到的聲音",210,960,300,"〰️"),
     gal2:{m:{src:"",cap:""},p:[],ms:{"學習單三_找角度：聲音從正前方來（0°）":{src:photo("聲音從正前方來（0°）",140,960,960,"⬆️"),cap:"時間差 0，多走的路 0"},
@@ -7755,7 +7755,7 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     motivePics:[{src:photo("研究動機：自己拍的照片",350,960,720,"🚑"),cap:"放學時看到救護車被車子擋住（模擬）"}],goalPics:[],procPics:[],resPics:[],toolsPics:[],
     refs:"1. 教育部（模擬）：聲音的傳播。\n2. 交通部（模擬）：緊急救護車輛警報器規格。"})}
 async function ready(){if(window.__BIG&&window.__BIG.ready)await window.__BIG.ready}
-async function enter(){if(!confirm("要填入模擬資料嗎？\n\n・這台電腦原本的學習單資料會先備份起來。\n・測試的時候不會連雲端，不會蓋掉全隊真的資料。\n・測完按「清掉模擬資料」就會放回原本的資料。"))return;
+async function enter(){if(!confirm("要填入模擬資料嗎？\n\n・這台電腦原本的實驗資料會先備份起來。\n・測試的時候不會連雲端，不會蓋掉全隊真的資料。\n・測完按「清掉模擬資料」就會放回原本的資料。"))return;
   await ready();const bk={};for(const k of keys())bk[k]=LS.getItem(k);LS.setItem(BK,JSON.stringify(bk));LS.setItem(TEST,"1");
   for(const k of keys())LS.removeItem(k);mock();setTimeout(()=>location.reload(),600)}
 async function leave(){if(!confirm("要清掉模擬資料，放回這台電腦原本的資料嗎？"))return;
