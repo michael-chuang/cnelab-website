@@ -85,6 +85,13 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
+/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
+  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
@@ -115,6 +122,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
       try{const L=(await HI.where("key","==",key).get()).docs.map(d=>+(d.data().ts||0));const t=L.length?Math.max(...L):0;lastSnap.set(key,t);return t}catch(e){return Date.now()}}
     const api={
       async save(key,data,ts){data=String(data??"");
+        if(window.__wwtRO())throw new Error("locked");   // 鎖起來了：不能存
         /* 存之前先留一份舊版本：上一次是別台電腦存的（換電腦了），先把雲端那一份留起來；同一台每 10 分鐘也留一份 */
         try{const pw=who.get(key);
           if(pw&&pw.dev&&pw.dev!==DEV&&meta.has(key)){const old=await api.load(key);if(old&&old.data)await snap(key,old.data,old.ts,pw.dev,pw.dn,"換電腦之前")}
@@ -131,10 +139,15 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
       async load(key){const m=await timeout(D.doc(key).get(),20000,"load "+key);if(!m.exists)return null;const {ts,n}=m.data();
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
+      /* 鎖起來／解鎖（只有老師的電腦可以） */
+      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+        await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
+      onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
       watch(cb){subs.add(cb);if(loaded){for(const [k,t] of meta)cb(k,t);cb(null)}return()=>subs.delete(cb)}};
+    const lockSubs=new Set(),setL=on=>{try{if((W.localStorage.getItem("wwt-lock")==="1")!==on)W.localStorage.setItem("wwt-lock",on?"1":"0")}catch(e){}lockSubs.forEach(f=>{try{f(on)}catch(e){lockSubs.delete(f)}})};
     const tell=(...a)=>subs.forEach(f=>{try{f(...a)}catch(e){subs.delete(f)}});   // 已經關掉的分頁會出錯，就把它拿掉
-    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.type==="removed")return;const k=c.doc.id,x=c.doc.data(),t=+(x.ts||0);meta.set(k,t);who.set(k,{dev:x.dev||"",dn:x.dn||""});ch.push([k,t])});
+    D.onSnapshot(s=>{const ch=[];s.docChanges().forEach(c=>{if(c.doc.id==="cfg-lock"){setL(c.type!=="removed"&&!!c.doc.data().lock);return}if(c.type==="removed")return;const k=c.doc.id,x=c.doc.data(),t=+(x.ts||0);meta.set(k,t);who.set(k,{dev:x.dev||"",dn:x.dn||""});ch.push([k,t])});
       const first=!loaded;loaded=true;ch.forEach(([k,t])=>tell(k,t));if(first)tell(null)},e=>console.warn("[firebase]",e));
     return api})(),15000,"connect");
   W.__FBP.catch(e=>console.warn("[firebase] 連不上，改用 Google 試算表：",e&&e.message||e));
@@ -158,7 +171,10 @@ const nk=k=>kid?k+"@"+kid:k;
 const used=new Set();
 P.getItem=function(k){if(this===LS&&isWS(k)){used.add(k);return oG.call(this,nk(k))}return oG.call(this,k)};
 let boot=true;setTimeout(()=>boot=false,4000);   // 頁面剛打開時自己寫的（預設值、整理舊資料）不算新的修改，才不會蓋掉雲端比較新的
-P.setItem=function(k,v){if(this===LS&&isWS(k)){oS.call(this,nk(k),v);
+const RO=()=>!!(window.__wwtRO&&window.__wwtRO());
+P.setItem=function(k,v){if(this===LS&&isWS(k)&&RO()){const old=oG.call(this,nk(k));oS.call(this,nk(k),v);   // 鎖起來了：只改這台電腦，時間記成 0，下次打開就換回雲端那一份
+    if(!boot&&old!==String(v))oS.call(this,nk(k)+"#ts","0");return}
+  if(this===LS&&isWS(k)){oS.call(this,nk(k),v);
     if(boot){if(oG.call(this,nk(k)+"#ts")===null)oS.call(this,nk(k)+"#ts","1");return}
     oS.call(this,nk(k)+"#ts",String(Date.now()));dirty.add(k);sched();return}return oS.call(this,k,v)};
 P.removeItem=function(k){return oR.call(this,this===LS&&isWS(k)?nk(k):k)};
@@ -169,6 +185,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
+const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -177,12 +194,12 @@ function onRemote(k,ts){if(!fb)return;
   if(ts>lt+1000){fb.load(k).then(r=>{if(!r||+(g(nk(k)+"#ts")||0)>=r.ts)return;s(nk(k),r.data);s(nk(k)+"#ts",String(r.ts));
       if(window.__wsRemote&&window.__wsRemote(k))return;reloadSoon()}).catch(e=>console.warn("[firebase] load",k,e))}
   else if(lt>ts+1000){dirty.add(k);sched()}}
-window.__FB.then(a=>{fb=a;const un=a.watch(onRemote);addEventListener("pagehide",un);show("☁ 已連上雲端（會即時同步）");if(dirty.size)push()})
+window.__FB.then(a=>{fb=a;const un=a.watch(onRemote);addEventListener("pagehide",un);show(RO()?LOCKMSG:"☁ 已連上雲端（會即時同步）");const ul=a.onLock(()=>roApply());addEventListener("pagehide",ul);if(dirty.size)push()})
   .catch(()=>{fbDead=true;pull();if(dirty.size)push()});
 try{if(!g("wwt-fb-mig1")){s("wwt-fb-mig1","1");setTimeout(pull,1500)}}catch(e){}   // 第一次：先把 Google 試算表裡比較新的拿下來，再交給 Firebase
 function sched(){clearTimeout(tm);tm=setTimeout(push,2500);show("有改動，等一下自動存檔…")}
 function kidsList(){try{return JSON.parse(g("wwt-kids")||"[]")}catch(e){return[]}}
-async function push(beacon){if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
+async function push(beacon){if(RO()){dirty.clear();show(LOCKMSG);return}if(!kid){show("先選你的名字，資料才會分開存，也才能存到雲端");return}
   if(!url()){dirty.clear();show(TESTM?"🧪 測試模式：只存在這台電腦":"已存在這台電腦（還沒設定雲端）");return}
   const keys=[...dirty];if(!keys.length)return;
   if(!fb&&!fbDead){clearTimeout(tm);tm=setTimeout(push,3000);return}   // 還在連 Firebase，等一下
@@ -229,6 +246,7 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
     ${L.length?L.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line,#eee)"><div style="flex:1"><b>${T(o.ts)}</b>${keys.length>1?`（${lab(o.k)}）`:""}<br><span style="font-size:12px;color:var(--muted,#666)">${o.dn||""}${o.why?"・"+o.why:""}・${sz(o.len||0)}</span></div><button type="button" data-i="${i}" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">拿回這一版</button></div>`).join(""):"<div>還沒有舊版本（存過幾次之後就會有）。</div>"}`;
   P.querySelector("[data-x]").addEventListener("click",()=>P.remove());
   P.querySelectorAll("[data-i]").forEach(b=>b.addEventListener("click",async()=>{const o=L[+b.dataset.i];
+    if(RO()){alert("老師鎖起來了，現在不能拿回舊版本。");return}
     if(!confirm(`要把「${lab(o.k)}」換回 ${T(o.ts)} 那一版嗎？\n（現在這一份會先留起來，之後還可以換回來）`))return;
     b.disabled=true;b.textContent="拿回中…";
     try{const cur=g(nk(o.k));if(cur)await fb.snap(o.k,cur,+(g(nk(o.k)+"#ts")||Date.now()),"拿回舊版之前");
@@ -236,6 +254,30 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       const now=Date.now();s(nk(o.k),r.data);s(nk(o.k)+"#ts",String(now));await fb.save(o.k,r.data,now);
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
+/* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
+async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
+    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+  if(!fb){alert("還沒連上雲端，等一下再試。");return}
+  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
+  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  document.documentElement.classList.toggle("wwt-ro",ro);
+  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+{const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
+  const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
+  const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
+  ["beforeinput","paste","drop","cut"].forEach(t=>document.addEventListener(t,e=>{if(RO()&&(isEd(e.target)||t==="drop"))no(e)},true));
+  document.addEventListener("pointerdown",e=>{if(RO()&&e.target.closest&&e.target.closest("[data-drag]"))no(e)},true);
+  document.addEventListener("click",e=>{if(!RO()||!e.target.closest)return;const t=e.target.closest("button,label,input,[role=button]");if(!t||t.closest("#kidBar"))return;
+    const f=t.tagName==="LABEL"&&t.htmlFor?document.getElementById(t.htmlFor):null;
+    if((t.tagName==="INPUT"&&/^(file|checkbox|radio)$/.test(t.type))||(f&&f.type==="file")||(t.tagName==="LABEL"&&t.querySelector("input[type=file]"))||(t.tagName!=="INPUT"&&MOD.test(t.textContent)))no(e)},true);
+  const css=document.createElement("style");css.textContent="html.wwt-ro [data-drag],html.wwt-ro .addeq,html.wwt-ro [data-del],html.wwt-ro [data-rm],html.wwt-ro [data-xdel],html.wwt-ro [data-pladd],html.wwt-ro [data-snapmore]{display:none!important}html.wwt-ro textarea,html.wwt-ro input:not([type=range]){caret-color:transparent}";
+  (document.head||document.documentElement).appendChild(css)}
 /* 名字列 */
 function show(t){st=t;const e=document.getElementById("ksStat");if(e)e.textContent=t}
 function setKid(n){const old=kid;n=n.trim();if(!n)return;const L=kidsList();if(!L.includes(n)){L.push(n);s("wwt-kids",JSON.stringify(L))}
@@ -246,13 +288,15 @@ function bar(){const W=document.createElement("div");W.id="kidBar";
   W.style.cssText="position:"+(top?"fixed":"absolute")+";top:10px;right:12px;z-index:60;font-size:15px;text-align:right";
   const L=kidsList(),esc=n=>n.replace(/[<&]/g,"");
   const pill="font:inherit;font-size:15px;padding:6px 14px;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);";
-  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
+  if(TEAM){if(!top&&getComputedStyle(document.body).position==="static")document.body.style.position="relative";W.innerHTML=`<div style="${pill}display:flex;align-items:center;gap:10px;background:var(--paper,#fff);color:var(--ink,#000);border:2px solid var(--line,#d3dbe0);cursor:default"><span>👥 全隊一份</span><span id="ksStat" style="font-size:13px;color:var(--muted,#666)"></span><button type="button" id="ksSave" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--accent,#1f7a5a);background:var(--paper,#fff);color:var(--accent,#1f7a5a);cursor:pointer">💾 立即存檔</button><button type="button" id="ksLock" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer"></button><button type="button" id="ksHist" style="font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--ink,#000);cursor:pointer">🕘 舊版本</button></div>`;
     document.body.appendChild(W);
     W.querySelector("#ksHist").addEventListener("click",histPanel);
+    W.querySelector("#ksLock").addEventListener("click",lockClick);
     /* 手機上這一列會蓋到標題：在最上面留一點空間給它 */
     {const sp=document.createElement("div");sp.setAttribute("aria-hidden","true");document.body.insertBefore(sp,document.body.firstChild);
       const fit=()=>{sp.style.height=innerWidth<760?(W.offsetHeight+8)+"px":"0"};fit();addEventListener("resize",fit);setTimeout(fit,500)}
     W.querySelector("#ksSave").addEventListener("click",()=>{for(const k of Object.keys(LS))if(isWS(k)&&k.endsWith("@"+kid))dirty.add(k.slice(0,-kid.length-1));push().then(()=>{if(fbDead)pull()})});
+    roApply();if(RO())st=LOCKMSG;
     show(st||(TESTM?"🧪 測試模式：不會上傳":url()?"會自動存到雲端":"已存在這台電腦"));return}
   W.innerHTML=`<button type="button" id="ksBtn" aria-expanded="false" aria-label="選名字與存檔" style="${pill}background:var(--paper,#fff);color:var(--ink,#000);border:2px solid ${kid?"var(--line,#d3dbe0)":"#e3a008"}">☰ 👤 ${kid?esc(kid):"選名字"}</button>
   <div id="ksPanel" hidden style="margin-top:6px;padding:12px 14px;border-radius:12px;background:var(--paper,#fff);border:1px solid var(--line,#d3dbe0);box-shadow:0 6px 20px rgba(0,0,0,.15);text-align:left;width:250px;display:grid;gap:10px">
