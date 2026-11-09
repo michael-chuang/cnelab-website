@@ -5559,6 +5559,7 @@ td.no{color:var(--b);font-weight:700}
   <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
   <p class="cap" id="t34cap">表 3-3　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
   <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
+  <div class="bar" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="radarSimBtn" class="addeq">🪄 用表 3-3 的數據畫雷達圖（1～4 支都畫）</button><span id="radarSimMsg" class="muted" style="font-size:13px"></span></div>
   <div id="radarShots" class="card" style="margin-top:10px"></div>
   <p class="cap">表 3-4　四種麥克風數量的比較（自動算）</p>
   <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
@@ -6792,6 +6793,39 @@ function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
     tr.querySelectorAll("input,select").forEach(e=>e.addEventListener(e.tagName==="SELECT"||e.type==="checkbox"?"change":"input",()=>{r[e.dataset.k]=e.type==="checkbox"?e.checked:e.value;
       if(e.type==="checkbox"){const ra=tr.querySelector('[data-k="ra"]');ra.disabled=e.checked}save();fillRow(tr,r);calcT35()}));
     fillRow(tr,r)});calcT35()}
+/* 🪄 依表 3-3 的數據模擬「頻率雷達」的畫面：每條路取第一次有數據的那一筆，畫成雷達圖放進「聲音雷達的截圖」 */
+function simRadar(n,ra,nodir){const W=800,c=document.createElement("canvas");c.width=c.height=W;const g=c.getContext("2d"),cx=W/2,cy=W/2,R=W*0.40;
+  const P=(az,r)=>[cx+Math.sin(az*Math.PI/180)*r*R,cy-Math.cos(az*Math.PI/180)*r*R],MICS=[45,135,225,315],USE={1:[3],2:[3,0],3:[3,0,1],4:[0,1,2,3]}[n];
+  g.fillStyle="#121a21";g.fillRect(0,0,W,W);g.lineWidth=1;
+  for(const r of [1/3,2/3]){g.strokeStyle="#22303b";g.beginPath();g.arc(cx,cy,r*R,0,7);g.stroke()}
+  g.strokeStyle="#33434f";g.lineWidth=1.6;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+  for(let d=0;d<360;d+=10){const [x0,y0]=P(d,d%30?0.96:0.92),[x1,y1]=P(d,1);g.lineWidth=d%30?1:1.6;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke()}
+  g.font="600 24px ui-monospace,Menlo,monospace";g.textAlign="center";g.textBaseline="middle";
+  for(let d=0;d<360;d+=30){const [x0,y0]=P(d,0.1),[x1,y1]=P(d,0.92);g.strokeStyle="#22303b";g.lineWidth=0.7;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();
+    const [tx,ty]=P(d,1.13);g.fillStyle=d%90?"#b8c4cd":"#e6edf2";g.fillText(d+"°",tx,ty)}
+  /* 方向的「雲」：麥克風越多越尖；2 支會前後分不清（多一個鏡像），1 支沒有方向（一圈） */
+  const col="#34d399",lobe=(fn)=>{g.beginPath();for(let a=0;a<=360;a+=2){const [x,y]=P(a,fn(a));a?g.lineTo(x,y):g.moveTo(x,y)}g.closePath();g.fillStyle="rgba(52,211,153,.14)";g.fill();g.strokeStyle="rgba(52,211,153,.55)";g.lineWidth=1.2;g.stroke()};
+  const cs=(a,b,p)=>Math.pow(Math.max(0,Math.cos((a-b)*Math.PI/360)),p);
+  if(nodir||ra===null)lobe(a=>0.62+0.05*Math.sin(a*Math.PI/45));
+  else{const p={1:2,2:6,3:18,4:40}[n];lobe(n===2?a=>0.22+0.6*Math.min(1,cs(a,ra,p)+0.85*cs(a,(540-ra)%360,p)):a=>0.2+0.62*cs(a,ra,p))}
+  g.fillStyle="#17212a";g.strokeStyle="#33434f";g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,0.1*R,0,7);g.fill();g.stroke();
+  MICS.forEach((d,m)=>{const [x,y]=P(d,0.2),on=USE.includes(m);g.fillStyle=on?"#2f7cff":"#17212a";g.strokeStyle=on?"#2f7cff":"#33434f";g.lineWidth=2;g.beginPath();g.arc(x,y,15,0,7);g.fill();g.stroke();
+    g.fillStyle=on?"#fff":"#8a97a1";g.font="bold 17px ui-monospace,Menlo,monospace";g.fillText(String(m+1),x,y+1);
+    if(!on){g.strokeStyle="#8a97a1";g.lineWidth=1.5;g.beginPath();g.moveTo(x-9,y-9);g.lineTo(x+9,y+9);g.stroke()}});
+  if(!(nodir||ra===null)){const [x0,y0]=P(ra,0.12),[x1,y1]=P(ra,0.8);g.strokeStyle="rgba(52,211,153,.35)";g.lineWidth=9;g.lineCap="round";g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();
+    g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();g.fillStyle=col;g.strokeStyle="#0b1015";g.lineWidth=2;g.beginPath();g.arc(x1,y1,9,0,7);g.fill();g.stroke()}
+  return c.toDataURL("image/png")}
+function radarSimAll(){let made=0;const msg=$("radarSimMsg");
+  for(const n of [1,2,3,4]){const L=[];
+    for(const rd of ROADN){const r=(S.exp[n]||[]).find(r=>r.road===rd&&(r.nodir||num(r.ra)!==null));if(!r)continue;
+      const tr=num(r.tr)??num((S.setup&&S.setup.road||{})[rd]),ra=r.nodir?null:num(r.ra);
+      L.push({src:simRadar(n,ra,r.nodir),auto:1,t:`用 ${n} 支麥克風：救護車在${RL(rd)}`,cap:(r.nodir||ra===null?"雷達沒有方向":`雷達指 ${Math.round(ra)}°`)+(tr!==null?`（真實 ${Math.round(tr)}°）`:"")+"。依表 3-3 的數據畫的模擬圖"})}
+    if(!L.length)continue;made+=L.length;
+    const keep=(S.radar[n]||[]).filter(o=>o&&!o.auto&&(o.src||o.cap||o.t));S.radar[n]=[...L,...keep]}   // 之前自動畫的換新；自己放的照片留著
+  if(!made){msg.textContent="表 3-3 還沒有雷達角度，先填數據再按。";return}
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){msg.textContent="存不下來（空間不夠）";return}
+  buildT34();msg.textContent=`✓ 畫好了 ${made} 張（每條路取第一次的數據）`}
+$("radarSimBtn")?.addEventListener("click",radarSimAll);
 function fillRow(tr,r){const c=rowCalc(r);tr.querySelector('[data-o="err"]').textContent=c.err===null?"":Math.round(c.err);tr.querySelector('[data-o="rr"]').textContent=c.rr?(c.rr==="沒有方向"?c.rr:RL(c.rr)):"";
   const o=tr.querySelector('[data-o="ok"]');o.textContent=c.ok===null?"":c.ok?"✓":"✗";o.className=c.ok===null?"":c.ok?"ok":"no"}
 document.querySelectorAll("#nTabs button").forEach(b=>b.addEventListener("click",()=>{S.tab=+b.dataset.n;save();buildT34()}));
