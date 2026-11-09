@@ -200,23 +200,17 @@ a.tablink:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .ttl-edit:empty::before{content:attr(data-ph);color:var(--muted)}
 </style>
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -262,7 +256,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -2189,23 +2183,17 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -2251,7 +2239,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -2296,7 +2284,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
+const LOCKMSG="🔒 已鎖起來：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -2366,19 +2354,18 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
-async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
-  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
-    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
-  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
-function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
+  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
-  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
-addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
 {const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
   const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
   const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
@@ -3425,23 +3412,17 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -3487,7 +3468,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -3532,7 +3513,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
+const LOCKMSG="🔒 已鎖起來：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -3602,19 +3583,18 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
-async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
-  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
-    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
-  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
-function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
+  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
-  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
-addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
 {const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
   const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
   const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
@@ -5047,23 +5027,17 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <!-- BIGSTORE END -->
 <!-- KIDSYNC START -->
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -5109,7 +5083,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -5154,7 +5128,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
+const LOCKMSG="🔒 已鎖起來：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -5224,19 +5198,18 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
-async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
-  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
-    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
-  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
-function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
+  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
-  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
-addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
 {const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
   const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
   const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
@@ -6782,7 +6755,7 @@ function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
   document.querySelectorAll("#nTabs button").forEach(b=>{const on=+b.dataset.n===n;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   $("t34cap").textContent=`表 3-3　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
   /* 聲音雷達的截圖：每種麥克風數量至少 4 張（可以再加） */
-  S.radar=S.radar||{};if(!Array.isArray(S.radar[n]))S.radar[n]=[...Array(4)].map(()=>({src:"",cap:""}));
+  S.radar=S.radar||{};if(!Array.isArray(S.radar[n]))S.radar[n]=[...Array(2)].map(()=>({src:"",cap:""}));{const R=S.radar[n];while(R.length>2&&!R[R.length-1].src&&!R[R.length-1].cap&&!R[R.length-1].t)R.pop()}   // 預設 2 格（空的多出來就收掉）
   makePhotoList($("radarShots"),()=>S.radar[n],L=>{S.radar[n]=L;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}},{label:"雷達截圖",title:`📡 聲音雷達的截圖（用 ${n} 支麥克風）`,max:12});
   S.exp[n].forEach((r,i)=>{const tr=tb.insertRow();
     tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>[x,RL(x)]),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" placeholder="${esc(S.setup.road[r.road]??"")}" aria-label="真實角度"></td>
@@ -6965,23 +6938,17 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <script>window.KS_TEAM=1<\/script>
 <!-- KIDSYNC START -->
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -7027,7 +6994,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -7072,7 +7039,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
+const LOCKMSG="🔒 已鎖起來：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -7142,19 +7109,18 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
-async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
-  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
-    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
-  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
-function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
+  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
-  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
-addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
 {const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
   const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
   const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
@@ -7536,23 +7502,17 @@ P.removeItem=function(k){if(this!==LS)return oR.call(this,k);k=String(k);
 <script>window.KS_TEAM=1<\/script>
 <!-- KIDSYNC START -->
 <script>
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
-/* 鎖定（唯讀）：老師按「🔒 鎖起來」後，雲端記一個 cfg-lock；其他電腦只能看，不能存到雲端。輸入老師密碼的電腦（wwt-teacher）照常可以改。 */
-(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
-  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
-  window.__wwtLocked=()=>g("wwt-lock")==="1";window.__wwtTeacher=()=>g("wwt-teacher")==="ok1";
-  window.__wwtRO=()=>window.__wwtLocked()&&!window.__wwtTeacher();
-  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
-    if(h!=="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2")return false;W.localStorage.setItem("wwt-teacher","ok1");return true}catch(e){return false}}})();
 /* FBSYNC：全隊資料存在 Firebase（Firestore）。整個網站只連一次（放在最上層的視窗），每個學習單分頁共用。
    資料：teams/ritz/docs/{鍵} 放時間 ts 和分成幾段 n；teams/ritz/chunks/{鍵}~{i} 放內容（照片很大，切成很多段）。
    連不上 Firebase 時回傳失敗，呼叫的地方會改用原本的 Google 試算表。 */
+/* 鎖定（唯讀）：輸入老師密碼按「鎖起來」後，雲端記一個 cfg-lock；所有電腦都只能看，不能存到雲端。要改：輸入密碼解鎖，改完再鎖。 */
+(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
+  const g=k=>{try{return W.localStorage.getItem(k)}catch(e){return null}};
+  window.__wwtLocked=()=>g("wwt-lock")==="1";
+  window.__wwtRO=()=>window.__wwtLocked();   // 鎖起來：每一台電腦（包括老師的）都只能看；要改就先解鎖
+  window.__wwtPin=async pin=>{try{const h=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wwt:"+pin)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    return h==="5e318495c7d40f6ef9b1dc830105aca2f6339a6dfe49874d99e34e0e6b3f8dd2"}catch(e){return false}};
+  try{W.localStorage.removeItem("wwt-teacher")}catch(e){}})();
 window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.top.location.origin===location.origin)W=window.top}catch(e){}
   if(W.__FBP)return W.__FBP;
   const V="10.14.1",B="https://cdn.jsdelivr.net/npm/firebase@"+V+"/";
@@ -7598,7 +7558,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on){if(!window.__wwtTeacher())throw new Error("not teacher");
+      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -7643,7 +7603,7 @@ const gasQ=new Set();let gasT=null;
 function gasLater(k){gasQ.add(k);clearTimeout(gasT);gasT=setTimeout(()=>gasFlush(false),60000)}
 function gasFlush(beacon){if(!url())return;for(const k of [...gasQ]){const body=JSON.stringify({token:TOKEN,op:"save",kid,key:k,ts:+(g(nk(k)+"#ts")||Date.now()),data:g(nk(k))||""});gasQ.delete(k);
   try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(url(),new Blob([body],{type:"text/plain"}));else fetch(url(),{method:"POST",body}).catch(()=>{})}catch(e){}}}
-const LOCKMSG="🔒 老師鎖起來了：只能看（可以輸出 Word）";
+const LOCKMSG="🔒 已鎖起來：只能看（可以輸出 Word）";
 function onRemote(k,ts){if(!fb)return;
   if(k===null){for(const key of Object.keys(LS))if(isWS(key)&&key.endsWith("@"+kid)){const b=key.slice(0,-kid.length-1);if(used.has(b)&&fb.ts(b)===undefined)dirty.add(b)}   // 雲端還沒有的，傳上去
     if(dirty.size)sched();return}
@@ -7713,19 +7673,18 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
       show("已拿回舊版本");setTimeout(()=>location.reload(),300)}
     catch(e){b.disabled=false;b.textContent="拿回這一版";alert("沒有成功，等一下再試一次。")}}))}
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
-async function lockClick(){const T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
-  if(!T){const p=prompt(L?"現在是「只能看」。老師要修改，請輸入老師密碼：":"老師密碼（輸入後這台電腦可以鎖起來／解鎖）：");if(!p)return;
-    if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-    alert("這台電腦已經是老師的電腦了，可以修改，也可以鎖起來／解鎖。");roApply();if(dirty.size)push();return}
+async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  if(!confirm(L?"要解鎖嗎？解鎖後，小朋友的電腦又可以修改、存到雲端。":"要鎖起來嗎？\n鎖起來後，其他電腦只能看、不能改（改了也不會存）；這台老師的電腦照常可以改。"))return;
-  try{await fb.setLock(!L);roApply();alert(L?"已解鎖。":"已鎖起來。")}catch(e){alert("沒有成功，等一下再試一次。")}}
-function roApply(){const ro=RO(),T=window.__wwtTeacher&&window.__wwtTeacher(),L=window.__wwtLocked&&window.__wwtLocked();
+  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
+  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
+  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=T?(L?"🔓 解鎖":"🔒 鎖起來"):(L?"🔒 只能看":"🔑");b.title=T?(L?"老師：解鎖，讓大家可以改":"老師：鎖起來，其他電腦只能看"):"老師登入";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
-  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show(T&&L?"🔒 已鎖起來（老師的電腦可以改）":"會自動存到雲端")}
-addEventListener("storage",e=>{if(e.key==="wwt-lock"||e.key==="wwt-teacher")roApply()});
+  if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
+addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
 {const isEd=t=>t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(range|button|submit|checkbox|radio|file|color)$/.test(t.type)));
   const MOD=/刪|清|新增|保存|存檔|填入|＋|✕|📷|截|換一張|拍照|上傳|移除|加入|重來|重設|拿回/;
   const no=e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();show(LOCKMSG)};
