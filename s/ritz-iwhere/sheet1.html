@@ -777,7 +777,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}

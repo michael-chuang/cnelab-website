@@ -2893,7 +2893,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
@@ -4497,7 +4504,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
@@ -6546,7 +6560,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
@@ -7397,7 +7418,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
@@ -8146,7 +8174,14 @@ async function photoTable(X,L,total){   /* 兩張一列的照片表格：每格 
   const img=async o=>{const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});
     let WW=W,H=Math.round(W*h/w);if(H>Math.round(W*1.2)){H=Math.round(W*1.2);WW=Math.round(H*w/h)}return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})};
   const cell=ch=>new TableCell({width:{size:half,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
-  const rows=[];for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
+  const rows=[];
+  /* 科展網站：最重要，自己佔一整列（照片寬 15 公分） */
+  const isSite=o=>o&&/科展網站|cnelab\.net/.test(o.cap||"");L=L.slice();const wi=L.findIndex(isSite);
+  if(wi>=0){const o=L.splice(wi,1)[0],span=ch=>new TableCell({columnSpan:2,width:{size:half*2,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:85,right:85},children:ch});
+    if(o.src){const [w,h]=await new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([4,3]);i.src=o.src});let WW=567,H=Math.round(567*h/w);if(H>378){H=378;WW=Math.round(H*w/h)}
+      rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(o.src)).arrayBuffer()),transformation:{width:WW,height:H}})]})])]}))}
+    rows.push(new TableRow({cantSplit:true,children:[span([new Paragraph({children:[new TextRun({text:o.cap,size:20,color:"5B6872"})]})])]}))}
+  for(let i=0;i<L.length;i+=2){const two=[L[i],L[i+1]];
     if(two.some(o=>o&&o.src))rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async o=>cell([o&&o.src?await img(o):new Paragraph("")])))}));   // 兩格都沒照片就不留空白列
     rows.push(new TableRow({cantSplit:true,children:two.map(o=>cell([new Paragraph({children:[new TextRun({text:o?o.cap:"",size:20,color:"5B6872"})]})]))}))}
   return new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:X.TableLayoutType&&X.TableLayoutType.FIXED,rows})}
@@ -8288,7 +8323,7 @@ function prot(a,b){const w=600,h=340,c=document.createElement("canvas");c.width=
   a.forEach(d=>dot(d,"#3557b7"));b.forEach(d=>dot(d,"#c62d2d"));g.fillStyle="#10202c";g.font="bold 18px sans-serif";g.fillText("🧪 模擬：藍＝未遮蔽、紅＝戴耳機",20,26);return c.toDataURL("image/png")}
 const rid=()=>Math.random().toString(36).slice(2,9);
 function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.stringify(o));LS.setItem(k+"@_team#ts",String(T))};
-  const eq=(L,h)=>L.map((name,i)=>({name,src:i<2?photo(name,h+i*25,640,480,"🧰"):""}));
+  const eq=(L,h)=>L.map((name,i)=>({name,src:i<3?photo(name,h+i*25,640,480,"🧰"):""}));
   /* 實驗一 */
   const subj=(name,ra,pa,rb,pb)=>{const t1={a:ra.map((r,i)=>({r:String(r),p:String(pa[i])})),b:rb.map((r,i)=>({r:String(r),p:String(pb[i])}))};
     const d=(r,p)=>{let x=Math.abs(r-p);return x>180?360-x:x},A=ra.map((r,i)=>d(r,pa[i])),B=rb.map((r,i)=>d(r,pb[i])),av=L=>(L.reduce((s,x)=>s+x,0)/L.length).toFixed(1);
@@ -8296,7 +8331,7 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
   put("ws1-occlusion-v2",{date:"2026-11-10",rec:"小華",ann2:"小美",who:"",t1:{a:[...Array(5)].map(()=>({r:"",p:""})),b:[...Array(5)].map(()=>({r:"",p:""}))},pl:null,
     t2:[subj("小明",[0,90,180,270,45],[5,80,170,285,50],[0,90,180,270,45],[20,60,140,300,80]),subj("小美",[30,120,210,300,0],[35,115,200,310,10],[30,120,210,300,0],[60,90,250,330,40]),subj("小華",[60,150,240,330,90],[55,160,250,320,95],[60,150,240,330,90],[95,120,200,290,130])],
     hyp:"戴上耳機以後，指的方向會差比較多。",q2:"在正後方的時候最容易指錯。",q3:"右邊的點離 0° 比較遠。",concl:"關上車窗（戴耳機）時，聽警笛判斷方向的誤差變大，所以駕駛需要別的幫忙。",
-    eq:eq(["大型量角器（放在地上）","童軍繩 2 條","手機（播警笛）","分貝計 app","遮光眼罩","隔音耳機"],200),
+    eq:eq(["科展網站 (https://cnelab.net/s/ritz-iwhere)","大型量角器（放在地上）","童軍繩 2 條","手機（播警笛）","分貝計 app","遮光眼罩","隔音耳機"],200),
     gal:{m:{src:photo("實驗一 3D 模擬截圖",210,960,540,"🧑‍🦯"),cap:"3D 模擬：蒙眼聽聲音指方向"},p:[0,1,2].map(i=>({src:photo("實驗一 實驗照片 "+(i+1),20+i*40,960,720,"📸"),cap:["受試者蒙眼站在量角器圓心","播音員在 2 公尺外播警笛","記錄員讀角度"][i]}))}});
   /* 實驗二 */
   const t23=[{id:rid(),v:"說「啊——」",reg:"規律",peak:"很明顯",hz:"220"},{id:rid(),v:"吹口哨",reg:"規律",peak:"很明顯",hz:"1500"},{id:rid(),v:"拍手",reg:"不規律",peak:"不明顯",hz:""}];
@@ -8306,7 +8341,7 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     t25:[{c:"救護車",lr:"650～1000",lt:"高低音每 0.5 秒輪流一次"},{c:"消防車",lr:"500～1300",lt:"每 4 秒慢慢升降一次"},{c:"警車",lr:"600～1500",lt:"每 1 秒快速升降"}],
     cWhat:"三種警笛的頻率都在 500～1500 Hz，而且會一直變；電腦可以從頻率的變化分出是哪一種車。",
     hear:{rows:[{n:"大象 Elephant",lo:"16",hi:"12000"},{n:"狗 Dog",lo:"67",hi:"45000"},{n:"貓 Cat",lo:"45",hi:"64000"},{n:"老鼠 Mouse",lo:"1000",hi:"91000"},{n:"海豚 Dolphin",lo:"150",hi:"150000"},{n:"蝙蝠 Bat",lo:"2000",hi:"110000"}],src:"（模擬）網路資料"}});
-  const I2={eq:eq(["手機（Phyphox）","彩虹彈簧","喇叭","串珠"],120),gal:{m:{src:"",cap:""},p:[0,1,2].map(i=>({src:photo("實驗二 實驗照片 "+(i+1),160+i*30,960,720,"🔊"),cap:"用 Phyphox 錄警笛聲（模擬）"})),
+  const I2={eq:eq(["科展網站 (https://cnelab.net/s/ritz-iwhere)","手機（Phyphox）","彩虹彈簧","喇叭","串珠"],120),gal:{m:{src:"",cap:""},p:[0,1,2].map(i=>({src:photo("實驗二 實驗照片 "+(i+1),160+i*30,960,720,"🔊"),cap:"用 Phyphox 錄警笛聲（模擬）"})),
     ms:{"喇叭推空氣":{src:photo("喇叭推空氣＋波形",230,960,600,"🔈"),cap:"喇叭前後振動，空氣一疏一密"},"彩虹彈簧：變出彈簧前":{src:photo("變出彈簧前",280,960,600,"〰️"),cap:"只有波形"},
       "彩虹彈簧：變出彈簧後（側面）":{src:photo("變出彈簧後（側面）",300,960,600,"🌈"),cap:"波形和彈簧一起轉"},"彩虹彈簧：正面看（圓）":{src:photo("正面看（圓）",320,960,600,"⭕"),cap:"正面看是一個圓"}}}};
   t23.forEach((r,i)=>{I2["t23w_"+r.id]=photo(r.v+" 的波形",60+i*30,960,480,"〰️");I2["t23s_"+r.id]=photo(r.v+" 的頻譜",90+i*30,960,480,"📊")});
@@ -8320,7 +8355,7 @@ function mock(){const T=Date.now(),put=(k,o)=>{LS.setItem(k+"@_team",JSON.string
     t32:[{ms:0.10,cm:"3.4",deg:"10"},{ms:0.29,cm:"9.9",deg:"30"},{ms:0.50,cm:"17",deg:"58"}],
     setup:{road:{北:"0",東:"90",南:"180",西:"270"},mic:{1:"45",2:"135",3:"225",4:"315"},use:{1:"只留 1 號",2:"1、3 號（對角）",3:"1、2、3 號",4:"1、2、3、4 號"}},exp,
     c1:"靠聲音到兩隻耳朵（兩支麥克風）的時間差。",c2:"把多走的路畫在半圓上，用量角器量角度。",c3a:"高",c3b:"小",c4:"對，至少要 3 支，平均擺在四周。",c5:"智慧路口要裝 4 支麥克風的陣列，才能準確知道救護車從哪條路來。",
-    eq:eq(["ReSpeaker 陣列式麥克風","筆電（頻率雷達）","手機（播警笛）","救護車玩具","紙箱房子","紙膠帶道路"],40),
+    eq:eq(["科展網站 (https://cnelab.net/s/ritz-iwhere)","ReSpeaker 陣列式麥克風","筆電（頻率雷達）","手機（播警笛）","救護車玩具","紙箱房子","紙膠帶道路"],40),
     gal:{m:{src:photo("小模型路口 3D 截圖",190,960,540,"🚦"),cap:"小模型路口的 3D 模型"},p:[0,1,2].map(i=>({src:photo("實驗三 實驗照片 "+(i+1),330+i*10,960,720,"🎤"),cap:["擺好小模型路口","手機放在救護車玩具後方播警笛","看頻率雷達指的方向"][i]}))},
     gal1:{m:{src:"",cap:""},p:[],ms:{"學習單三_兩隻耳朵":{src:photo("女孩聽音樂：右耳先聽到",100,960,540,"👧"),cap:"喇叭在 60°，右耳先聽到，左耳晚了 0.50 毫秒"}}},
     fig31:photo("圖 3-1 兩隻耳朵收到的聲音",210,960,300,"〰️"),
