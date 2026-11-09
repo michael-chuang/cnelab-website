@@ -5356,6 +5356,7 @@ td.no{color:var(--b);font-weight:700}
   <div class="row" role="tablist" aria-label="麥克風數量" id="nTabs"><button data-n="1">1 支</button><button data-n="2">2 支</button><button data-n="3">3 支</button><button data-n="4">4 支</button></div>
   <p class="cap" id="t34cap">表 3-3　用 1 支麥克風的結果（角度差、雷達指的路、對不對會自己算）</p>
   <div class="tbl"><table id="t34"><thead><tr><th>第幾次</th><th>救護車在哪條路</th><th>真實角度（度）</th><th>雷達角度（度）</th><th>角度差（度）</th><th>雷達指的路</th><th>選對了嗎？</th></tr></thead><tbody></tbody></table></div>
+  <div id="radarShots" class="card" style="margin-top:10px"></div>
   <p class="cap">表 3-4　四種麥克風數量的比較（自動算）</p>
   <div class="tbl"><table id="t35"><thead><tr><th>麥克風數量</th><th>選對路的次數</th><th>正確率</th><th>平均角度差（度）</th></tr></thead><tbody></tbody></table></div>
   <div class="two">
@@ -6570,6 +6571,9 @@ function stats(n){const R=S.exp[n].map(rowCalc),done=S.exp[n].filter((r,i)=>R[i]
 function buildT34(){const n=S.tab,tb=$("t34").tBodies[0];tb.innerHTML="";
   document.querySelectorAll("#nTabs button").forEach(b=>{const on=+b.dataset.n===n;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   $("t34cap").textContent=`表 3-3　用 ${n} 支麥克風的結果（角度差、雷達指的路、對不對會自己算）`;
+  /* 聲音雷達的截圖：每種麥克風數量至少 4 張（可以再加） */
+  S.radar=S.radar||{};if(!Array.isArray(S.radar[n]))S.radar[n]=[...Array(4)].map(()=>({src:"",cap:""}));
+  makePhotoList($("radarShots"),()=>S.radar[n],L=>{S.radar[n]=L;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}},{label:"雷達截圖",title:`📡 聲音雷達的截圖（用 ${n} 支麥克風）`,max:12});
   S.exp[n].forEach((r,i)=>{const tr=tb.insertRow();
     tr.innerHTML=`<td>${i+1}</td><td>${sel(ROADN.map(x=>[x,RL(x)]),r.road,'data-k="road" aria-label="救護車在哪條路"')}</td><td><input type="number" step="1" data-k="tr" value="${esc(r.tr)}" placeholder="${esc(S.setup.road[r.road]??"")}" aria-label="真實角度"></td>
       <td><input type="number" step="1" data-k="ra" value="${esc(r.ra)}" aria-label="雷達角度" ${r.nodir?"disabled":""}>${n===1?`<br><label class="nodir"><input type="checkbox" data-k="nodir" ${r.nodir?"checked":""}>雷達沒有方向</label>`:""}</td>
@@ -6637,7 +6641,8 @@ btn.addEventListener("click",async()=>{
     B.push(H("三、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordGal(S.gal));B.push(...await wordFigs(secBy("三、"),["cAcc","cErr"]));
     B.push(cap("場景設定：雷達上的角度"));B.push(table(["","角度（度）／點選"],[...ROADN.map(r=>[RL(r),S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時點選`,S.setup.use[n]])]));
     for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?RL(r.road):"",r.tr,r.nodir?"沒有方向":r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?RL(c.rr):c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
-      B.push(cap(`表 3-3-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));}
+      B.push(cap(`表 3-3-${n}、用 ${n} 支麥克風的結果`));B.push(table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows));
+      B.push(...await photoBlocks(((S.radar||{})[n]||[]).map((o,i)=>({src:o&&o.src,cap:(o&&o.t||`用 ${n} 支麥克風：雷達截圖 ${i+1}`)+(o&&o.cap?"："+o.cap:"")})).filter(o=>o.src)));}
     B.push(cap("表 3-4、四種麥克風數量的比較"));B.push(table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
     for(const [k,t] of [["acc","圖 3-2、選對路的正確率"],["err","圖 3-3、平均角度差（越小越準）"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);
       B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(s,420,300),transformation:{width:360,height:257}})]}));B.push(cap(t))}
