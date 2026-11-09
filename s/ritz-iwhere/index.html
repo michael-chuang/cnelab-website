@@ -357,12 +357,12 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* 樹狀圖 */
 #tab0 .fw-tree{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;position:relative;margin-top:6px}
 #tab0 .fw-node{border-radius:14px;padding:12px 16px;text-align:center;background:var(--panel);border:2px solid var(--line);position:relative;z-index:1}
-#tab0 .fw-node .t{font-family:var(--display);font-size:18px;font-weight:700;color:var(--fg)}
-#tab0 .fw-node .s{font-size:14px;color:var(--muted);margin-top:2px}
+#tab0 .fw-node .t{font-family:var(--display);font-size:21px;font-weight:700;color:var(--fg)}
+#tab0 .fw-node .s{font-size:17px;color:var(--muted);margin-top:2px}
 #tab0 .fw-vision{grid-column:1/3;justify-self:center;border-color:var(--fwV);background:color-mix(in srgb,var(--fwV) 10%,var(--panel));min-width:min(100%,320px)}
 #tab0 .fw-vision .t,#tab0 .fw-end .t{color:var(--fwV)}
 #tab0 .fw-end{grid-column:1/3;justify-self:center;border-color:var(--fwV);background:color-mix(in srgb,var(--fwV) 10%,var(--panel));min-width:min(100%,360px)}
-#tab0 .fw-eq{font-family:var(--display);font-size:17px;margin-top:6px;color:var(--fg)}
+#tab0 .fw-eq{font-family:var(--display);font-size:19px;margin-top:6px;color:var(--fg)}
 #tab0 .fw-eq span{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);margin:2px}
 #tab0 .fw-col{display:flex;flex-direction:column;align-items:stretch}
 #tab0 .fw-L .fw-node{border-color:var(--fwL)} #tab0 .fw-L .fw-node .t{color:var(--fwL)}
@@ -372,14 +372,14 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 #tab0 .fw-node.sub ul{margin:6px 0 0;padding-left:1.2em;font-size:15px;line-height:1.6;color:var(--fg)}
 #tab0 .fw-v{width:2px;height:22px;background:var(--line);margin:0 auto}
 #tab0 .fw-node.cause{border-color:var(--stop)!important;background:color-mix(in srgb,var(--stop) 7%,var(--panel))}
-#tab0 .fw-node.cause .t{color:var(--stop)!important;font-size:16px}
-#tab0 .fw-node.cause .s{font-size:15px;color:var(--fg)}
+#tab0 .fw-node.cause .t{color:var(--stop)!important;font-size:19px}
+#tab0 .fw-node.cause .s{font-size:18px;color:var(--fg)}
 #tab0 .fw-node.sub{display:flex;flex-direction:column;gap:6px}
-#tab0 .fw-node.sub .t{color:var(--fg)!important;font-size:16px}
-#tab0 .fw-node.sub p{margin:0;font-size:14px;line-height:1.6;color:var(--muted)}
-#tab0 .fw-node .q{font-family:var(--num);font-size:13px;font-weight:500;color:#fff;align-self:flex-start;padding:2px 10px;border-radius:999px}
+#tab0 .fw-node.sub .t{color:var(--fg)!important;font-size:19px}
+#tab0 .fw-node.sub p{margin:0;font-size:17px;line-height:1.6;color:var(--fg)}
+#tab0 .fw-node .q{font-family:var(--num);font-size:15px;font-weight:500;color:#fff;align-self:flex-start;padding:2px 10px;border-radius:999px}
 #tab0 .fw-node .go{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
-#tab0 .fw-node .go button{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
+#tab0 .fw-node .go button{font-size:15px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
 #tab0 .fw-node .go button:hover{border-color:var(--accent);color:var(--accent)}
 #tab0 .fw-fill{flex:1;min-height:0;width:2px;background:var(--line);margin:0 auto}
 #tab0 .fw-node.sub{border-style:solid;border-width:1px}
@@ -411,6 +411,15 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 #tab0 .fw-h .go button{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);cursor:pointer}
 #tab0 .fw-h .go button:hover{border-color:var(--accent);color:var(--accent)}
 #tab0 .fw-arrow{align-self:center;font-size:22px;color:var(--muted)}
+/* 拍進 Word 用：固定寬度、字再大一點，縮小放進報告後還是看得清楚 */
+#tab0 .fw-tree.fw-print{width:900px!important;column-gap:22px}
+#tab0 .fw-print .fw-node .t{font-size:26px}
+#tab0 .fw-print .fw-node.cause .t,#tab0 .fw-print .fw-node.sub .t{font-size:24px}
+#tab0 .fw-print .fw-node.cause .s{font-size:22px}
+#tab0 .fw-print .fw-node.sub p{font-size:21px;line-height:1.5}
+#tab0 .fw-print .fw-node .q{font-size:18px}
+#tab0 .fw-print .fw-node .go button{font-size:18px}
+#tab0 .fw-print .fw-eq{font-size:23px}
 @media (max-width:760px){
   #tab0 .fw-dsk{display:none}
   #tab0 .fw-mob{display:block}
@@ -8017,14 +8026,15 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
   b.addEventListener("click",async()=>{const old=b.textContent;b.disabled=true;b.textContent="拍架構圖中…";
     const tab=P.document.getElementById("tab0"),tree=tab.querySelector(".fw-tree"),wasHidden=tab.hidden,css=tab.style.cssText;
     try{await need();if(wasHidden){tab.hidden=false;tab.style.cssText+=";position:fixed;left:-12000px;top:0;width:1100px"}
+      tree.classList.add("fw-print");await new Promise(r=>setTimeout(r,60));   // 拍照用：字放大、寬度固定
       const bg=P.getComputedStyle(tree.closest(".fw-card")).backgroundColor;
       const c=await P.html2canvas(tree,{backgroundColor:bg,scale:2,logging:false});
-      const W=Math.min(1600,c.width),o=document.createElement("canvas");o.width=W;o.height=Math.round(c.height*W/c.width);
+      const W=Math.min(1800,c.width),o=document.createElement("canvas");o.width=W;o.height=Math.round(c.height*W/c.width);
       const g=o.getContext("2d");g.fillStyle=bg;g.fillRect(0,0,o.width,o.height);g.drawImage(c,0,0,o.width,o.height);
       const src=o.toDataURL("image/jpeg",0.9),i=S.goalPics.findIndex(x=>x.cap==="研究架構");
       if(i>=0)S.goalPics[i].src=src;else S.goalPics.push({src,cap:"研究架構"});save();showPics("goalPics");b.textContent="✓ 已放進架構圖（再按一次會更新）"}
     catch(e){console.warn("tree",e);b.textContent="拍不到架構圖，請再試一次"}
-    finally{if(wasHidden){tab.hidden=true;tab.style.cssText=css}b.disabled=false;setTimeout(()=>b.textContent=old,2500)}})})();
+    finally{try{tree.classList.remove("fw-print")}catch(e){}if(wasHidden){tab.hidden=true;tab.style.cssText=css}b.disabled=false;setTimeout(()=>b.textContent=old,2500)}})})();
 
 /* 從實驗一～三帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
