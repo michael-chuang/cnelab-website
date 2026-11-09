@@ -189,8 +189,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <script>
 /* PANPAD START */
 /* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
-function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".png";
-  fetch(dataURL).then(r=>r.blob()).then(async blob=>{
+function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".jpg";
+  /* 存成 JPG、最長邊 1600：檔案小很多（PNG 常常好幾 MB） */
+  new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);c.toBlob(b=>b?ok(b):fetch(dataURL).then(r=>r.blob()).then(ok),"image/jpeg",0.88)};
+    im.onerror=()=>fetch(dataURL).then(r=>r.blob()).then(ok);im.src=dataURL}).then(async blob=>{
     try{if(window.top!==window&&typeof window.top.__saveFile==="function"){await window.top.__saveFile(blob,fn);return}}catch(e){if(e&&e.code==="declined")return}
     try{if(window.claude&&typeof window.claude.use==="function"){const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:blob});return}}}catch(e){if(e&&e.code==="declined")return}
     const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)})}
