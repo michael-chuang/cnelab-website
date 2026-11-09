@@ -7851,6 +7851,7 @@ btn.addEventListener("click",async()=>{
       const [w,h]=await imgSize(p.src),PW=Math.round(W/15*0.95),PH=Math.round(PW*h/w);   // 研究架構：自己一張表格，佔滿整格
       return [new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({cantSplit:true,children:[new TableCell({width:{size:W,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:PW,height:PH}})]})]})]}),
         new TableRow({children:[new TableCell({width:{size:W,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:p.cap||"研究架構",size:22,color:"5B6872"})]})]})]})]}),para("")]}
+    async function picsEach(arr){const out=[];for(const p of (arr||[]).filter(p=>p&&p.src))out.push(...await archTable(p));return out}   // 研究動機的圖：每張自己一張表格
     async function pics(arr){arr=(arr||[]).filter(p=>p&&p.src);const A=arr.filter(p=>p.cap==="研究架構");if(A.length){const rest=arr.filter(p=>p.cap!=="研究架構");const out=[];for(const p of A)out.push(...await archTable(p));return [...out,...await pics(rest)]}
       if(arr.length>1)return [await window.__photoTable(window.docx,arr.map(p=>({src:p.src,cap:p.cap||""})),7300),para("")];   // 兩張以上排成表格
       const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
@@ -7864,7 +7865,7 @@ btn.addEventListener("click",async()=>{
       row("年級",null,S.mems.map(m=>para(`${m.yr||"　"} 年 ${m.cls||"　"} 班　　姓名：${m.nm||""}`))),
       row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
       row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
-      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await pics([...(S.newsOff?[]:[{src:document.querySelector("#newsFig img").src,cap:"新聞畫面（模擬）：救護車被擋，塞在車陣中過不去"}]),...withScene(S.motivePics,"motive")])],1800),
+      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await picsEach([...(S.newsOff?[]:[{src:document.querySelector("#newsFig img").src,cap:"新聞畫面（模擬）：救護車被擋，塞在車陣中過不去"}]),...withScene(S.motivePics,"motive")])],1800),
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
       row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkBlocks()],2400),
