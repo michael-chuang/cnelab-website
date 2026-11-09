@@ -141,7 +141,7 @@ window.__FB=window.__FB||(()=>{let W=window;try{if(window.top.document&&window.t
         const parts=await timeout(Promise.all([...Array(n||1)].map((_,i)=>C.doc(key+"~"+i).get())),30000,"chunks "+key);
         return {ts,data:parts.map(p=>p.exists?(p.data().d||""):"").join("")}},
       /* 鎖起來／解鎖（只有老師的電腦可以） */
-      async setLock(on,pin){if(!(await window.__wwtPin(pin)))throw new Error("pin");
+      async setLock(on,pin){if(!on&&!(await window.__wwtPin(pin)))throw new Error("pin");   // 鎖起來不用密碼；解鎖才要
         await timeout(D.doc("cfg-lock").set({lock:!!on,ts:Date.now(),n:0,len:0,dev:DEV,dn:NAME(),at:fb.firestore.FieldValue.serverTimestamp()}),20000,"lock");setL(!!on)},
       onLock(cb){lockSubs.add(cb);cb(window.__wwtLocked());return()=>lockSubs.delete(cb)},
       ts:key=>meta.get(key),loaded:()=>loaded,
@@ -258,13 +258,15 @@ async function histPanel(){let P=document.getElementById("ksHP");if(P){P.remove(
 /* 鎖定（唯讀）：老師的電腦輸入密碼後，可以「🔒 鎖起來」；鎖起來時，別的電腦只能看、不能改，也不會存到雲端 */
 async function lockClick(){const L=window.__wwtLocked&&window.__wwtLocked();
   if(!fb){alert("還沒連上雲端，等一下再試。");return}
-  const p=prompt(L?"現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：":"要鎖起來嗎？鎖起來後，每一台電腦（包括老師的）都只能看、不能改。\n請輸入老師密碼：");if(!p)return;
-  if(!(window.__wwtPin&&await window.__wwtPin(p.trim()))){alert("密碼不對。");return}
-  if(!L&&dirty.size)await push();   // 鎖之前，這台電腦還沒存的先存上去
-  try{await fb.setLock(!L,p.trim());roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
+  let p="";
+  if(L){p=prompt("現在鎖起來了（每一台電腦都只能看）。\n要解鎖、讓大家可以修改，請輸入老師密碼：");if(!p)return;p=p.trim();
+    if(!(window.__wwtPin&&await window.__wwtPin(p))){alert("密碼不對。");return}}
+  else{if(!confirm("要鎖起來嗎？\n鎖起來後，每一台電腦都只能看、不能改；要再修改，需要老師密碼解鎖。"))return;
+    if(dirty.size)await push()}   // 鎖之前，這台電腦還沒存的先存上去
+  try{await fb.setLock(!L,p);roApply();alert(L?"已解鎖，現在可以修改。改完記得再鎖起來。":"已鎖起來，每一台電腦都只能看。")}catch(e){alert("沒有成功，等一下再試一次。")}}
 function roApply(){const ro=RO(),L=window.__wwtLocked&&window.__wwtLocked();
   document.documentElement.classList.toggle("wwt-ro",ro);
-  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡輸入老師密碼，鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
+  const b=document.getElementById("ksLock");if(b){b.textContent=L?"🔒 已鎖":"🔓 可以改";b.title=L?"現在只能看。按這裡輸入老師密碼解鎖":"按這裡鎖起來（大家只能看）";b.setAttribute("aria-label",b.title)}
   const sv=document.getElementById("ksSave");if(sv)sv.style.display=ro?"none":"";
   if(ro){dirty.clear();show(LOCKMSG)}else if(st===LOCKMSG)show("會自動存到雲端")}
 addEventListener("storage",e=>{if(e.key==="wwt-lock")roApply()});
