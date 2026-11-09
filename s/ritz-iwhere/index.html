@@ -3335,8 +3335,10 @@ btn.addEventListener("click",async()=>{
     const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,HeadingLevel,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80},bullet:o.bullet?{level:0}:undefined});
     const H=(t)=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
-    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined});
-    const table=(head,rows,ws)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,w:ws&&ws[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{w:ws&&ws[i],bold:r.bold}))}))]});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.dx?{size:o.dx,type:WidthType.DXA}:undefined});
+    /* 表格寬度用固定的 twip（15.6 公分），Word 才不會把欄擠成一條 */
+    const table=(head,rows,ws)=>{const n=head.length,TW=8844,cw=ws&&ws.length===n?ws.map(p=>Math.round(TW*p/100)):Array(n).fill(Math.floor(TW/n)),TL=(window.__L||window.docx).TableLayoutType;
+      return new Table({width:{size:TW,type:WidthType.DXA},columnWidths:cw,layout:TL&&TL.FIXED,rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,dx:cw[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{bold:r.bold,dx:cw[i]}))}))]})};
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const t1Rows=T1=>{const rows=[...Array(N)].map((_,i)=>{const a=T1.a[i],b=T1.b[i];return [i+1,a.r,a.p,f1(dUse(a)),b.r,b.p,f1(dUse(b))]});
       const r=["平均","—","—",f1(t1Avg("a",T1)),"—","—",f1(t1Avg("b",T1))];r.bold=true;rows.push(r);return rows};
@@ -4996,8 +4998,10 @@ btn.addEventListener("click",async()=>{
   try{const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
     const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
-    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
-    const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c,{bold:r.bold}))}))]});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.dx?{size:o.dx,type:WidthType.DXA}:undefined});
+    /* 表格寬度用固定的 twip（15.6 公分），Word 才不會把欄擠成一條 */
+    const table=(head,rows,ws)=>{const n=head.length,TW=8844,cw=ws&&ws.length===n?ws.map(p=>Math.round(TW*p/100)):Array(n).fill(Math.floor(TW/n)),TL=(window.__L||window.docx).TableLayoutType;
+      return new Table({width:{size:TW,type:WidthType.DXA},columnWidths:cw,layout:TL&&TL.FIXED,rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,dx:cw[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{bold:r.bold,dx:cw[i]}))}))]})};
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const pic=async(u,w)=>{const [iw,ih]=await imgSize(u);return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(u),transformation:{width:w,height:Math.round(w*ih/iw)}})]})};
     const B=[];
@@ -6987,8 +6991,10 @@ btn.addEventListener("click",async()=>{
   try{const D=window.__L||window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,ShadingType}=D;
     const P=(t,o={})=>new Paragraph({children:[new TextRun({text:t,bold:o.bold,size:o.size,color:o.color})],alignment:o.align,spacing:{after:o.after??80}});
     const H=t=>new Paragraph({children:[new TextRun({text:t,bold:true,size:28})],spacing:{before:240,after:120}});
-    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined});
-    const table=(head,rows)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({tableHeader:true,children:head.map(h=>cell(h,{head:true,bold:true}))}),...rows.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
+    const cell=(t,o={})=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??""),bold:o.bold,size:20})],alignment:AlignmentType.CENTER})],shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,width:o.dx?{size:o.dx,type:WidthType.DXA}:undefined});
+    /* 表格寬度用固定的 twip（15.6 公分），Word 才不會把欄擠成一條 */
+    const table=(head,rows,ws)=>{const n=head.length,TW=8844,cw=ws&&ws.length===n?ws.map(p=>Math.round(TW*p/100)):Array(n).fill(Math.floor(TW/n)),TL=(window.__L||window.docx).TableLayoutType;
+      return new Table({width:{size:TW,type:WidthType.DXA},columnWidths:cw,layout:TL&&TL.FIXED,rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,dx:cw[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{bold:r.bold,dx:cw[i]}))}))]})};
     const cap=t=>P(t,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200});
     const B=[];
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗三 Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
