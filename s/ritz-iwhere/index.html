@@ -2851,11 +2851,18 @@ function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").
 function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);
   const cur=()=>{const g=galFix(get());g.ms=g.ms||{};return [g,g.ms[name]||(g.ms[name]={src:"",cap:""})]};
-  function draw(){const [g,o]=cur(),X=galX(g,name);el.innerHTML=`<h3>📷 ${title}的截圖${X.length?`（${X.length+1} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉。</p><div class="shotrow">${o.src?`<img src="${o.src}" alt="${title}的截圖">`:`<div class="galempty">按上面畫面左下角的 📷，截圖會放在這裡</div>`}
-      <div class="shotside"><textarea rows="3" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖的圖片描述">${esc(o.cap)}</textarea>${o.src?'<div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉截圖</button></div>':""}</div></div>${X.length?`<div class="galgrid" style="margin-top:10px">${xFigs(X,"截圖",esc)}</div>`:""}`;
-    bindX(el,get,set,draw,name);makeSortable(el,'.galf[data-sort="x"]',(a,b)=>{const g=galFix(get());moveIn(galX(g,name),a,b);set(g);draw()});
-    el.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur();o.cap=e.target.value;set(g)});
-    const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";const X=galX(g,name);if(X.length)Object.assign(o,X.shift());set(g);draw()})}
+  /* 全部截圖排成一樣大小的格子：A = [第一張, ...其他]；改完再寫回去 */
+  const all=()=>{const [g,o]=cur();return [g,o.src?[o,...galX(g,name)]:[]]};
+  const put=(g,A)=>{A=A.map(x=>({src:x.src,cap:x.cap||""}));const o=g.ms[name];   // 先複製，免得第一張被自己蓋掉
+    o.src=A[0]?A[0].src:"";o.cap=A[0]?A[0].cap||"":"";g.mx[name]=A.slice(1).map(x=>({src:x.src,cap:x.cap||""}));set(g)};
+  function draw(){const [g,A]=all();el.innerHTML=`<h3>📷 ${title}的截圖${A.length>1?`（${A.length} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉${A.length>1?"；按住「⠿ 拖曳」可以換順序":""}。</p>
+      ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption><b>截圖 ${i+1}</b> ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
+        <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
+        :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}`;
+    el.querySelectorAll(".galf[data-a]").forEach(f=>{const i=+f.dataset.a;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,A]=all();A[i].cap=e.target.value;put(g,A)});
+      f.querySelector("[data-del]").addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,A]=all();A.splice(i,1);put(g,A);draw()})});
+    makeSortable(el,".galf[data-a]",(a,b)=>{const [g,A]=all();moveIn(A,a,b);put(g,A);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();if(!snapInto(g,o,name,await galShrink(e.detail.u)))return;if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
   draw();return draw}
 
@@ -4379,11 +4386,18 @@ function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").
 function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);
   const cur=()=>{const g=galFix(get());g.ms=g.ms||{};return [g,g.ms[name]||(g.ms[name]={src:"",cap:""})]};
-  function draw(){const [g,o]=cur(),X=galX(g,name);el.innerHTML=`<h3>📷 ${title}的截圖${X.length?`（${X.length+1} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉。</p><div class="shotrow">${o.src?`<img src="${o.src}" alt="${title}的截圖">`:`<div class="galempty">按上面畫面左下角的 📷，截圖會放在這裡</div>`}
-      <div class="shotside"><textarea rows="3" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖的圖片描述">${esc(o.cap)}</textarea>${o.src?'<div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉截圖</button></div>':""}</div></div>${X.length?`<div class="galgrid" style="margin-top:10px">${xFigs(X,"截圖",esc)}</div>`:""}`;
-    bindX(el,get,set,draw,name);makeSortable(el,'.galf[data-sort="x"]',(a,b)=>{const g=galFix(get());moveIn(galX(g,name),a,b);set(g);draw()});
-    el.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur();o.cap=e.target.value;set(g)});
-    const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";const X=galX(g,name);if(X.length)Object.assign(o,X.shift());set(g);draw()})}
+  /* 全部截圖排成一樣大小的格子：A = [第一張, ...其他]；改完再寫回去 */
+  const all=()=>{const [g,o]=cur();return [g,o.src?[o,...galX(g,name)]:[]]};
+  const put=(g,A)=>{A=A.map(x=>({src:x.src,cap:x.cap||""}));const o=g.ms[name];   // 先複製，免得第一張被自己蓋掉
+    o.src=A[0]?A[0].src:"";o.cap=A[0]?A[0].cap||"":"";g.mx[name]=A.slice(1).map(x=>({src:x.src,cap:x.cap||""}));set(g)};
+  function draw(){const [g,A]=all();el.innerHTML=`<h3>📷 ${title}的截圖${A.length>1?`（${A.length} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉${A.length>1?"；按住「⠿ 拖曳」可以換順序":""}。</p>
+      ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption><b>截圖 ${i+1}</b> ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
+        <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
+        :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}`;
+    el.querySelectorAll(".galf[data-a]").forEach(f=>{const i=+f.dataset.a;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,A]=all();A[i].cap=e.target.value;put(g,A)});
+      f.querySelector("[data-del]").addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,A]=all();A.splice(i,1);put(g,A);draw()})});
+    makeSortable(el,".galf[data-a]",(a,b)=>{const [g,A]=all();moveIn(A,a,b);put(g,A);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();if(!snapInto(g,o,name,await galShrink(e.detail.u)))return;if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
   draw();return draw}
 
@@ -6350,11 +6364,18 @@ function makeEquip(el,ul,get,set){if(!el||!ul)return;const esc=s=>String(s??"").
 function makeShotSlot(anchor,name,title,get,set){if(!anchor)return;const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const el=document.createElement("div");el.className="card shotslot";anchor.after(el);
   const cur=()=>{const g=galFix(get());g.ms=g.ms||{};return [g,g.ms[name]||(g.ms[name]={src:"",cap:""})]};
-  function draw(){const [g,o]=cur(),X=galX(g,name);el.innerHTML=`<h3>📷 ${title}的截圖${X.length?`（${X.length+1} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉。</p><div class="shotrow">${o.src?`<img src="${o.src}" alt="${title}的截圖">`:`<div class="galempty">按上面畫面左下角的 📷，截圖會放在這裡</div>`}
-      <div class="shotside"><textarea rows="3" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖的圖片描述">${esc(o.cap)}</textarea>${o.src?'<div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉截圖</button></div>':""}</div></div>${X.length?`<div class="galgrid" style="margin-top:10px">${xFigs(X,"截圖",esc)}</div>`:""}`;
-    bindX(el,get,set,draw,name);makeSortable(el,'.galf[data-sort="x"]',(a,b)=>{const g=galFix(get());moveIn(galX(g,name),a,b);set(g);draw()});
-    el.querySelector("textarea").addEventListener("input",e=>{const [g,o]=cur();o.cap=e.target.value;set(g)});
-    const d=el.querySelector("[data-del]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,o]=cur();o.src="";const X=galX(g,name);if(X.length)Object.assign(o,X.shift());set(g);draw()})}
+  /* 全部截圖排成一樣大小的格子：A = [第一張, ...其他]；改完再寫回去 */
+  const all=()=>{const [g,o]=cur();return [g,o.src?[o,...galX(g,name)]:[]]};
+  const put=(g,A)=>{A=A.map(x=>({src:x.src,cap:x.cap||""}));const o=g.ms[name];   // 先複製，免得第一張被自己蓋掉
+    o.src=A[0]?A[0].src:"";o.cap=A[0]?A[0].cap||"":"";g.mx[name]=A.slice(1).map(x=>({src:x.src,cap:x.cap||""}));set(g)};
+  function draw(){const [g,A]=all();el.innerHTML=`<h3>📷 ${title}的截圖${A.length>1?`（${A.length} 張）`:""}</h3><p data-noword class="note" style="margin:0 0 6px">每按一次上面畫面的 📷 就多一張，不要的按 🗑 刪掉${A.length>1?"；按住「⠿ 拖曳」可以換順序":""}。</p>
+      ${A.length?`<div class="galgrid">${A.map((o,i)=>`<figure class="galf" data-a="${i}"><figcaption><b>截圖 ${i+1}</b> ${A.length>1?DRAG:""}</figcaption><img src="${o.src}" alt="${title}的截圖 ${i+1}">
+        <textarea rows="2" placeholder="圖片描述：這張圖在說什麼？" aria-label="${title}截圖 ${i+1} 的圖片描述">${esc(o.cap)}</textarea><div class="galbtn"><button type="button" class="xbtn" data-del>🗑 刪掉</button></div></figure>`).join("")}</div>`
+        :`<div class="galempty">按上面畫面的 📷，截圖會放在這裡</div>`}`;
+    el.querySelectorAll(".galf[data-a]").forEach(f=>{const i=+f.dataset.a;
+      f.querySelector("textarea").addEventListener("input",e=>{const [g,A]=all();A[i].cap=e.target.value;put(g,A)});
+      f.querySelector("[data-del]").addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const [g,A]=all();A.splice(i,1);put(g,A);draw()})});
+    makeSortable(el,".galf[data-a]",(a,b)=>{const [g,A]=all();moveIn(A,a,b);put(g,A);draw()})}
   addEventListener("pp-snap",async e=>{if(!e.detail||e.detail.name!==name)return;const [g,o]=cur();if(!snapInto(g,o,name,await galShrink(e.detail.u)))return;if(set(g)===false)alert("截圖太多，這台電腦存不下了。");draw();el.scrollIntoView({behavior:"smooth",block:"nearest"})});
   draw();return draw}
 
