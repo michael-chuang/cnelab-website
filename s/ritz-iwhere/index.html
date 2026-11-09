@@ -312,13 +312,16 @@ function init(){EL=[...document.querySelectorAll("[data-sync]")];
   Object.keys(DEF).forEach(k=>{if(get(k,null)===null)set(k,DEF[k])});   // 先放預設，作品說明打開時就不會自己寫入（那會被當成修改、蓋掉雲端）
   EL.forEach(e=>{const k=e.dataset.sync,ml=ML[k];
     try{e.contentEditable="plaintext-only";if(e.contentEditable!=="plaintext-only")e.contentEditable="true"}catch(err){e.contentEditable="true"}
-    if(RO()){e.contentEditable="false";e.title="老師鎖起來了，只能看";return}
     e.classList.add("ttl-edit");e.spellcheck=false;e.title="點一下就可以修改";e.dataset.ph=DEF[k];
     e.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ml){ev.preventDefault();e.blur()}});
     e.addEventListener("input",()=>{set(k,ml?e.innerText.replace(/\n$/,""):e.textContent.replace(/\s*\n\s*/g," "));paint(k,e);edited()});
     e.addEventListener("blur",()=>{if(!e.textContent.trim()){e.textContent=DEF[k];set(k,DEF[k]);paint(k,e);edited()}})});
   show();
-  window.__FB.then(a=>{fb=a;a.watch(onRemote);if(tm)push()}).catch(()=>{fbDead=true;pull()});
+  /* 鎖起來時不能改；解鎖後馬上又可以改（不用重新整理） */
+  const ce=(()=>{const t=document.createElement("span");try{t.contentEditable="plaintext-only"}catch(e){}return t.contentEditable==="plaintext-only"?"plaintext-only":"true"})();
+  const roApply=()=>{const ro=RO();EL.forEach(e=>{e.contentEditable=ro?"false":ce;e.classList.toggle("ttl-edit",!ro);e.title=ro?"鎖起來了，只能看（要改請先到實驗單上方按「🔒 已鎖」解鎖）":"點一下就可以修改"})};
+  roApply();addEventListener("storage",ev=>{if(ev.key==="wwt-lock")roApply()});
+  window.__FB.then(a=>{fb=a;a.watch(onRemote);a.onLock&&a.onLock(roApply);if(tm)push()}).catch(()=>{fbDead=true;pull()});
   try{if(!localStorage.getItem("wwt-fb-mig0")){localStorage.setItem("wwt-fb-mig0","1");pull()}}catch(e){}   // 第一次：先從 Google 試算表拿比較新的
   addEventListener("storage",ev=>{if(ev.key in DEF){paint(ev.key);edited()}});   // 作品說明那邊改的
   addEventListener("pagehide",()=>{if(tm)push(true)});
