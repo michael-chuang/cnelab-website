@@ -1080,6 +1080,16 @@ const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim
 function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*H/W*d;g.setTransform(r.width*d/W,0,0,r.width*d/W,0,0)}
 new ResizeObserver(resize).observe(cv);
 makePad(cv.parentElement,{corner:"tr",keys:[],name:"駕駛艙模式",snap:()=>cv.toDataURL("image/png"),step(){}});
+/* 只拍車用導航螢幕：導航螢幕上的 📷，截圖放進「車用螢幕顯示警笛從哪裡來」那格 */
+(()=>{const host=cv.parentElement,NX=520,NY=352,NW=362,NH=H-352-16,b=document.createElement("button");
+  b.type="button";b.textContent="📷 拍導航";b.title="只拍車用導航螢幕";b.setAttribute("aria-label","只拍車用導航螢幕");
+  b.style.cssText=`position:absolute;left:${(NX+237)/W*100}%;top:${(NY+20)/H*100}%;transform:translateX(-50%);z-index:5;font:600 12px/1 system-ui,sans-serif;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(10,14,22,.55);color:#fff;cursor:pointer`;
+  host.appendChild(b);
+  b.addEventListener("click",()=>{const k=cv.width/W,o=document.createElement("canvas");o.width=Math.round(NW*k);o.height=Math.round(NH*k);
+    o.getContext("2d").drawImage(cv,NX*k,NY*k,NW*k,NH*k,0,0,o.width,o.height);const u=o.toDataURL("image/png");
+    try{saveSnap(u,"車用導航螢幕")}catch(e){}
+    window.dispatchEvent(new CustomEvent("pp-snap",{detail:{u,name:"駕駛艙模式_導航",host,slot:"screen"}}));
+    b.textContent="✓ 拍好了";setTimeout(()=>b.textContent="📷 拍導航",1500)})})();
 
 /* 道路（x＝往右公尺）：對向車道 -11～-4，雙黃線 -3.6，左車道中心 -1.75，車道線 0，右車道中心 +1.75，路邊線 +3.6，機車道到 +5.6
    z＝在我前面幾公尺（負＝後面）。每台車有 x0（原本車道）與 side（讓道時往哪邊靠） */
@@ -2093,7 +2103,7 @@ document.head.appendChild(st)})();
       const d=f.querySelector("[data-d]");if(d)d.addEventListener("click",()=>{if(!confirm("要刪掉這張截圖嗎？"))return;const o=rd();slot(o,tab,s.k).src="";wr(o);render(tab)});
       G.appendChild(f)})}
   addEventListener("pp-snap",async e=>{const T=e.detail.host&&e.detail.host.closest('[id^="tab"]'),tab=T&&T.id;if(!SLOTS[tab])return;
-    const o=rd(),k=force[tab]||(SLOTS[tab].find(s=>!slot(o,tab,s.k).src)||{}).k;
+    const o=rd(),k=(e.detail.slot&&SLOTS[tab].some(s=>s.k===e.detail.slot)&&e.detail.slot)||force[tab]||(SLOTS[tab].find(s=>!slot(o,tab,s.k).src)||{}).k;   // 拍導航：直接放「車用螢幕」那格
     if(!k){alert("三格都有截圖了。想換哪一張，先按那格的「下一張放這格」，再按 📷。（這張還是有下載到電腦裡）");return}
     slot(o,tab,k).src=await small(e.detail.u);force[tab]=null;
     if(wr(o)){render(tab);const f=box(tab).querySelectorAll("figure")[SLOTS[tab].findIndex(s=>s.k===k)];if(f){f.scrollIntoView({behavior:"smooth",block:"nearest"});f.classList.add("flash");setTimeout(()=>f.classList.remove("flash"),1200)}}});
