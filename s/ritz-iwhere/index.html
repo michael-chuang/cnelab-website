@@ -5624,11 +5624,11 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>二、從時間差找出角度</h2>
-  <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；再用兩耳的寬度和量角器，就能找出角度，不用三角函數。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變。</p>
+  <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；再用兩耳的寬度和量角器，就能找出角度，不用三角函數。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變：下面的三角形跟上面一模一樣、方向也一樣，只是放大，方便用尺和量角器量。</p>
   <div class="card tri-card" data-wordalways><div class="tri-wrap"><svg id="tri" viewBox="0 0 640 642" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg>
 </div></div>
   <div class="card" id="rulerCard"><h3>換我試試：從時間差找角度</h3>
-    <p class="note">兩隻耳朵相距 20 公分，所以半圓的半徑就畫 20 公分（直尺從 0 到 20）。先算多走的路，再拖曳下面半圓尺上的點，讀出角度。</p>
+    <p class="note">跟上面一樣：兩耳的線長 20 公分，用它當直徑畫半圓。先算出多走的路，再拖曳半圓上的綠點，讓橘線（從左耳出發）的長度等於多走的路，就可以在右耳的量角器讀出角度。</p>
     <p class="cap">表 3-2　從時間差找出角度（按「對答案」看看）</p>
     <div class="two" style="margin-top:8px">
       <div><svg id="ruler" viewBox="0 0 440 270" role="img" aria-label="可以拖曳的半圓量角尺"></svg><div class="note" id="rulerTxt" style="text-align:center"></div><div style="text-align:center;margin-top:6px"><button type="button" class="xbtn" id="rulerSnap">📷 截圖（半圓尺＋表 3-2）</button></div></div>
@@ -6429,33 +6429,40 @@ function draw(t){ // t：動畫時間；null＝全部畫完
       const um=u1+sw/2;E("text",{x:near.x+Math.cos(um)*(ar+16),y:near.y+Math.sin(um)*(ar+16)+5,"text-anchor":"middle","font-size":14,"font-weight":700,fill:OG},top,`${Math.abs(th)}°`)}
     E("line",Object.assign(g,{stroke:OG,"stroke-width":7,"stroke-linecap":"round"}),top);
     if(q>0.9)E("text",{x:far.x+s.x*dpx/2+(th>=0?-14:14),y:far.y+s.y*dpx/2-10,"text-anchor":th>=0?"end":"start","font-size":14,"font-weight":700,fill:OG},top,`多走的路 ${(Math.round(dcm/34.3*100)/100*34).toFixed(1)} 公分`)}
-  // 下半部：半圓＋直尺＋量角器
-  const g2=E("g",{});
-  E("path",{d:`M${O.x-RAD},${O.y} A${RAD},${RAD} 0 0 1 ${O.x+RAD},${O.y} Z`,fill:paper,stroke:ink,"stroke-width":2},g2);
-  for(let d=-90;d<=90;d+=5){const r=d*Math.PI/180,l=d%30===0?14:d%10===0?9:5;E("line",{x1:O.x+Math.sin(r)*RAD,y1:O.y-Math.cos(r)*RAD,x2:O.x+Math.sin(r)*(RAD-l),y2:O.y-Math.cos(r)*(RAD-l),stroke:ink,"stroke-width":d%30===0?2:1},g2);
-    if(d%30===0)E("text",{x:O.x+Math.sin(r)*(RAD-28),y:O.y-Math.cos(r)*(RAD-28)+5-(Math.abs(d)===90?14:0),"text-anchor":"middle","font-size":13,fill:mut},g2,Math.abs(d)+"°")}
-  E("line",{x1:O.x,y1:O.y,x2:O.x,y2:O.y-RAD,stroke:line,"stroke-width":1.5,"stroke-dasharray":"5 4"},g2);
-  E("text",{x:O.x,y:O.y-RAD-8,"text-anchor":"middle","font-size":13,fill:mut},g2,"正前方");
-  for(let c=-20;c<=20;c++){const x=O.x+c*PX,l=c%5===0?10:5;E("line",{x1:x,y1:O.y,x2:x,y2:O.y+l,stroke:ink,"stroke-width":c%5===0?1.6:1},g2);if(c%5===0)E("text",{x,y:O.y+24,"text-anchor":"middle","font-size":12,fill:mut},g2,Math.abs(c))}
-  E("text",{x:O.x+RAD+6,y:O.y+24,"font-size":12,fill:mut},g2,"公分");
-  E("circle",{cx:O.x,cy:O.y,r:4,fill:ink},g2);
-  const sg=Math.sign(th)||1,xr=O.x+sg*dpx;
-  if(step>=3&&dpx>0.5){ // 搬到直尺上：從上面的位置滑下來
-    const q=step===3?p(3):1,g=seg(1),sx1=g.x1+(O.x-g.x1)*q,sy1=g.y1+(O.y-g.y1)*q,sx2=g.x2+(xr-g.x2)*q,sy2=g.y2+(O.y-g.y2)*q;
-    E("line",{x1:sx1,y1:sy1,x2:sx2,y2:sy2,stroke:OG,"stroke-width":7,"stroke-linecap":"round",opacity:0.95},svg)}
-  const P={x:xr,y:O.y-Math.sqrt(Math.max(0,RAD*RAD-dpx*dpx))};
-  if(step>=4){const q=step===4?p(4):1;E("line",{x1:xr,y1:O.y,x2:xr,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
-  if(step>=5&&dpx>0.5&&p(5)>0.95){E("polygon",{points:`${O.x},${O.y} ${P.x},${P.y} ${xr},${O.y}`,fill:"#fff","fill-opacity":0.6},svg);E("polygon",{points:`${O.x},${O.y} ${P.x},${P.y} ${xr},${O.y}`,fill:acc,"fill-opacity":0.22},svg);
-    const ar=30,u1=Math.atan2(O.y-P.y,O.x-P.x),u2=Math.PI/2,sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
-    E("path",{d:`M${P.x+Math.cos(u1)*ar},${P.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${P.x+Math.cos(u2)*ar},${P.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg)}
-  if(step>=5){const q=step===5?p(5):1;E("line",{x1:O.x,y1:O.y,x2:O.x+(P.x-O.x)*q,y2:O.y+(P.y-O.y)*q,stroke:acc,"stroke-width":3.5},svg);
-    if(q>0.95){E("circle",{cx:P.x,cy:P.y,r:6,fill:acc},svg);const ar=60,r=th*Math.PI/180;
-      if(th!==0)E("path",{d:`M${O.x},${O.y-ar} A${ar},${ar} 0 0 ${th>0?1:0} ${O.x+Math.sin(r)*ar},${O.y-Math.cos(r)*ar}`,fill:"none",stroke:OG,"stroke-width":3},svg);
-      E("text",{x:O.x+Math.sin(r/2)*(ar+30),y:O.y-Math.cos(r/2)*(ar+30)+5,"text-anchor":"middle","font-size":18,"font-weight":700,fill:OG},svg,`${Math.abs(th)}°`)}}
+  // 下半部：跟上面「一模一樣、方向也一樣」的三角形，只是放大（1 公分＝15 px），用直尺、半圓、量角器量
+  const SC=15,BY=478,BL={x:320-10*SC,y:BY},BR={x:320+10*SC,y:BY},bNear=th>=0?BR:BL,bFar=th>=0?BL:BR,dB=dcm*SC,g2=E("g",{});
+  E("text",{x:14,y:290,"font-size":13,fill:mut},g2,"放大來量：三角形跟上面一模一樣（方向也一樣）");
+  // 以兩耳的線當直徑的半圓（直角的那個點一定在半圓上）
+  E("path",{d:`M${BL.x},${BY} A${10*SC},${10*SC} 0 0 1 ${BR.x},${BY}`,fill:"none",stroke:mut,"stroke-width":1.6,"stroke-dasharray":"4 5"},g2);
+  E("text",{x:320,y:BY-10*SC-8,"text-anchor":"middle","font-size":12.5,fill:mut},g2,"用兩耳的線當直徑畫半圓");
+  // 兩耳的線＝直尺（20 公分，從遠的耳朵開始量）
+  E("line",{x1:BL.x,y1:BY,x2:BR.x,y2:BY,stroke:acc,"stroke-width":4},g2);
+  for(let c=0;c<=20;c++){const x=bFar.x+(bNear.x>bFar.x?1:-1)*c*SC,l=c%5===0?10:5;E("line",{x1:x,y1:BY,x2:x,y2:BY+l,stroke:ink,"stroke-width":c%5===0?1.6:1},g2);
+    if(c%5===0)E("text",{x,y:BY+24,"text-anchor":"middle","font-size":12,fill:mut},g2,c)}
+  E("text",{x:BR.x+(th>=0?28:8),y:BY+24,"font-size":12,fill:mut},g2,"公分");
+  for(const [e,n,c] of [[BL,"左耳",ca],[BR,"右耳",cb]]){E("circle",{cx:e.x,cy:e.y,r:8,fill:c,stroke:paper,"stroke-width":3},g2);E("text",{x:e.x+(e===BL?-12:12),y:e.y-14,"text-anchor":e===BL?"end":"start","font-size":14,"font-weight":700,fill:c},g2,n)}
+  const QB={x:bFar.x+s.x*dB,y:bFar.y+s.y*dB};
+  // 量角器：放在近的耳朵，0° 對著兩耳的線
+  if(step>=4&&th!==0){const PR=70,dir=bNear===BR?Math.PI:0,sg2=bNear===BR?1:-1;   // 0° 指向遠的耳朵，往上量到 90°
+    const pt=(deg,r)=>({x:bNear.x+Math.cos(dir+sg2*deg*Math.PI/180)*r,y:bNear.y+Math.sin(dir+sg2*deg*Math.PI/180)*r});
+    const a0=pt(0,PR),a9=pt(90,PR);E("path",{d:`M${bNear.x},${bNear.y} L${a0.x},${a0.y} A${PR},${PR} 0 0 ${sg2>0?1:0} ${a9.x},${a9.y} Z`,fill:"#ffffff",stroke:ink,"stroke-width":1.2,opacity:0.92},g2);
+    for(let d=0;d<=90;d+=5){const l=d%30===0?11:d%10===0?7:4,o=pt(d,PR),n=pt(d,PR-l);E("line",{x1:o.x,y1:o.y,x2:n.x,y2:n.y,stroke:ink,"stroke-width":d%30===0?1.6:0.9},g2);
+      if(d%30===0&&d){const t=pt(d,PR-20);E("text",{x:t.x,y:t.y+4,"text-anchor":"middle","font-size":10,fill:mut},g2,d)}}}
+  if(step>=3&&dpx>0.5){ // 從上面滑下來、變大：方向不變
+    const q=step===3?p(3):1,g=seg(1),x1=g.x1+(bFar.x-g.x1)*q,y1=g.y1+(bFar.y-g.y1)*q,x2=g.x2+(QB.x-g.x2)*q,y2=g.y2+(QB.y-g.y2)*q;
+    E("line",{x1,y1,x2,y2,stroke:OG,"stroke-width":7,"stroke-linecap":"round",opacity:0.95},svg);
+    if(q>0.95)E("text",{x:bFar.x+s.x*dB/2+(th>=0?-12:12),y:bFar.y+s.y*dB/2-8,"text-anchor":th>=0?"end":"start","font-size":13,"font-weight":700,fill:OG},svg,`多走的路 ${(Math.round(dcm/34.3*100)/100*34).toFixed(1)} 公分`)}
+  if(step>=4&&dpx>0.5){const q=step===4?p(4):1;E("line",{x1:bNear.x,y1:bNear.y,x2:bNear.x+(QB.x-bNear.x)*q,y2:bNear.y+(QB.y-bNear.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
+  if(step>=5&&dpx>0.5&&p(5)>0.95){E("polygon",{points:`${bFar.x},${bFar.y} ${bNear.x},${bNear.y} ${QB.x},${QB.y}`,fill:acc,"fill-opacity":0.18},svg);
+    E("circle",{cx:QB.x,cy:QB.y,r:5,fill:acc},svg);
+    const ar=46,u1=Math.atan2(bFar.y-bNear.y,bFar.x-bNear.x),u2=Math.atan2(QB.y-bNear.y,QB.x-bNear.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
+    E("path",{d:`M${bNear.x+Math.cos(u1)*ar},${bNear.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${bNear.x+Math.cos(u2)*ar},${bNear.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3.5},svg);
+    const um=u1+sw/2;E("text",{x:bNear.x+Math.cos(um)*(ar+92)+(th>=0?0:0),y:bNear.y+Math.sin(um)*(ar+92)+6,"text-anchor":"middle","font-size":20,"font-weight":800,fill:OG},svg,`${Math.abs(th)}°`)}
+  if(th===0&&step>=5)E("text",{x:320,y:BY-40,"text-anchor":"middle","font-size":15,"font-weight":700,fill:OG},svg,"多走的路是 0 → 聲音在正前方（0°）");
   if(AG)AG.parentNode.appendChild(AG);   // 箭頭放最上面，不被三角形蓋住
   // 說明文字
   const ms=Math.round(dcm/34.3*100)/100;
-  [[`① 量到時間差：${ms.toFixed(2)} 毫秒`,700],[`② 多走的路 ＝ ${ms.toFixed(2)} × 34 ≈ ${(ms*34).toFixed(1)} 公分`,400],["③ 兩耳寬 20 公分 ＝ 半圓的半徑",400],[`④ 用量角器讀出角度：${Math.abs(th)}°`,700]]
+  [[`① 量到時間差：${ms.toFixed(2)} 毫秒`,700],[`② 多走的路 ＝ ${ms.toFixed(2)} × 34 ≈ ${(ms*34).toFixed(1)} 公分`,400],["③ 從遠的耳朵量出多走的路，碰到半圓",400],[`④ 在近的耳朵用量角器讀出：${Math.abs(th)}°`,700]]
     .forEach(([t,w],i)=>E("text",{x:12,y:552+i*22,"font-size":14.5,"font-weight":w,fill:i===3?OG:ink},svg,t));
   // 公式（放在圖裡）
   E("rect",{x:330,y:522,width:302,height:116,rx:10,fill:paper,stroke:line},svg);
@@ -6476,22 +6483,28 @@ makePad(svg.parentElement,{corner:"tr",keys:[],name:"學習單三_找角度",sna
 const redraw=()=>{if(!anim)draw(null)};matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",redraw);
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
-/* 換我試試：可以拖曳的半圓尺 */
-const rs=$("ruler"),RO={x:220,y:250},RR=200;let rx=5;   // 公分
-function drawRuler(){rs.innerHTML="";const ink=col("--ink"),mut=col("--muted"),acc=col("--accent"),paper=col("--paper"),line=col("--line");
-  const e=(t,a,txt)=>E(t,a,rs,txt);
-  e("path",{d:`M${RO.x-RR},${RO.y} A${RR},${RR} 0 0 1 ${RO.x+RR},${RO.y} Z`,fill:paper,stroke:ink,"stroke-width":2});
-  for(let d=-90;d<=90;d+=5){const r=d*Math.PI/180,l=d%30===0?14:d%10===0?9:5;e("line",{x1:RO.x+Math.sin(r)*RR,y1:RO.y-Math.cos(r)*RR,x2:RO.x+Math.sin(r)*(RR-l),y2:RO.y-Math.cos(r)*(RR-l),stroke:ink,"stroke-width":d%30===0?2:1});
-    if(d%10===0)e("text",{x:RO.x+Math.sin(r)*(RR-(d%30===0?28:22)),y:RO.y-Math.cos(r)*(RR-(d%30===0?28:22))+4-(Math.abs(d)===90?12:0),"text-anchor":"middle","font-size":d%30===0?12:9,fill:mut},Math.abs(d))}
-  e("line",{x1:RO.x,y1:RO.y,x2:RO.x,y2:RO.y-RR,stroke:line,"stroke-dasharray":"5 4"});
-  for(let c=-20;c<=20;c++){const x=RO.x+c*10,l=c%5===0?9:4;e("line",{x1:x,y1:RO.y,x2:x,y2:RO.y+l,stroke:ink,"stroke-width":c%5===0?1.5:1});if(c%5===0)e("text",{x,y:RO.y+20,"text-anchor":"middle","font-size":11,fill:mut},Math.abs(c))}
-  const x=RO.x+rx*10,P={x,y:RO.y-Math.sqrt(Math.max(0,RR*RR-(rx*10)**2))},ang=Math.asin(Math.max(-1,Math.min(1,rx/20)))*180/Math.PI;
-  e("line",{x1:RO.x,y1:RO.y,x2:x,y2:RO.y,stroke:OG,"stroke-width":6,"stroke-linecap":"round"});
-  e("line",{x1:x,y1:RO.y,x2:P.x,y2:P.y,stroke:acc,"stroke-width":2,"stroke-dasharray":"5 4"});
-  e("line",{x1:RO.x,y1:RO.y,x2:P.x,y2:P.y,stroke:acc,"stroke-width":3});
-  e("circle",{cx:x,cy:RO.y,r:10,fill:OG,stroke:paper,"stroke-width":3,style:"cursor:ew-resize"});
-  $("rulerTxt").textContent=`尺上 ${Math.abs(rx).toFixed(1)} 公分 → 角度大約 ${Math.round(Math.abs(ang))}°（拖曳橘色的點）`}
-function setX(ev){const r=rs.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*440;rx=Math.max(-20,Math.min(20,Math.round((vx-RO.x)/10*2)/2));drawRuler()}
+/* 換我試試：跟上面同一個畫法（兩耳的線當直徑畫半圓；橘線從左耳出發碰到半圓；在右耳讀角度），拖曳半圓上的綠點 */
+const rs=$("ruler"),SC2=18,EY=218,EL={x:40,y:EY},ER={x:400,y:EY};let phi=40;   // phi：右耳的角度（度）
+function drawRuler(){rs.innerHTML="";const ink=col("--ink"),mut=col("--muted"),acc=col("--accent"),paper=col("--paper"),ca=col("--a"),cb=col("--b");
+  const e=(t,a,txt)=>E(t,a,rs,txt),R=10*SC2,cx=220;
+  e("path",{d:`M${EL.x},${EY} A${R},${R} 0 0 1 ${ER.x},${EY}`,fill:"none",stroke:mut,"stroke-width":1.5,"stroke-dasharray":"4 5"});
+  e("line",{x1:EL.x,y1:EY,x2:ER.x,y2:EY,stroke:acc,"stroke-width":4});
+  for(let c=0;c<=20;c++){const x=EL.x+c*SC2,l=c%5===0?9:4;e("line",{x1:x,y1:EY,x2:x,y2:EY+l,stroke:ink,"stroke-width":c%5===0?1.5:1});if(c%5===0)e("text",{x,y:EY+21,"text-anchor":"middle","font-size":11,fill:mut},c)}
+  e("text",{x:ER.x+6,y:EY+21,"font-size":11,fill:mut},"公分");
+  // 右耳的量角器（0° 對著左耳）
+  const PR=64,pt=(d,r)=>({x:ER.x-Math.cos(d*Math.PI/180)*r,y:EY-Math.sin(d*Math.PI/180)*r});
+  e("path",{d:`M${ER.x},${EY} L${ER.x-PR},${EY} A${PR},${PR} 0 0 1 ${ER.x},${EY-PR} Z`,fill:"#fff",stroke:ink,"stroke-width":1.1,opacity:0.92});
+  for(let d=0;d<=90;d+=5){const l=d%30===0?10:d%10===0?6:3,o=pt(d,PR),n=pt(d,PR-l);e("line",{x1:o.x,y1:o.y,x2:n.x,y2:n.y,stroke:ink,"stroke-width":d%30===0?1.5:0.8});if(d%30===0&&d){const t=pt(d,PR-19);e("text",{x:t.x,y:t.y+4,"text-anchor":"middle","font-size":9.5,fill:mut},d)}}
+  const r=phi*Math.PI/180,hyp=20*SC2,Q={x:ER.x-Math.cos(r)*Math.cos(r)*hyp,y:EY-Math.cos(r)*Math.sin(r)*hyp},d=20*Math.sin(r);
+  e("polygon",{points:`${EL.x},${EY} ${ER.x},${EY} ${Q.x},${Q.y}`,fill:acc,"fill-opacity":0.15});
+  e("line",{x1:ER.x,y1:EY,x2:Q.x,y2:Q.y,stroke:acc,"stroke-width":2,"stroke-dasharray":"5 4"});
+  e("line",{x1:EL.x,y1:EY,x2:Q.x,y2:Q.y,stroke:OG,"stroke-width":6,"stroke-linecap":"round"});
+  const ar=40;e("path",{d:`M${ER.x-ar},${EY} A${ar},${ar} 0 0 1 ${ER.x-Math.cos(r)*ar},${EY-Math.sin(r)*ar}`,fill:"none",stroke:OG,"stroke-width":3});
+  for(const [p,n,c,dx] of [[EL,"左耳",ca,-4],[ER,"右耳",cb,4]]){e("circle",{cx:p.x,cy:p.y,r:7,fill:c,stroke:paper,"stroke-width":2.5});e("text",{x:p.x,y:p.y+40,"text-anchor":"middle","font-size":13,"font-weight":700,fill:c},n)}
+  e("circle",{cx:Q.x,cy:Q.y,r:10,fill:acc,stroke:paper,"stroke-width":3,style:"cursor:grab"});
+  $("rulerTxt").textContent=`多走的路（橘線）${d.toFixed(1)} 公分 → 角度大約 ${Math.round(phi)}°（拖曳綠色的點）`}
+function setX(ev){const b=rs.getBoundingClientRect(),vx=(ev.clientX-b.left)/b.width*440,vy=(ev.clientY-b.top)/b.height*270;
+  let a=Math.atan2(EY-vy,ER.x-vx)*180/Math.PI;phi=Math.max(0,Math.min(90,Math.round(a)));drawRuler()}
 let drag=false;rs.addEventListener("pointerdown",e=>{drag=true;rs.setPointerCapture(e.pointerId);setX(e)});
 rs.addEventListener("pointermove",e=>{if(drag)setX(e)});rs.addEventListener("pointerup",()=>drag=false);rs.addEventListener("pointercancel",()=>drag=false);
 drawRuler();window.__redrawRuler=drawRuler;
