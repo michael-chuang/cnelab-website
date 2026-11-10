@@ -6371,6 +6371,14 @@ const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
 // 每一步的時間（秒）
 const SEQ=[2.2,1.4,1.6,1.8,1.4,1.8];const T0=SEQ.reduce((a,b,i)=>(a.push((a[i-1]||0)+b),a),[]);
 const angTxt=()=>th===0?"正前方 0°":`${th>0?"右":"左"}邊 ${Math.abs(th)}°`;
+/* 直角符號：在 Q 點，兩邊分別朝 A、B */
+function rightMark(par,Q,A,B,sz,color){const u=(P)=>{const dx=P.x-Q.x,dy=P.y-Q.y,l=Math.hypot(dx,dy)||1;return {x:dx/l,y:dy/l}},a=u(A),b=u(B);
+  E("path",{d:`M${Q.x+a.x*sz},${Q.y+a.y*sz} L${Q.x+(a.x+b.x)*sz},${Q.y+(a.y+b.y)*sz} L${Q.x+b.x*sz},${Q.y+b.y*sz}`,fill:"none",stroke:color,"stroke-width":2.2},par)}
+/* 聲音的箭頭：幾支平行的箭頭，從聲音來的方向射過來 */
+function soundArrows(par,C,s,R,color,n=4,gap=34){const tx=-s.y,ty=s.x;
+  for(let k=0;k<n;k++){const off=(k-(n-1)/2)*gap,bx=C.x+s.x*R+tx*off,by=C.y+s.y*R+ty*off,x2=bx-s.x*34,y2=by-s.y*34;
+    E("line",{x1:bx,y1:by,x2:x2+s.x*7,y2:y2+s.y*7,stroke:color,"stroke-width":2.4,"stroke-linecap":"round"},par);
+    E("polygon",{points:`${x2},${y2} ${x2+s.x*11-tx*5.5},${y2+s.y*11-ty*5.5} ${x2+s.x*11+tx*5.5},${y2+s.y*11+ty*5.5}`,fill:color},par)}}
 function draw(t){ // t：動畫時間；null＝全部畫完
   let AG=null;svg.innerHTML="";const ink=col("--ink"),mut=col("--muted"),line=col("--line"),acc=col("--accent"),ca=col("--a"),cb=col("--b"),paper=col("--paper");
   const step=t===null?9:T0.findIndex(x=>t<x),p=k=>t===null?1:ease((t-(T0[k-1]||0))/SEQ[k]);
@@ -6424,6 +6432,7 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   if(step>=2&&dpx>0.5){const q=step===2?p(2):1,g=seg(q);
     if(q>0.9){E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:"#fff","fill-opacity":0.6},top);E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:acc,"fill-opacity":0.22},top);
       E("line",{x1:near.x,y1:near.y,x2:Q.x,y2:Q.y,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},top);
+      if(dpx>14)rightMark(top,Q,far,near,9,"#fff");
       const ar=30,u1=-Math.PI/2,u2=Math.atan2(Q.y-far.y,Q.x-far.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
       E("line",{x1:far.x,y1:far.y,x2:far.x,y2:far.y-46,stroke:paper,"stroke-width":2,"stroke-dasharray":"4 3"},top);
       E("path",{d:`M${far.x+Math.cos(u1)*ar},${far.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${far.x+Math.cos(u2)*ar},${far.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},top);
@@ -6435,7 +6444,7 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   E("text",{x:14,y:290,"font-size":13,fill:mut},g2,"放大來量：三角形跟上面一模一樣（方向也一樣）");
   // 以兩耳的線當直徑的半圓（直角的那個點一定在半圓上）
   E("path",{d:`M${BL.x},${BY} A${10*SC},${10*SC} 0 0 1 ${BR.x},${BY}`,fill:"none",stroke:mut,"stroke-width":1.6,"stroke-dasharray":"4 5"},g2);
-  E("text",{x:320,y:BY-10*SC-8,"text-anchor":"middle","font-size":12.5,fill:mut},g2,"用兩耳的線當直徑畫半圓");
+  {const lx=bNear===BR?BR.x+16:BL.x-16,an=bNear===BR?"start":"end";E("text",{x:lx,y:BY-118,"text-anchor":an,"font-size":12.5,fill:mut},g2,"用兩耳的線");E("text",{x:lx,y:BY-100,"text-anchor":an,"font-size":12.5,fill:mut},g2,"當直徑畫半圓")}
   // 兩耳的線＝直尺（20 公分，從遠的耳朵開始量）
   E("line",{x1:BL.x,y1:BY,x2:BR.x,y2:BY,stroke:acc,"stroke-width":4},g2);
   for(let c=0;c<=20;c++){const x=bFar.x+(bNear.x>bFar.x?1:-1)*c*SC,l=c%5===0?10:5;E("line",{x1:x,y1:BY,x2:x,y2:BY+l,stroke:ink,"stroke-width":c%5===0?1.6:1},g2);
@@ -6457,9 +6466,12 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   if(step>=4&&dpx>0.5){const q=step===4?p(4):1;E("line",{x1:bNear.x,y1:bNear.y,x2:bNear.x+(QB.x-bNear.x)*q,y2:bNear.y+(QB.y-bNear.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
   if(step>=5&&dpx>0.5&&p(5)>0.95){E("polygon",{points:`${bFar.x},${bFar.y} ${bNear.x},${bNear.y} ${QB.x},${QB.y}`,fill:acc,"fill-opacity":0.18},svg);
     E("circle",{cx:QB.x,cy:QB.y,r:5,fill:acc},svg);
+    if(dB>14)rightMark(svg,QB,bFar,bNear,12,ink);
     const ar=52,u1=-Math.PI/2,u2=Math.atan2(QB.y-bFar.y,QB.x-bFar.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
     E("path",{d:`M${bFar.x+Math.cos(u1)*ar},${bFar.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${bFar.x+Math.cos(u2)*ar},${bFar.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3.5},svg);
     const um=u1+sw/2;E("text",{x:bFar.x+Math.cos(um)*(ar+50),y:bFar.y+Math.sin(um)*(ar+50)+7,"text-anchor":"middle","font-size":20,"font-weight":800,fill:OG},svg,`${Math.abs(th)}°`)}
+  if(step>=1){const C={x:bFar.x+s.x*dB*0.75,y:bFar.y+s.y*dB*0.75};soundArrows(svg,C,s,dB*0.25+64,ink,3,38);
+    E("text",{x:C.x+s.x*(dB*0.25+108)+(s.x>0?14:-14),y:Math.max(306,C.y+s.y*(dB*0.25+108)+4),"text-anchor":"middle","font-size":13,"font-weight":700,fill:ink},svg,"聲音")}
   if(th===0&&step>=5)E("text",{x:320,y:BY-40,"text-anchor":"middle","font-size":15,"font-weight":700,fill:OG},svg,"多走的路是 0 → 聲音在正前方（0°）");
   if(AG)AG.parentNode.appendChild(AG);   // 箭頭放最上面，不被三角形蓋住
   // 說明文字
@@ -6504,6 +6516,8 @@ function drawRuler(){rs.innerHTML="";const ink=col("--ink"),mut=col("--muted"),a
   e("line",{x1:EL.x,y1:EY,x2:Q.x,y2:Q.y,stroke:OG,"stroke-width":6,"stroke-linecap":"round"});
   const ar=44,ux=(Q.x-EL.x),uy=(Q.y-EY),ul=Math.hypot(ux,uy)||1;e("path",{d:`M${EL.x},${EY-ar} A${ar},${ar} 0 0 1 ${EL.x+ux/ul*ar},${EY+uy/ul*ar}`,fill:"none",stroke:OG,"stroke-width":3});
   for(const [p,n,c,dx] of [[EL,"左耳",ca,-4],[ER,"右耳",cb,4]]){e("circle",{cx:p.x,cy:p.y,r:7,fill:c,stroke:paper,"stroke-width":2.5});e("text",{x:p.x,y:p.y+40,"text-anchor":"middle","font-size":13,"font-weight":700,fill:c},n)}
+  if(d>1)rightMark(rs,Q,EL,ER,10,ink);
+  {const sv={x:Math.sin(r),y:-Math.cos(r)};soundArrows(rs,Q,sv,48,ink,3,30)}
   e("circle",{cx:Q.x,cy:Q.y,r:10,fill:acc,stroke:paper,"stroke-width":3,style:"cursor:grab"});
   $("rulerTxt").textContent=`多走的路（橘線）${d.toFixed(1)} 公分 → 角度大約 ${Math.round(phi)}°（拖曳綠色的點）`}
 function setX(ev){const b=rs.getBoundingClientRect(),vx=(ev.clientX-b.left)/b.width*440,vy=(ev.clientY-b.top)/b.height*270;
@@ -6841,7 +6855,7 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
 /* ================= 實驗三：資料、表格、圖、匯出 ================= */
 const KEY="ws3-doa-v1";
 const POS=[["正前方（0°）"],["正右方（90°）"],["正後方（180°）"],["正左方（270°）"]];
-const PRACT=[0.10,0.29,0.50];
+const PRACT=[0.10,0.29,0.40,0.50];
 const ROADN=["北","東","南","西"],ROADA={北:0,東:90,南:180,西:270};
 const RL=r=>r+"路";   // 北路、東路、南路、西路
 const NTR=8;
@@ -6850,6 +6864,7 @@ let S={p1:"",p2:"",p3:"",p4:"",t31:POS.map(([p])=>({p,first:"",big:""})),t32:PRA
   exp:{1:[],2:[],3:[],4:[]},setup:null,c1:"",c2:"",c3a:"",c3b:"",c4:"",c5:"",date:"",names:"",tab:1};
 for(const n of [1,2,3,4])S.exp[n]=[...Array(NTR)].map((_,i)=>({road:ROADN[Math.floor(i/2)],tr:"",ra:"",nodir:false}));
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s)}catch(e){}
+if(Array.isArray(S.t32)){PRACT.forEach(ms=>{if(!S.t32.some(r=>Math.abs(r.ms-ms)<1e-6))S.t32.push({ms,cm:"",deg:""})});S.t32.sort((a,b)=>a.ms-b.ms)}   // 多一題換我試試
 setTimeout(()=>makeEquip($("eqPics3"),$("equipList3"),()=>S.eq,(L)=>{S.eq=L;S.equipHTML=$("equipList3").innerHTML;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 window.__galModelOnly=true;   // 實驗三的「模型截圖」只收小模型路口的截圖
 /* 小模型路口：看到才載入；模型裡按 📷 的截圖，放進「模型截圖」 */
