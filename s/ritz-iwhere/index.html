@@ -4849,12 +4849,12 @@ function buildShots(){const box=$("shots23");if(!box)return;box.innerHTML="";con
     c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id);buildT23()})}}
 /* 表 2-3：一次看一種警笛。下拉選（也可以自己取名）→ 一句話＋頻譜截圖 */
 const rng24=r=>(r.lo||r.hi)?`${r.lo||"＿"}～${r.hi||"＿"}`:"";
-const sent24=r=>`${r.s}：主要頻率 ${r.hz||"＿＿"} Hz，頻率範圍 ${rng24(r)||"＿＿"} Hz；變化形式：${r.form||"＿＿"}`;
+const sent24=r=>`${r.s}：頻率範圍 ${rng24(r)||"＿＿"} Hz；變化形式：${r.form||"＿＿"}`;   // 警笛都是雙頻，不問主要頻率
 let cur24=null;
 function buildT24(){const pk=$("pick24");if(!pk)return;
   const names=[...SIRENS,...S.t24.map(r=>r.s).filter(v=>!SIRENS.includes(v))];
   pk.innerHTML=`<option value="">選一種警笛</option>${names.map(n=>`<option${n===cur24?" selected":""}>${esc(n)}</option>`).join("")}<option value="__new">＋ 自己取名…</option>`;
-  $("done24").innerHTML=S.t24.length?`<span class="note">已經記錄：</span>`+S.t24.map(r=>`<button type="button" class="chip${r.s===cur24?" on":""}" data-go="${esc(r.s)}">${esc(r.s)}${IMG["t24w_"+r.id]&&IMG["t24s_"+r.id]&&r.hz?" ✓":""}</button>`).join(""):"";
+  $("done24").innerHTML=S.t24.length?`<span class="note">已經記錄：</span>`+S.t24.map(r=>`<button type="button" class="chip${r.s===cur24?" on":""}" data-go="${esc(r.s)}">${esc(r.s)}${IMG["t24w_"+r.id]&&IMG["t24s_"+r.id]&&(r.lo||r.hi)?" ✓":""}</button>`).join(""):"";
   $("done24").querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{cur24=b.dataset.go;buildT24()}));
   $("del24").hidden=!S.t24.some(r=>r.s===cur24);
   buildShots24()}
@@ -4863,17 +4863,17 @@ function buildShots24(){const box=$("shots24");if(!box)return;box.innerHTML="";c
   const n=(id,v,lab)=>`<input type="number" id="${id}" min="0" step="1" inputmode="numeric" value="${esc(v)}" style="max-width:6em" aria-label="${lab}">`;
   const c=document.createElement("div");c.className="shot";
   c.innerHTML=`<p class="sent23">影片網址：<input type="text" id="su24" value="${esc(r.url)}" placeholder="https://" style="max-width:22em;text-align:left" aria-label="影片網址"></p>
-    <p class="sent23">${esc(r.s)} 的主要頻率是 ${n("sh24",r.hz,"主要頻率")} Hz，頻率範圍（山峰在哪些頻率之間移動）是 ${n("sl24",r.lo,"最低")}～${n("sx24",r.hi,"最高")} Hz。</p>
+    <p class="sent23">${esc(r.s)} 的頻率範圍（山峰在哪些頻率之間移動）是 ${n("sl24",r.lo,"最低")}～${n("sx24",r.hi,"最高")} Hz。</p>
     <p class="sent23" style="line-height:1.6">變化形式：<span class="note">頻率是<b>高低交替</b>、<b>慢慢升高再降下</b>，還是<b>很快地上上下下</b>？大約<b>多久</b>變一次（例如 1 秒 2 次）？有沒有<b>停頓</b>？</span></p>
     <textarea id="sf24" rows="2" placeholder="怎麼變？多久變一次？" aria-label="變化形式">${esc(r.form)}</textarea>
     <div class="two">${[["w","波形"],["s","頻譜"]].map(([k,n])=>{const id="t24"+k+"_"+r.id;
       return `<div class="photo"><label class="drop" for="f_${id}"><img id="im_${id}" alt="" hidden><span>點這裡放${n}截圖</span></label><input type="file" id="f_${id}" accept="image/*" hidden><p class="cap" style="margin:0">${esc(r.s)} 的${n}</p><button class="xbtn" data-shot="${id}">移除</button></div>`}).join("")}</div>`;
   box.appendChild(c);
-  for(const [e,k] of [["su24","url"],["sh24","hz"],["sl24","lo"],["sx24","hi"],["sf24","form"]])c.querySelector("#"+e).addEventListener("input",ev=>{r[k]=ev.target.value;save();if(k==="hz")$("done24").querySelector(".chip.on")&&buildChipsOnly24()});
+  for(const [e,k] of [["su24","url"],["sl24","lo"],["sx24","hi"],["sf24","form"]])c.querySelector("#"+e).addEventListener("input",ev=>{r[k]=ev.target.value;save();if(k==="lo"||k==="hi")$("done24").querySelector(".chip.on")&&buildChipsOnly24()});
   for(const k of ["w","s"]){const id="t24"+k+"_"+r.id;showImg(id);
     c.querySelector("#f_"+id).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[id]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(id);buildT24()}catch(err){}e.target.value=""});
     c.querySelector(`[data-shot="${id}"]`).addEventListener("click",()=>{delete IMG[id];saveImg();showImg(id);buildT24()})}}
-function buildChipsOnly24(){const r=S.t24.find(x=>x.s===cur24),b=$("done24").querySelector(".chip.on");if(r&&b)b.textContent=r.s+(IMG["t24w_"+r.id]&&IMG["t24s_"+r.id]&&r.hz?" ✓":"")}
+function buildChipsOnly24(){const r=S.t24.find(x=>x.s===cur24),b=$("done24").querySelector(".chip.on");if(r&&b)b.textContent=r.s+(IMG["t24w_"+r.id]&&IMG["t24s_"+r.id]&&(r.lo||r.hi)?" ✓":"")}
 function buildT25(){const tb=$("t25").querySelector("tbody");tb.innerHTML="";
   S.t25.forEach((r,i)=>{const tr=document.createElement("tr");
     tr.innerHTML=`<td>${r.c}</td><td><input type="text" id="lr${i}" class="name" placeholder="例：幾～幾"></td><td><textarea id="lt${i}" rows="2" style="min-width:14em;text-align:left" placeholder="怎麼變？多久一次？"></textarea></td>`;
@@ -5038,8 +5038,8 @@ btn.addEventListener("click",async()=>{
     B.push(...await photoBlocks([["ph3","cap3"],["ph4","cap4"]].map(([k,c])=>({src:IMG[k],cap:"截圖："+(S[c]||"")})),9000,300));
     B.push(P("怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+(S.qp1||"＿＿")));B.push(P("唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")));
     B.push(H("四、警笛聲調查：YouTube＋Phyphox"));B.push(...await wordFigs(secBy("四、"),[]));
-    {const sr=S.t24.filter(r=>r.s).map(r=>[r.s,r.url,r.hz,rng24(r),r.form]);
-    B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","主要頻率（Hz）","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","","",""]]));
+    {const sr=S.t24.filter(r=>r.s).map(r=>[r.s,r.url,rng24(r),r.form]);
+    B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","",""]]));
     for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));B.push(...await photoBlocks([["w","波形"],["s","頻譜"]].map(([k,n])=>({src:IMG["t24"+k+"_"+r.id],cap:`${r.s} 的${n}`})),9000,300))}}
     B.push(...await photoBlocks([["ph5","cap5"],["ph6","cap6"]].map(([k,c])=>({src:IMG[k],cap:"截圖："+(S[c]||"")+" 的頻譜"})),9000,300));
     B.push(H("五、臺灣對警笛聲的規定"));B.push(...await wordFigs(secBy("五、"),["law"]));
@@ -8336,7 +8336,7 @@ window.__talkBlocks=talkBlocks;
         if(A!==null&&B!==null)L.push(`・全組 ${t.length} 位平均：沒有遮住 ${r1(A)}°，戴耳機 ${r1(B)}°，多了 ${r1(B-A)}°`)}
       if(S.q2)L.push(`・戴耳機時，播音員站在${S.q2}最容易指錯`);if(S.q3)L.push(`・圖 1-1 中，${S.q3}的點離 0° 比較遠`)}
     if(w.n==="二"){(S.t23||[]).filter(r=>r.v).forEach(r=>L.push(`・${r.v}：波形${r.reg||"＿"}，頻譜${r.peak==="很明顯"?`有很明顯的山峰，主要頻率 ${r.hz||"＿"} Hz`:r.peak==="不明顯"?"沒有明顯的山峰":"＿"}`));
-      (S.t24||[]).filter(r=>r.s&&(r.hz||r.lo||r.hi||r.form)).forEach(r=>L.push(`・${r.s}：主要頻率 ${r.hz||"＿"} Hz，範圍 ${r.lo||"＿"}～${r.hi||"＿"} Hz${r.form?"，"+r.form:""}`));
+      (S.t24||[]).filter(r=>r.s&&(r.lo||r.hi||r.form)).forEach(r=>L.push(`・${r.s}：頻率範圍 ${r.lo||"＿"}～${r.hi||"＿"} Hz${r.form?"，"+r.form:""}`));
       (S.t25||[]).filter(r=>r.lr||r.lt).forEach(r=>L.push(`・法規：${r.c} ${r.lr||""} Hz${r.lt?"，"+r.lt:""}`))}
     if(w.n==="三"){(S.t31||[]).filter(r=>r.first||r.ms||r.big).forEach(r=>L.push(`・喇叭在${r.p}：${r.first||"＿"}先聽到，時間差${r.ms!=null&&r.ms!==""?" "+r.ms+" 毫秒":(r.big||"＿")}`));
       for(const n of [1,2,3,4]){const R=((S.exp||{})[n]||[]);let done=0,ok=0;const er=[];
