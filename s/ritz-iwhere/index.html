@@ -6373,7 +6373,7 @@ const SEQ=[2.2,1.4,1.6,1.8,1.4,1.8];const T0=SEQ.reduce((a,b,i)=>(a.push((a[i-1]
 const angTxt=()=>th===0?"正前方 0°":`${th>0?"右":"左"}邊 ${Math.abs(th)}°`;
 /* 直角符號：在 Q 點，兩邊分別朝 A、B */
 function rightMark(par,Q,A,B,sz,color){const u=(P)=>{const dx=P.x-Q.x,dy=P.y-Q.y,l=Math.hypot(dx,dy)||1;return {x:dx/l,y:dy/l}},a=u(A),b=u(B);
-  E("path",{d:`M${Q.x+a.x*sz},${Q.y+a.y*sz} L${Q.x+(a.x+b.x)*sz},${Q.y+(a.y+b.y)*sz} L${Q.x+b.x*sz},${Q.y+b.y*sz}`,fill:"none",stroke:color,"stroke-width":2.2},par)}
+  E("path",{d:`M${Q.x+a.x*sz},${Q.y+a.y*sz} L${Q.x+(a.x+b.x)*sz},${Q.y+(a.y+b.y)*sz} L${Q.x+b.x*sz},${Q.y+b.y*sz}`,fill:"none",stroke:color,"stroke-width":2.8},par)}
 /* 聲音的箭頭：平均排在虛線（聲音同時到的那條線）上，從聲音來的方向射過來 */
 function soundArrows(par,A,B,s,color,n=6,len=46){const tx=-s.y,ty=s.x;
   for(let k=0;k<n;k++){const f=n>1?k/(n-1):0.5,px=A.x+(B.x-A.x)*f,py=A.y+(B.y-A.y)*f,x2=px+s.x*7,y2=py+s.y*7,bx=x2+s.x*len,by=y2+s.y*len;
@@ -6432,7 +6432,7 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   if(step>=2&&dpx>0.5){const q=step===2?p(2):1,g=seg(q);
     if(q>0.9){E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:"#fff","fill-opacity":0.6},top);E("polygon",{points:`${far.x},${far.y} ${near.x},${near.y} ${Q.x},${Q.y}`,fill:acc,"fill-opacity":0.22},top);
       E("line",{x1:near.x,y1:near.y,x2:Q.x,y2:Q.y,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},top);
-      if(dpx>14)rightMark(top,Q,far,near,9,"#fff");
+      if(dpx>24)rightMark(top,Q,far,near,14,"#fff");
       const ar=30,u1=-Math.PI/2,u2=Math.atan2(Q.y-far.y,Q.x-far.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
       E("line",{x1:far.x,y1:far.y,x2:far.x,y2:far.y-46,stroke:paper,"stroke-width":2,"stroke-dasharray":"4 3"},top);
       E("path",{d:`M${far.x+Math.cos(u1)*ar},${far.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${far.x+Math.cos(u2)*ar},${far.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3},top);
@@ -6466,7 +6466,7 @@ function draw(t){ // t：動畫時間；null＝全部畫完
   if(step>=4&&dpx>0.5){const q=step===4?p(4):1;E("line",{x1:bNear.x,y1:bNear.y,x2:bNear.x+(QB.x-bNear.x)*q,y2:bNear.y+(QB.y-bNear.y)*q,stroke:acc,"stroke-width":2.5,"stroke-dasharray":"6 4"},svg)}
   if(step>=5&&dpx>0.5&&p(5)>0.95){E("polygon",{points:`${bFar.x},${bFar.y} ${bNear.x},${bNear.y} ${QB.x},${QB.y}`,fill:acc,"fill-opacity":0.18},svg);
     E("circle",{cx:QB.x,cy:QB.y,r:5,fill:acc},svg);
-    if(dB>14)rightMark(svg,QB,bFar,bNear,12,ink);
+    if(dB>30)rightMark(svg,QB,bFar,bNear,22,ink);
     const ar=52,u1=-Math.PI/2,u2=Math.atan2(QB.y-bFar.y,QB.x-bFar.x),sw=((u2-u1+3*Math.PI)%(2*Math.PI))-Math.PI;
     E("path",{d:`M${bFar.x+Math.cos(u1)*ar},${bFar.y+Math.sin(u1)*ar} A${ar},${ar} 0 0 ${sw>0?1:0} ${bFar.x+Math.cos(u2)*ar},${bFar.y+Math.sin(u2)*ar}`,fill:"none",stroke:OG,"stroke-width":3.5},svg);
     const um=u1+sw/2;E("text",{x:bFar.x+Math.cos(um)*(ar+50),y:bFar.y+Math.sin(um)*(ar+50)+7,"text-anchor":"middle","font-size":20,"font-weight":800,fill:OG},svg,`${Math.abs(th)}°`)}
@@ -6516,7 +6516,7 @@ function drawRuler(){rs.innerHTML="";const ink=col("--ink"),mut=col("--muted"),a
   e("line",{x1:EL.x,y1:EY,x2:Q.x,y2:Q.y,stroke:OG,"stroke-width":6,"stroke-linecap":"round"});
   const ar=44,ux=(Q.x-EL.x),uy=(Q.y-EY),ul=Math.hypot(ux,uy)||1;e("path",{d:`M${EL.x},${EY-ar} A${ar},${ar} 0 0 1 ${EL.x+ux/ul*ar},${EY+uy/ul*ar}`,fill:"none",stroke:OG,"stroke-width":3});
   for(const [p,n,c,dx] of [[EL,"左耳",ca,-4],[ER,"右耳",cb,4]]){e("circle",{cx:p.x,cy:p.y,r:7,fill:c,stroke:paper,"stroke-width":2.5});e("text",{x:p.x,y:p.y+40,"text-anchor":"middle","font-size":13,"font-weight":700,fill:c},n)}
-  if(d>1)rightMark(rs,Q,EL,ER,10,ink);
+  if(d>1)rightMark(rs,Q,EL,ER,24,ink);
   {const sv={x:Math.sin(r),y:-Math.cos(r)};soundArrows(rs,Q,ER,sv,ink,5,34)}
   e("circle",{cx:Q.x,cy:Q.y,r:10,fill:acc,stroke:paper,"stroke-width":3,style:"cursor:grab"});
   $("rulerTxt").textContent=`多走的路（橘線）${d.toFixed(1)} 公分 → 角度大約 ${Math.round(phi)}°（拖曳綠色的點）`}
