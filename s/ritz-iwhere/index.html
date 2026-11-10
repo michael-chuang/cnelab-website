@@ -5057,9 +5057,10 @@ btn.addEventListener("click",async()=>{
     {const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
       if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}}
     B.push(...await wordGal(IMG.gal,"其他截圖和實驗照片",{skip:n=>n==="喇叭推空氣"||/彩虹彈簧/.test(n)}));
-    if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     B.push(H(((secBy("二、")||{}).querySelector?.("h2")||{}).textContent||"二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[],{steps:false}));
-    B.push(...await photoBlocks([...[["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]].map(([k,t])=>({src:IMG[k],cap:t})),...(IMG.xBead||[]).map((o,i)=>({src:o.src,cap:(o.t||`照片 ${i+3}`)+(o.cap?"："+o.cap:"")}))]));
+    B.push(...await photoBlocks([["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]].map(([k,t])=>({src:IMG[k],cap:t}))));
+    if(window.__L){B.push({__split:1});B.push(H(((secBy("二、")||{}).querySelector?.("h2")||{}).textContent||"二、認識「頻譜」"))}   // 「科展作品說明」彙整時：照片 1、2 放「研究過程」，後面（更多照片、表、圖）放「結果」
+    B.push(...await photoBlocks((IMG.xBead||[]).map((o,i)=>({src:o.src,cap:(o.t||`照片 ${i+3}`)+(o.cap?"："+o.cap:"")}))));
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
     B.push(cap("表 2-1、我的這一把串珠"));B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));
     const bs=off("0 0 560 300");drawBeads(bs,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bs,560,300),transformation:{width:450,height:241}})]}));
