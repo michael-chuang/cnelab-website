@@ -7685,7 +7685,7 @@ function draw(){const L=S.L;$("tkCount").textContent=`（${L.length}／${MAX}）
   $("tkList").innerHTML=L.map((o,i)=>`<div class="tkrow" data-i="${i}">
     <label class="tkph${o.src?" has":""}" for="tkf${i}" title="${o.src?"換一張照片":"拍照或選照片"}">${o.src?`<img src="${o.src}" alt="第 ${i+1} 次討論的照片">`:"📷<span>拍照</span>"}</label><input type="file" accept="image/*" id="tkf${i}" hidden>
     <div class="tkside"><div class="tktop">
-      <div class="tkbtns">${L.length>1?DRAG:""}<button type="button" data-up ${i?"":"disabled"} aria-label="往上移">▲</button><button type="button" data-dn ${i<L.length-1?"":"disabled"} aria-label="往下移">▼</button>${o.src?'<button type="button" data-unpic>移除照片</button>':""}<button type="button" data-del aria-label="刪掉這一次">🗑</button></div></div>
+      <div class="tkbtns">${L.length>1?DRAG:""}<button type="button" data-up ${i?"":"disabled"} aria-label="往上移">▲</button><button type="button" data-dn ${i<L.length-1?"":"disabled"} aria-label="往下移">▼</button>${o.src?'<button type="button" data-unpic>移除照片</button>':""}<button type="button" data-end aria-pressed="${o.end?"true":"false"}" title="這張放在作品說明「結果」的最後面" style="${o.end?"background:#fde68a;border-color:#d97706":""}">${o.end?"⭐ 放在結論最後":"☆ 放在結論最後"}</button><button type="button" data-del aria-label="刪掉這一次">🗑</button></div></div>
       <textarea placeholder="這次討論了什麼？決定了什麼？" aria-label="第 ${i+1} 次：討論了什麼">${esc(o.cap)}</textarea></div></div>`).join("")||'<p class="note" style="margin:0">還沒有紀錄。按下面的「＋ 新增一次討論」。</p>';
   makeSortable($("tkList"),".tkrow",(a,b)=>{moveIn(S.L,a,b);save();draw()});
   $("tkList").querySelectorAll(".tkrow").forEach(r=>{const i=+r.dataset.i,o=S.L[i];
@@ -7695,6 +7695,7 @@ function draw(){const L=S.L;$("tkCount").textContent=`（${L.length}／${MAX}）
       const u=await new Promise(ok=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.readAsDataURL(file)});o.src=await shrink(u);
       if(!o.date&&file.lastModified){const d=new Date(file.lastModified);o.date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
       if(save()===false)alert("存不下了，請先刪掉幾張。");draw()});
+    r.querySelector("[data-end]").addEventListener("click",()=>{o.end=!o.end;save();draw()});   // 比較特別的照片：放在作品說明「結果」的最後面
     const up=r.querySelector("[data-unpic]");if(up)up.addEventListener("click",()=>{if(!confirm("要把這張照片拿掉嗎？"))return;o.src="";save();draw()});
     r.querySelector("[data-del]").addEventListener("click",()=>{if((o.src||o.cap)&&!confirm(`要刪掉第 ${i+1} 次的紀錄嗎？`))return;S.L.splice(i,1);save();draw()});
     r.querySelector("[data-up]").addEventListener("click",()=>{[S.L[i-1],S.L[i]]=[S.L[i],S.L[i-1]];save();draw()});
@@ -8370,11 +8371,14 @@ buildMems();$("addMem").addEventListener("click",()=>{const l=S.mems[S.mems.leng
 /* 從實驗一～三帶入：器材、步驟＋紀錄、結論（按了才帶入，之後可以自己改） */
 (()=>{const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}};
 /* 研究過程最後面：「討論過程紀錄」分頁的每一次討論（日期、照片、討論內容） */
-async function talkBlocks(){const X=window.docx,{Paragraph,TextRun,ImageRun,AlignmentType}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&(o.src||o.cap));if(!L.length)return [];
+async function talkBlocks(){const X=window.docx,{Paragraph,TextRun,ImageRun,AlignmentType}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&(o.src||o.cap)&&!o.end);if(!L.length)return [];
   const out=[new Paragraph({spacing:{before:200,after:80},children:[new TextRun({text:"討論過程紀錄",bold:true,size:26})]})];
   out.push(await window.__photoTable(X,L.map(o=>({src:o.src,cap:o.cap||""})),7300),new Paragraph({spacing:{after:80},children:[]}));
   return out}
 window.__talkBlocks=talkBlocks;
+/* 「討論過程紀錄」裡勾了「⭐ 放在結論最後」的照片：放在「結果」的最後面 */
+window.__talkEnd=async()=>{const X=window.docx,{Paragraph}=X;const L=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&o.end&&(o.src||o.cap));if(!L.length)return [];
+  return [new Paragraph({spacing:{before:200},children:[]}),await window.__photoTable(X,L.map(o=>({src:o.src,cap:o.cap||""})),7300)]};
   const ls=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
   const items=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
   const W=()=>{const a=rd("ws1-occlusion-v2"),b=rd("ws2-fourier-v1"),c=rd("ws3-doa-v1");
@@ -8493,7 +8497,7 @@ btn.addEventListener("click",async()=>{
       row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
       row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
       row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkBlocks()],2400),
-      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",(WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})],2000),
+      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...((WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkEnd()],2000),
       row("參考資料及其他",null,lines(S.refs),1000)];
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
       sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2："),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[703,9197],layout:D.TableLayoutType.FIXED,rows})]}]});
