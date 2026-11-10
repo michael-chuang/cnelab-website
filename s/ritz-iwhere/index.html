@@ -5631,7 +5631,7 @@ td.no{color:var(--b);font-weight:700}
     <p class="note">跟上面一樣：兩耳的線長 20 公分，用它當直徑畫半圓。先算出多走的路，再拖曳半圓上的綠點，讓橘線（從左耳出發）的長度等於多走的路，就可以在左耳的量角器（0° 對正前方）讀出角度。</p>
     <p class="cap">表 3-2　從時間差找出角度（按「對答案」看看）</p>
     <div class="two" style="margin-top:8px">
-      <div><svg id="ruler" viewBox="0 0 440 270" role="img" aria-label="可以拖曳的半圓量角尺"></svg><div class="note" id="rulerTxt" style="text-align:center"></div><div style="text-align:center;margin-top:6px"><button type="button" class="xbtn" id="rulerSnap">📷 截圖（半圓尺＋表 3-2）</button></div></div>
+      <div><svg id="ruler" viewBox="0 0 440 270" role="img" aria-label="可以拖曳的半圓量角尺"></svg><div class="note" id="rulerTxt" style="text-align:center"></div><div style="text-align:center;margin-top:6px"><button type="button" class="xbtn" id="rulerSnap">📷 截圖（半圓尺）</button></div></div>
       <div class="tbl"><table id="t32"><thead><tr><th>時間差（毫秒）</th><th>多走的路（公分）</th><th>角度（度）</th><th></th></tr></thead><tbody></tbody></table></div>
     </div>
   </div>
@@ -6889,12 +6889,8 @@ setTimeout(()=>{const t=$("tri");makeShotSlots(t&&t.closest(".tri-card"),"學習
 /* 換我試試：把半圓尺和表 3-2 一起拍下來（可以拍好幾張） */
 setTimeout(()=>{makeShotSlot($("rulerCard"),"實驗三_換我試試","換我試試",()=>S.gal4,g=>{S.gal4=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}},{photos:1,snapBtn:"rulerSnap"});
   const b=$("rulerSnap");if(b)b.addEventListener("click",async()=>{b.disabled=true;try{const a=await svgSnap($("ruler")),ia=await new Promise(ok=>{const i=new Image();i.onload=()=>ok(i);i.src=a});
-    const rows=[...document.querySelectorAll("#t32 tbody tr")].map(tr=>[...tr.querySelectorAll("td")].slice(0,3).map(td=>{const i=td.querySelector("input");return (i?i.value:td.textContent).trim()}));
-    const W=ia.width,TH=60+rows.length*54,txt=($("rulerTxt").textContent||"").trim(),c=document.createElement("canvas");c.width=W;c.height=ia.height+50+TH;const g=c.getContext("2d");
+    const W=ia.width,txt=($("rulerTxt").textContent||"").replace("（拖曳綠色的點）","").trim(),c=document.createElement("canvas");c.width=W;c.height=ia.height+50;const g=c.getContext("2d");   // 只截半圓尺，不截表格
     g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(ia,0,0);g.fillStyle="#333";g.font=`${Math.round(W/36)}px sans-serif`;g.textAlign="center";g.fillText(txt,W/2,ia.height+34);
-    const y0=ia.height+50,cw=[W*.34,W*.33,W*.33],hd=["時間差（毫秒）","多走的路（公分）","角度（度）"];g.font=`bold ${Math.round(W/34)}px sans-serif`;
-    hd.forEach((h,i)=>g.fillText(h,cw.slice(0,i).reduce((a,b)=>a+b,0)+cw[i]/2,y0+38));g.font=`${Math.round(W/32)}px sans-serif`;g.strokeStyle="#ccc";
-    rows.forEach((r,k)=>{const y=y0+60+k*54;g.beginPath();g.moveTo(10,y);g.lineTo(W-10,y);g.stroke();r.forEach((v,i)=>g.fillText(v||"＿",cw.slice(0,i).reduce((a,b)=>a+b,0)+cw[i]/2,y+36))});
     dispatchEvent(new CustomEvent("pp-snap",{detail:{u:c.toDataURL("image/png"),name:"實驗三_換我試試"}}))}catch(e){console.warn(e)}b.disabled=false})},0);
 setTimeout(()=>makeGallery($("gal3"),()=>S.gal,g=>{S.gal=g;try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}),0);
 S.t31=POS.map(([p])=>S.t31.find(r=>r.p===p)||{p,first:"",big:""});
