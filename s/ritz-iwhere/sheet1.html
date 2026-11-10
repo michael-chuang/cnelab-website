@@ -934,11 +934,17 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   async function img(u,cap,keep){if(window.__L&&!keep)return;   /* 科展作品說明裡只放標了 data-wordalways 的大圖 *//* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
-  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：只放標了 data-wordalways 的大圖 */
+  /* 說明文字：每段開頭的 p.lead，和「①②③」的步驟卡（.step）。彙整成科展作品說明時也要放 */
+  const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
+  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
+    for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
+    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
+  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
-    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword]"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
+    if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword],.step"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
     if(skip.includes(e.id)||e.closest("button,.drop,.photo,.pics,.chip,[data-noword]"))continue;
     const r=reg.find(x=>x.host.contains(e));
     if(r){if(done.has(r.host))continue;done.add(r.host);try{await img(await r.opt.snap(),capOf(r.host.querySelector("canvas,svg"),r.host),!!r.host.closest("[data-wordalways]"))}catch(err){}continue}

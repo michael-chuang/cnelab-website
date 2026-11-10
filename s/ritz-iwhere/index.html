@@ -3079,11 +3079,17 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   async function img(u,cap,keep){if(window.__L&&!keep)return;   /* 科展作品說明裡只放標了 data-wordalways 的大圖 *//* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
-  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：只放標了 data-wordalways 的大圖 */
+  /* 說明文字：每段開頭的 p.lead，和「①②③」的步驟卡（.step）。彙整成科展作品說明時也要放 */
+  const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
+  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
+    for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
+    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
+  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
-    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword]"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
+    if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword],.step"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
     if(skip.includes(e.id)||e.closest("button,.drop,.photo,.pics,.chip,[data-noword]"))continue;
     const r=reg.find(x=>x.host.contains(e));
     if(r){if(done.has(r.host))continue;done.add(r.host);try{await img(await r.opt.snap(),capOf(r.host.querySelector("canvas,svg"),r.host),!!r.host.closest("[data-wordalways]"))}catch(err){}continue}
@@ -4723,11 +4729,17 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   async function img(u,cap,keep){if(window.__L&&!keep)return;   /* 科展作品說明裡只放標了 data-wordalways 的大圖 *//* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
-  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：只放標了 data-wordalways 的大圖 */
+  /* 說明文字：每段開頭的 p.lead，和「①②③」的步驟卡（.step）。彙整成科展作品說明時也要放 */
+  const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
+  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
+    for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
+    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
+  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
-    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword]"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
+    if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword],.step"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
     if(skip.includes(e.id)||e.closest("button,.drop,.photo,.pics,.chip,[data-noword]"))continue;
     const r=reg.find(x=>x.host.contains(e));
     if(r){if(done.has(r.host))continue;done.add(r.host);try{await img(await r.opt.snap(),capOf(r.host.querySelector("canvas,svg"),r.host),!!r.host.closest("[data-wordalways]"))}catch(err){}continue}
@@ -5020,6 +5032,7 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗二 What 傅立葉轉換篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
+    {const ld=[...document.querySelectorAll("p.lead")].find(e=>!e.closest("section"));if(ld)B.push(P(ld.textContent.trim().replace(/\s+/g," ")))}   // 開頭的說明
     if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
       if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
     B.push(...await wordGal(IMG.gal,"模型截圖"));
@@ -5585,7 +5598,7 @@ td.no{color:var(--b);font-weight:700}
 <header>
   <div class="eyebrow"><span data-sync-ro="wwt-title">智「where」開道、平安駕到</span>　科展實驗三 Where 聲源定位篇</div>
   <h1 data-sync-ro="wwt-fw-h3q">警笛聲從哪裡來？</h1>
-  <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這個實驗先用自己的兩隻耳朵了解「時間差」，再學一個不用三角函數也能找出角度的方法，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
+  <p class="lead">機器聽方向的本事叫做「聲源定位」，也叫 DOA（Direction of Arrival，聲音的到達方向）。這個實驗先用自己的兩隻耳朵了解「時間差」，再用學過的三角形和圓規，從時間差畫出三角形、找出聲音的角度，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。</p>
 </header>
 
 <section>
@@ -5624,7 +5637,7 @@ td.no{color:var(--b);font-weight:700}
 
 <section>
   <h2>二、從時間差找出角度</h2>
-  <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；再用兩耳的寬度和量角器，就能找出角度，不用三角函數。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變：下面的三角形跟上面一模一樣、方向也一樣，只是放大，方便用尺和量角器量。</p>
+  <p class="lead">真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」；我們已經學過三角形的基本性質和圓規：知道兩個邊長（兩耳的距離 20 公分、多走的路）和一個直角，就能畫出這個三角形，再用量角器讀出聲音來的角度。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變：下面的三角形跟上面一模一樣、方向也一樣，只是放大，方便用尺和量角器量。</p>
   <div class="card tri-card" data-wordalways><div class="tri-wrap"><svg id="tri" viewBox="0 0 640 642" role="img" aria-label="從多走的路找出角度的半圓作圖"></svg>
 </div></div>
   <div class="card" id="rulerCard"><h3>換我試試：從時間差找角度</h3>
@@ -6052,7 +6065,7 @@ document.getElementById("ctrl").addEventListener("click",e=>{const b=e.target.cl
   <h2>四、結果與結論</h2>
   <div class="card qa"><ol>
     <li><label for="c1">兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？</label><input type="text" id="c1" class="wide"></li>
-    <li><label for="c2">不用三角函數，怎麼從時間差找出角度？</label><input type="text" id="c2" class="wide"></li>
+    <li><label for="c2">怎麼從時間差畫出三角形、找出角度？</label><input type="text" id="c2" class="wide"></li>
     <li>實驗結果：麥克風越多，正確率越 <select id="c3a"><option></option><option>高</option><option>低</option><option>差不多</option></select>，角度差越 <select id="c3b"><option></option><option>小</option><option>大</option><option>差不多</option></select>。</li>
     <li><label for="c4">我的假設（路口至少要幾支）對嗎？至少要幾支、怎麼擺？</label><input type="text" id="c4" class="wide"></li>
     <li><label for="c5">結論：給智慧路口的建議</label><textarea id="c5"></textarea></li>
@@ -6358,7 +6371,7 @@ place();view("front");resize();updRes();tick();
 window.__h3d={setAng,play,stop,cam,ctl,level:()=>{if(!AN)return -1;const d=new Float32Array(AN.fftSize);AN.getFloatTimeDomainData(d);return Math.sqrt(d.reduce((a,x)=>a+x*x,0)/d.length)},state:()=>AC&&AC.state};
 })();
 
-/* ================= 二、不用三角函數：多走的路 → 半圓 → 角度 ================= */
+/* ================= 二、用三角形和圓規：多走的路 → 半圓 → 角度 ================= */
 (()=>{
 const NS="http://www.w3.org/2000/svg",svg=$("tri");
 const E=(tag,a,p=svg,txt)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;p.appendChild(e);return e};
@@ -6838,11 +6851,17 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   async function img(u,cap,keep){if(window.__L&&!keep)return;   /* 科展作品說明裡只放標了 data-wordalways 的大圖 *//* 科展作品說明彙整時：孩子已經有自己的截圖，不放網頁自動拍的畫面 */if(!u||!/^data:image\//.test(u)||u.length<2000)return;const [w,h]=await size(u),W=Math.min(440,Math.round(w/2)||440);
     out.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await buf(u),transformation:{width:W,height:Math.round(W*h/w)}})]}));
     n++;out.push(P(`（網頁上的畫面）${cap}`,{align:AlignmentType.CENTER,size:20,color:"5B6872",after:200}))}
-  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：只放標了 data-wordalways 的大圖 */
+  /* 說明文字：每段開頭的 p.lead，和「①②③」的步驟卡（.step）。彙整成科展作品說明時也要放 */
+  const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
+  if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
+    for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
+    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll("p.lead,p.note,svg,canvas")];
+  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
-    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword]"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
+    if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
+    if(e.matches("p")){if(e.closest(".drop,.pics,.photo,table,button,label,.galf,[data-noword],.step"))continue;const t=e.innerText.replace(/\s+\n/g,"\n").trim();if(t)out.push(P(t,{color:"37474F"}));continue}
     if(skip.includes(e.id)||e.closest("button,.drop,.photo,.pics,.chip,[data-noword]"))continue;
     const r=reg.find(x=>x.host.contains(e));
     if(r){if(done.has(r.host))continue;done.add(r.host);try{await img(await r.opt.snap(),capOf(r.host.querySelector("canvas,svg"),r.host),!!r.host.closest("[data-wordalways]"))}catch(err){}continue}
@@ -7041,13 +7060,14 @@ btn.addEventListener("click",async()=>{
     B.push(P((localStorage.getItem("wwt-title")||"智「where」開道、平安駕到")+"　科展實驗三 Where 聲源定位篇",{align:AlignmentType.CENTER,size:22,color:"5B6872"}));
     B.push(P(localStorage.getItem("wwt-fw-h3q")||"警笛聲從哪裡來？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
-    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("先想一想"));B.push(P("戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("兩隻耳朵靠什麼聽出左右？"+(S.p2||"＿＿＿＿")));
-    B.push(P(`我猜：路口至少要 ${S.p3||"＿＿"} 麥克風，因為 ${S.p4||"＿＿＿＿"}`));
+    {const ld=document.querySelector("header p.lead, main > p.lead, body > p.lead")||[...document.querySelectorAll("p.lead")].find(e=>!e.closest("section"));if(ld)B.push(P(ld.textContent.trim().replace(/\s+/g," ")))}
+    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList3 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((S.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("先想一想"));B.push(P("實驗一發現：戴上耳機後，指方向變得怎樣？"+(S.p1||"＿＿＿＿")));B.push(P("你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？"+(S.p2||"＿＿＿＿")));
+    B.push(P(`我猜：路口至少要裝 ${S.p3||"＿＿"} 麥克風，才分得出救護車從哪一條路來，因為 ${S.p4||"＿＿＿＿"}`));
     B.push(H("一、兩隻耳朵的時間差"));B.push(...await wordFigs(secBy("一、"),[]));B.push(...await wordGal(Object.assign({},S.gal1,{p:[]}),"兩隻耳朵聽聲音的截圖"));if(S.fig31){const [w,h]=await new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,1]);i.src=S.fig31});B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:new Uint8Array(await (await fetch(S.fig31)).arrayBuffer()),transformation:{width:440,height:Math.round(440*h/w)}})]}));B.push(cap("圖 3-1、兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"))}B.push(...await photoBlocks(((S.gal1||{}).p||[]).map((o,i)=>({src:o&&o.src,cap:(o&&o.t||`實驗照片 ${i+1}`)+(o&&o.cap?"："+o.cap:"")})).filter(o=>o.src)));
     B.push(cap("表 3-1、喇叭在不同位置，兩隻耳朵的時間差"));B.push(table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])));
     B.push(H("二、從時間差找出角度"));B.push(...await wordFigs(secBy("二、"),[]));B.push(...await wordGal(S.gal2,"從時間差找出角度的截圖"));B.push(...await wordGal(S.gal4,"換我試試的截圖"));
     B.push(P("聲速：聲音每秒大約走 340 公尺（34000 公分）；1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。"));
-    B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。把多走的路畫在半圓的直尺上，往上畫直線碰到半圓，連到圓心，用量角器量角度。"));
+    B.push(P("多走的路（公分）＝ 時間差（毫秒）× 34。我們已經學過三角形的基本性質和圓規：知道兩個邊長（兩耳的距離 20 公分、多走的路）和一個直角，就能畫出這個三角形。畫法：先畫兩耳的線（20 公分），用它當直徑畫半圓；從遠的耳朵用圓規量出多走的路，碰到半圓的點和近的耳朵連起來，那裡就是直角；最後在遠的耳朵放量角器（0° 對正前方），讀出聲音來的角度。"));
     B.push(cap("表 3-2、從時間差找出角度"));B.push(table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[r.ms.toFixed(2),r.cm,r.deg])));
     if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
     B.push(H("三、動手實驗：ReSpeaker 用 1～4 支麥克風"));B.push(...await wordGal(S.gal));B.push(...await wordFigs(secBy("三、"),["cAcc","cErr"]));
@@ -7059,7 +7079,7 @@ btn.addEventListener("click",async()=>{
     for(const [k,t] of [["acc","圖 3-2、選對路的正確率"],["err","圖 3-3、平均角度差（越小越準）"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);
       B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(s,420,300),transformation:{width:360,height:257}})]}));B.push(cap(t))}
     B.push(H("四、結果與結論"));
-    B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 不用三角函數，怎麼從時間差找出角度？"+(S.c2||"＿＿")));
+    B.push(P("1. 兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"+(S.c1||"＿＿")));B.push(P("2. 怎麼從時間差畫出三角形、找出角度？"+(S.c2||"＿＿")));
     B.push(P(`3. 麥克風越多，正確率越 ${S.c3a||"＿"}，角度差越 ${S.c3b||"＿"}。`));B.push(P("4. 我的假設對嗎？至少要幾支、怎麼擺？"+(S.c4||"＿＿")));B.push(P("5. 結論：給智慧路口的建議："+(S.c5||"＿＿＿＿")));
     if(window.__wantBlocks){const f=window.__wantBlocks;window.__wantBlocks=null;btn.disabled=false;msg.textContent="";f(B);return}
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},sections:[{properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},children:B}]});
