@@ -921,7 +921,7 @@ function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;c
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+async function wordFigs(sec,skip=[],opt={}){const out=[];if(!sec||!(window.__L||window.docx))return out;
   const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
@@ -938,9 +938,9 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
   if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
     for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
-    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
+    for(const e of sec.querySelectorAll(opt.steps===false?"p.lead":"p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
+  const nodes=[...sec.querySelectorAll(opt.steps===false?'p.lead,p.note,ol[id^="stepList"],svg,canvas':'p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
     if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
     if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
@@ -952,6 +952,10 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
     const keep=!!e.closest("[data-wordalways]");try{if(e.tagName.toLowerCase()==="canvas")await img(e.toDataURL("image/png"),capOf(e),keep);
       else if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),keep)}catch(err){}}
   return out}
+/* ①②③ 步驟卡的文字（要放在別的位置時用；wordFigs 要加 {steps:false}） */
+function wordSteps(sec){const out=[];if(!sec||!(window.__L||window.docx))return out;const {Paragraph,TextRun}=window.__L||window.docx;
+  for(const e of sec.querySelectorAll(".step")){if(e.closest("[data-noword]"))continue;const k=e.querySelector(".k"),t=((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean).join(" ")).trim();
+    if(t)out.push(new Paragraph({children:[new TextRun({text:t,size:22,color:"37474F"})],spacing:{after:100}}))}return out}
 /* WORDFIG END */
 function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".jpg";
   /* 存成 JPG、最長邊 1600：檔案小很多（PNG 常常好幾 MB） */

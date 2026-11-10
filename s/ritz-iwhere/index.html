@@ -3066,7 +3066,7 @@ function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;c
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+async function wordFigs(sec,skip=[],opt={}){const out=[];if(!sec||!(window.__L||window.docx))return out;
   const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
@@ -3083,9 +3083,9 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
   if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
     for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
-    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
+    for(const e of sec.querySelectorAll(opt.steps===false?"p.lead":"p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
+  const nodes=[...sec.querySelectorAll(opt.steps===false?'p.lead,p.note,ol[id^="stepList"],svg,canvas':'p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
     if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
     if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
@@ -3097,6 +3097,10 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
     const keep=!!e.closest("[data-wordalways]");try{if(e.tagName.toLowerCase()==="canvas")await img(e.toDataURL("image/png"),capOf(e),keep);
       else if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),keep)}catch(err){}}
   return out}
+/* ①②③ 步驟卡的文字（要放在別的位置時用；wordFigs 要加 {steps:false}） */
+function wordSteps(sec){const out=[];if(!sec||!(window.__L||window.docx))return out;const {Paragraph,TextRun}=window.__L||window.docx;
+  for(const e of sec.querySelectorAll(".step")){if(e.closest("[data-noword]"))continue;const k=e.querySelector(".k"),t=((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean).join(" ")).trim();
+    if(t)out.push(new Paragraph({children:[new TextRun({text:t,size:22,color:"37474F"})],spacing:{after:100}}))}return out}
 /* WORDFIG END */
 function saveSnap(dataURL,name){const fn=(name||"截圖")+"_"+new Date().toISOString().slice(0,16).replace(/[-:T]/g,"")+".jpg";
   /* 存成 JPG、最長邊 1600：檔案小很多（PNG 常常好幾 MB） */
@@ -4569,11 +4573,15 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
     ts.textContent=`📷 截圖已放進下面的「模型截圖」，現在有 ${1+galX(g,"__m").length} 張（點這裡看）`;ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
+/* opt.only(n)：只要名字符合的截圖；opt.skip(n)：不要這些（已經在別的地方放過）；opt.noPhotos：不放實驗照片 */
+async function wordGal(g,title="模型截圖和實驗照片",opt={}){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const X=n=>((g.mx||{})[n]||[]),nm=n=>n.replace(/^學習單.?_/,"");
   const T=(o,d)=>o&&o.t?o.t:d;   // 小朋友改過的標題優先
-  const all=[[T(g.m,"模型截圖"),g.m],...X("__m").map((o,i)=>[T(o,`模型截圖 ${i+2}`),o]),...Object.entries(g.ms||{}).map(([n,o])=>[T(o,"模型截圖："+nm(n)),o]),
-    ...Object.entries(g.mx||{}).filter(([n])=>n!=="__m").flatMap(([n,L])=>L.map((o,i)=>[T(o,`模型截圖：${nm(n)}（另外 ${i+1}）`),o])),...g.p.map((o,i)=>[T(o,`實驗照片 ${i+1}`),o])].filter(([,o])=>o&&o.src);if(!all.length)return out;
+  const ok=n=>(!opt.only||opt.only(n))&&!(opt.skip&&opt.skip(n));
+  const names=[...new Set([...Object.keys(g.ms||{}),...Object.keys(g.mx||{}).filter(n=>n!=="__m")])].filter(ok);
+  const all=[...(opt.only?[]:[[T(g.m,"模型截圖"),g.m],...X("__m").map((o,i)=>[T(o,`模型截圖 ${i+2}`),o])]),
+    ...names.flatMap(n=>[[T((g.ms||{})[n],"模型截圖："+nm(n)),(g.ms||{})[n]],...X(n).map((o,i)=>[T(o,`模型截圖：${nm(n)}（另外 ${i+1}）`),o])]),   // 同一個畫面的截圖排在一起
+    ...(opt.only||opt.noPhotos?[]:g.p.map((o,i)=>[T(o,`實驗照片 ${i+1}`),o]))].filter(([,o])=>o&&o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
@@ -4716,7 +4724,7 @@ function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;c
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+async function wordFigs(sec,skip=[],opt={}){const out=[];if(!sec||!(window.__L||window.docx))return out;
   const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
@@ -4733,9 +4741,9 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
   if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
     for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
-    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
+    for(const e of sec.querySelectorAll(opt.steps===false?"p.lead":"p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
+  const nodes=[...sec.querySelectorAll(opt.steps===false?'p.lead,p.note,ol[id^="stepList"],svg,canvas':'p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
     if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
     if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
@@ -4747,6 +4755,10 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
     const keep=!!e.closest("[data-wordalways]");try{if(e.tagName.toLowerCase()==="canvas")await img(e.toDataURL("image/png"),capOf(e),keep);
       else if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),keep)}catch(err){}}
   return out}
+/* ①②③ 步驟卡的文字（要放在別的位置時用；wordFigs 要加 {steps:false}） */
+function wordSteps(sec){const out=[];if(!sec||!(window.__L||window.docx))return out;const {Paragraph,TextRun}=window.__L||window.docx;
+  for(const e of sec.querySelectorAll(".step")){if(e.closest("[data-noword]"))continue;const k=e.querySelector(".k"),t=((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean).join(" ")).trim();
+    if(t)out.push(new Paragraph({children:[new TextRun({text:t,size:22,color:"37474F"})],spacing:{after:100}}))}return out}
 /* WORDFIG END */
 
 /* ================= 實驗二：資料、表格、照片、圖、匯出 ================= */
@@ -5033,18 +5045,27 @@ btn.addEventListener("click",async()=>{
     B.push(P(localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",{align:AlignmentType.CENTER,bold:true,size:36,after:240}));
     B.push(P(`日期：${S.date||"＿＿＿＿"}　　組員：${S.names||"＿＿＿＿＿＿"}`));
     {const ld=[...document.querySelectorAll("p.lead")].find(e=>!e.closest("section"));if(ld)B.push(P(ld.textContent.trim().replace(/\s+/g," ")))}   // 開頭的說明
-    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("自然課學過的聲音"));B.push(...await wordFigs(secBy("一、"),[]));{const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
-      if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
-    B.push(...await wordGal(IMG.gal,"模型截圖"));
+    if(!window.__L){B.push(H("器材"));[...document.querySelectorAll("#equipList2 li")].map(x=>x.textContent.trim()).filter(Boolean).forEach(x=>B.push(P("• "+x)));B.push(...await wordPhotos((IMG.eq||[]).filter(x=>x.src).map(x=>({src:x.src,cap:x.name}))));}B.push(H("自然課學過的聲音"));B.push(P("聲音是怎麼產生的？"+(S.n1||"＿＿＿＿")));B.push(P("聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿")));B.push(P("聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿")));B.push(P("聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")));
+    /* 一、照網頁的順序：標題 → 說明 → 喇叭推空氣的截圖 → 彩虹彈簧的截圖 → ①②③ → ④ 聲音的家族 */
+    {const sec=secBy("一、"),txt=e=>e?e.innerText.replace(/\s+/g," ").trim():"",stepT=e=>{const k=e.querySelector(".k");return ((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(txt).filter(Boolean).join(" ")).trim()};
+    B.push(H((sec&&sec.querySelector("h2")||{}).textContent||"一、聲音是振動：頻率是什麼？"));
+    if(sec){const ld=sec.querySelector("p.lead");if(ld)B.push(P(txt(ld)))}
+    B.push(...await wordGal(IMG.gal,"喇叭推空氣的截圖",{only:n=>n==="喇叭推空氣"}));
+    B.push(...await wordGal(IMG.gal,"彩虹彈簧的截圖",{only:n=>/彩虹彈簧/.test(n)}));
+    if(sec)for(const e of sec.querySelectorAll(".steps .step"))B.push(P(stepT(e)));
+    if(sec){const fc=sec.querySelector(".fam-card");if(fc)B.push(P(stepT(fc)))}
+    {const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src){const [w,h]=await imgSize(fp.src);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(fp.src),transformation:{width:500,height:Math.round(500*h/w)}})]}));B.push(cap("聲音的家族：誰聽得到？（人是範例，動物是我們查到的）"));
+      if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}}
+    B.push(...await wordGal(IMG.gal,"其他截圖和實驗照片",{skip:n=>n==="喇叭推空氣"||/彩虹彈簧/.test(n)}));
     if(window.__L)B.push({__split:1});   // 「科展作品說明」彙整時：這裡之前放「研究過程」，之後放「結果」
-    B.push(H("二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[]));
+    B.push(H(((secBy("二、")||{}).querySelector?.("h2")||{}).textContent||"二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[],{steps:false}));
     B.push(...await photoBlocks([...[["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]].map(([k,t])=>({src:IMG[k],cap:t})),...(IMG.xBead||[]).map((o,i)=>({src:o.src,cap:(o.t||`照片 ${i+3}`)+(o.cap?"："+o.cap:"")}))]));
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
     B.push(cap("表 2-1、我的這一把串珠"));B.push(table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));
     const bs=off("0 0 560 300");drawBeads(bs,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(bs,560,300),transformation:{width:450,height:241}})]}));
     B.push(cap("圖 2-1、我的串珠頻譜（實心＝實際，虛線＝我猜）"));
     B.push(P("只用眼睛猜，準嗎？"+(S.qb1||"＿＿")));B.push(P("排好、數好以後，一眼就能看出哪一種最多嗎？"+(S.qb2||"＿＿")));
-    B.push(P("串珠的顏色＝聲音的頻率，顆數＝那個頻率的大小聲。把混在一起的東西依種類排好、數出多少，就是「頻譜」；聲音用傅立葉轉換拆開。",{color:"5B6872",size:21}));
+    B.push(...wordSteps(secBy("二、")));   // ①②③④ 跟網頁一樣放在最後
     B.push(H("三、看看自己的聲音頻譜"));B.push(...await wordFigs(secBy("三、"),[]));
     B.push(cap("表 2-2、我的聲音：波形和頻譜"));{const rows=S.t23.filter(r=>r.v);B.push(table(["我發出的聲音","波形規律嗎？","頻譜的尖尖山峰","主要頻率（Hz）"],rows.length?rows.map(r=>[r.v,r.reg,r.peak,r.peak==="很明顯"?r.hz:"—"]):[["","","",""]]));}
     for(const r of S.t23){if(!r.v)continue;B.push(P(sent23(r)));B.push(...await photoBlocks([...[["w","波形"],["s","頻譜"]].map(([k,n])=>({src:IMG["t23"+k+"_"+r.id],cap:`${r.v} 的${n}`})),...(IMG["t23x_"+r.id]||[]).map(o=>({src:o.src,cap:`${r.v}：`+(o.t?o.t+(o.cap?"："+o.cap:""):(o.cap||"實驗照片"))}))],9000,300))}
@@ -5055,7 +5076,7 @@ btn.addEventListener("click",async()=>{
     B.push(cap("表 2-3、警笛聲的頻率"));B.push(table(["警笛／警報聲","影片網址","頻率範圍（Hz）","變化形式"],sr.length?sr:[["","","",""]]));
     for(const r of S.t24){if(!r.s)continue;B.push(P(sent24(r)));B.push(...await photoBlocks([["w","波形"],["s","頻譜"]].map(([k,n])=>({src:IMG["t24"+k+"_"+r.id],cap:`${r.s} 的${n}`})),9000,300))}}
     B.push(...await photoBlocks([["ph5","cap5"],["ph6","cap6"]].map(([k,c])=>({src:IMG[k],cap:"截圖："+(S[c]||"")+" 的頻譜"})),9000,300));
-    B.push(H("五、臺灣對警笛聲的規定"));B.push(...await wordFigs(secBy("五、"),["law"]));
+    B.push(H("五、查一查：臺灣對警笛聲有規定嗎？"));B.push(...await wordFigs(secBy("五、"),["law"]));
     B.push(cap("表 2-4、法規對警報聲的規定"));B.push(table(["車種","頻率範圍（Hz）","節奏（怎麼變、多久變一次）"],S.t25.map(r=>[r.c,r.lr,r.lt])));
     const ls=off("0 0 640 350");drawLaw(ls,PRINT);B.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await svgPng(ls,640,350),transformation:{width:480,height:263}})]}));
     B.push(cap("圖 2-2、依法規畫出的三種警報聲：頻率隨時間的變化"));
@@ -6691,11 +6712,15 @@ function makeGallery(el,get,set,opt={}){if(!el)return;const MODELS=opt.models||n
     ts.textContent=`📷 截圖已放進下面的「模型截圖」，現在有 ${1+galX(g,"__m").length} 張（點這裡看）`;ts.style.display="block";clearTimeout(ts._t);ts._t=setTimeout(()=>ts.style.display="none",3500)});
   draw();return draw}
 /* Word：把模型截圖和實驗照片放進去 */
-async function wordGal(g,title="模型截圖和實驗照片"){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
+/* opt.only(n)：只要名字符合的截圖；opt.skip(n)：不要這些（已經在別的地方放過）；opt.noPhotos：不放實驗照片 */
+async function wordGal(g,title="模型截圖和實驗照片",opt={}){const out=[];g=galFix(g);if(!(window.__L||window.docx))return out;const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const X=n=>((g.mx||{})[n]||[]),nm=n=>n.replace(/^學習單.?_/,"");
   const T=(o,d)=>o&&o.t?o.t:d;   // 小朋友改過的標題優先
-  const all=[[T(g.m,"模型截圖"),g.m],...X("__m").map((o,i)=>[T(o,`模型截圖 ${i+2}`),o]),...Object.entries(g.ms||{}).map(([n,o])=>[T(o,"模型截圖："+nm(n)),o]),
-    ...Object.entries(g.mx||{}).filter(([n])=>n!=="__m").flatMap(([n,L])=>L.map((o,i)=>[T(o,`模型截圖：${nm(n)}（另外 ${i+1}）`),o])),...g.p.map((o,i)=>[T(o,`實驗照片 ${i+1}`),o])].filter(([,o])=>o&&o.src);if(!all.length)return out;
+  const ok=n=>(!opt.only||opt.only(n))&&!(opt.skip&&opt.skip(n));
+  const names=[...new Set([...Object.keys(g.ms||{}),...Object.keys(g.mx||{}).filter(n=>n!=="__m")])].filter(ok);
+  const all=[...(opt.only?[]:[[T(g.m,"模型截圖"),g.m],...X("__m").map((o,i)=>[T(o,`模型截圖 ${i+2}`),o])]),
+    ...names.flatMap(n=>[[T((g.ms||{})[n],"模型截圖："+nm(n)),(g.ms||{})[n]],...X(n).map((o,i)=>[T(o,`模型截圖：${nm(n)}（另外 ${i+1}）`),o])]),   // 同一個畫面的截圖排在一起
+    ...(opt.only||opt.noPhotos?[]:g.p.map((o,i)=>[T(o,`實驗照片 ${i+1}`),o]))].filter(([,o])=>o&&o.src);if(!all.length)return out;
   out.push(new Paragraph({children:[new TextRun({text:title,bold:true,size:24})],spacing:{before:160,after:100}}));
   out.push(...await photoBlocks(all.map(([t,o])=>({src:o.src,cap:t+(o.cap?"："+o.cap:"")}))));
   return out}
@@ -6838,7 +6863,7 @@ function makeShotSlots(anchor,name,title,slots,pick,get,set){if(!anchor)return;c
 /* GALLERY END */
 /* WORDFIG START：匯出 Word 時，把網頁上這一段的說明文字和 3D／平面畫面（拍成圖）一起放進去 */
 const secBy=pre=>[...document.querySelectorAll("section")].find(s=>{const h=s.querySelector("h2");return h&&h.textContent.trim().startsWith(pre)});
-async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.docx))return out;
+async function wordFigs(sec,skip=[],opt={}){const out=[];if(!sec||!(window.__L||window.docx))return out;
   const {Paragraph,TextRun,ImageRun,AlignmentType}=window.__L||window.docx;
   const vis=e=>e&&e.getClientRects().length>0&&!e.closest("[hidden]");
   const reg=(window.__padReg||[]).filter(r=>sec.contains(r.host)&&vis(r.host));
@@ -6855,9 +6880,9 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
   const stepTxt=e=>{const k=e.querySelector(".k"),ps=[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean);return ((k?k.textContent.trim()+"：":"")+ps.join(" ")).trim()};
   if(window.__L){   /* 彙整成科展作品說明時（學習單在背景，看不到畫面）：說明文字＋標了 data-wordalways 的大圖 */
     for(const ol of sec.querySelectorAll('ol[id^="stepList"]')){const L=[...ol.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}}
-    for(const e of sec.querySelectorAll("p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
+    for(const e of sec.querySelectorAll(opt.steps===false?"p.lead":"p.lead,.step")){if(e.closest("[data-noword],.drop,.photo,table,label,.galf"))continue;const t=e.matches(".step")?stepTxt(e):e.textContent.replace(/\s+/g," ").trim();if(t)out.push(P(t,{color:"37474F"}))}
     for(const e of sec.querySelectorAll("[data-wordalways] svg")){if(e.parentElement&&e.parentElement.closest("svg"))continue;try{if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),true)}catch(err){}}return out}
-  const nodes=[...sec.querySelectorAll('p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
+  const nodes=[...sec.querySelectorAll(opt.steps===false?'p.lead,p.note,ol[id^="stepList"],svg,canvas':'p.lead,p.note,.step,ol[id^="stepList"],svg,canvas')];
   for(const e of nodes){if(!vis(e)||(e.parentElement&&e.parentElement.closest("svg")))continue;
     if(e.matches("ol")){const L=[...e.querySelectorAll("li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);if(L.length){out.push(P("步驟：",{color:"37474F"}));L.forEach((t,i)=>out.push(P(`${i+1}. ${t}`,{color:"37474F"})))}continue}
     if(e.matches(".step")){if(e.closest("[data-noword]"))continue;const t=stepTxt(e);if(t)out.push(P(t,{color:"37474F"}));continue}
@@ -6869,6 +6894,10 @@ async function wordFigs(sec,skip=[]){const out=[];if(!sec||!(window.__L||window.
     const keep=!!e.closest("[data-wordalways]");try{if(e.tagName.toLowerCase()==="canvas")await img(e.toDataURL("image/png"),capOf(e),keep);
       else if(typeof svgSnap==="function")await img(await svgSnap(e),capOf(e),keep)}catch(err){}}
   return out}
+/* ①②③ 步驟卡的文字（要放在別的位置時用；wordFigs 要加 {steps:false}） */
+function wordSteps(sec){const out=[];if(!sec||!(window.__L||window.docx))return out;const {Paragraph,TextRun}=window.__L||window.docx;
+  for(const e of sec.querySelectorAll(".step")){if(e.closest("[data-noword]"))continue;const k=e.querySelector(".k"),t=((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(x=>x.innerText.replace(/\s+/g," ").trim()).filter(Boolean).join(" ")).trim();
+    if(t)out.push(new Paragraph({children:[new TextRun({text:t,size:22,color:"37474F"})],spacing:{after:100}}))}return out}
 /* WORDFIG END */
 
 /* ================= 實驗三：資料、表格、圖、匯出 ================= */
