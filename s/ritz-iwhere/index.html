@@ -4071,10 +4071,7 @@ td.rng input{width:5.2em!important;max-width:5.2em!important;flex:none}
 <section>
   <h2>二、認識「頻譜」</h2>
   <p class="lead">一個聲音裡面混了很多種頻率，就像一把混在一起的串珠。先抓一把、拍照，用眼睛猜猜看；再把同顏色排成一排、拍照、數一數。</p>
-  <div class="two">
-    <div class="photo card"><h3>照片 1：抓一把（還沒排）</h3><label class="drop" for="ph1"><img id="im_ph1" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph1" accept="image/*" hidden><button class="xbtn" data-clear="ph1">移除照片</button></div>
-    <div class="photo card"><h3>照片 2：同顏色排成一排</h3><label class="drop" for="ph2"><img id="im_ph2" alt="" hidden><span>點這裡拍照或選照片</span></label><input type="file" id="ph2" accept="image/*" hidden><button class="xbtn" data-clear="ph2">移除照片</button></div>
-  </div>
+  <div id="bead0" class="card"></div>
     <div id="xBead" class="card" style="margin-top:12px"></div>
   <div class="card bcard">
     <div class="bc-scroll"><div class="bc" id="bc" role="group" aria-label="串珠頻譜：每種顏色輸入我猜幾顆和實際幾顆"></div></div>
@@ -4997,7 +4994,7 @@ function confirmClear(){const b=$("bcClear");if(b.dataset.arm){delete b.dataset.
 function shrink(file){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const m=900,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
   c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",0.72))};img.onerror=no;img.src=u})}
 function showImg(k){const im=$("im_"+k);if(!im)return;if(IMG[k]){im.src=IMG[k];im.hidden=false;im.nextElementSibling.hidden=true}else{im.hidden=true;im.removeAttribute("src");im.nextElementSibling.hidden=false}}
-["ph1","ph2","ph3","ph4","ph5","ph6"].forEach(k=>{$(k).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[k]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(k)}catch(err){alertMsg("這張照片讀不出來，換一張試試。")}});showImg(k)});
+["ph3","ph4","ph5","ph6"].forEach(k=>{$(k)&&$(k).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{IMG[k]=await shrink(f);if(!saveImg())alertMsg("照片太多，瀏覽器存不下了；這張照片只會留到關掉頁面前，記得先匯出 Word。");showImg(k)}catch(err){alertMsg("這張照片讀不出來，換一張試試。")}});showImg(k)});
 document.querySelectorAll("[data-clear]").forEach(b=>b.addEventListener("click",()=>{delete IMG[b.dataset.clear];saveImg();showImg(b.dataset.clear)}));
 function alertMsg(t){$("expMsg").textContent=t}
 
@@ -5058,7 +5055,7 @@ btn.addEventListener("click",async()=>{
       if(fp.rows.length)B.push(table(["動物","最低（Hz）","最高（Hz）"],fp.rows.map(r=>[r.n,r.lo,r.hi])));if(fp.srcText)B.push(P("資料來源："+fp.srcText))}}}
     B.push(...await wordGal(IMG.gal,"其他截圖和實驗照片",{skip:n=>n==="喇叭推空氣"||/彩虹彈簧/.test(n)}));
     B.push(H(((secBy("二、")||{}).querySelector?.("h2")||{}).textContent||"二、認識「頻譜」"));B.push(...await wordFigs(secBy("二、"),[],{steps:false}));
-    B.push(...await photoBlocks([["ph1","照片 1：抓一把（還沒排）"],["ph2","照片 2：同顏色排成一排"]].map(([k,t])=>({src:IMG[k],cap:t}))));
+    B.push(...await photoBlocks((Array.isArray(IMG.bead0)?IMG.bead0:[{src:IMG.ph1,t:"照片 1：抓一把（還沒排）"},{src:IMG.ph2,t:"照片 2：同顏色排成一排"}]).map((o,i)=>({src:o&&o.src,cap:((o&&o.t)||`照片 ${i+1}`)+(o&&o.cap?"："+o.cap:"")}))));
     if(window.__L){B.push({__split:1});B.push(H(((secBy("二、")||{}).querySelector?.("h2")||{}).textContent||"二、認識「頻譜」"))}   // 「科展作品說明」彙整時：照片 1、2 放「研究過程」，後面（更多照片、表、圖）放「結果」
     B.push(...await photoBlocks((IMG.xBead||[]).map((o,i)=>({src:o.src,cap:(o.t||`照片 ${i+3}`)+(o.cap?"："+o.cap:"")}))));
     const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
@@ -5095,6 +5092,9 @@ btn.addEventListener("click",async()=>{
   btn.disabled=false})})();
 
 /* 串珠：照片 1、2 之外，可以再加好幾張 */
+/* 串珠照片 1、2：可以拖曳換位置、標題可以改（以前存在 IMG.ph1／ph2，第一次打開時搬進來） */
+if(!Array.isArray(IMG.bead0)){IMG.bead0=[{src:IMG.ph1||"",cap:"",t:"照片 1：抓一把（還沒排）"},{src:IMG.ph2||"",cap:"",t:"照片 2：同顏色排成一排"}]}
+makePhotoList(document.getElementById("bead0"),()=>IMG.bead0,L=>{IMG.bead0=L;return saveImg()},{label:"照片",start:1,title:"串珠照片（按住「⠿ 拖曳」可以換位置，標題可以改）",max:2});
 makePhotoList(document.getElementById("xBead"),()=>IMG.xBead||[],L=>{IMG.xBead=L;return saveImg()},{label:"照片",start:3,title:"更多串珠照片（可以加好幾張）",max:8});
 <\/script>
 <style>body{padding-left:0!important;padding-right:0!important;padding-top:4px!important}</style></body></html></script>
