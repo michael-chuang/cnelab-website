@@ -561,6 +561,16 @@ a:hover {
   }
 }
 
+/* Cursor-reactive particle field (homepage hero only, see main.js). Sits
+   above the video, below the .hero::after darkening gradient so it reads
+   as part of the same backdrop rather than a layer floating on top. */
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
 .hero-video-controls {
   position: relative;
   z-index: 1;

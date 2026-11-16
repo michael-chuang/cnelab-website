@@ -238,3 +238,174 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 });
+
+// Homepage hero particle field: an ambient, cursor-reactive network of dots
+// layered between the background video and its darkening overlay — a small
+// nod to the lab's neural/connectivity focus. No-ops on pages without the
+// canvas, and skipped entirely for prefers-reduced-motion.
+document.addEventListener("DOMContentLoaded", function () {
+  var canvas = document.getElementById("hero-particles");
+  if (!canvas) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  var hero = canvas.closest(".hero");
+  if (!hero) return;
+
+  var ctx = canvas.getContext("2d");
+  var hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var COLORS = ["#4c6ef5", "#91a7ff", "#9775fa", "#5f3dc4"];
+  var LINK_DIST = 115;
+  var MOUSE_RADIUS = 150;
+
+  var width = 0;
+  var height = 0;
+  var particles = [];
+  var mouse = { x: 0, y: 0, active: false };
+
+  function particleCount() {
+    // Roughly one particle per 9000 CSS px^2 of hero area, capped for perf.
+    return Math.max(32, Math.min(80, Math.round((width * height) / 9000)));
+  }
+
+  function seedParticles() {
+    var count = particleCount();
+    particles = [];
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        r: Math.random() * 1.6 + 1,
+        color: COLORS[i % COLORS.length]
+      });
+    }
+  }
+
+  function resize() {
+    width = hero.clientWidth;
+    height = hero.clientHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seedParticles();
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+
+      // Gently push particles away from the cursor so the field visibly
+      // reacts to it, instead of drifting obliviously underneath.
+      if (mouse.active) {
+        var dxm = p.x - mouse.x;
+        var dym = p.y - mouse.y;
+        var distM = Math.sqrt(dxm * dxm + dym * dym);
+        if (distM < MOUSE_RADIUS && distM > 0.01) {
+          var force = (1 - distM / MOUSE_RADIUS) * 0.6;
+          p.x += (dxm / distM) * force;
+          p.y += (dym / distM) * force;
+        }
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > width) p.vx *= -1;
+      if (p.y < 0 || p.y > height) p.vy *= -1;
+      p.x = Math.max(0, Math.min(width, p.x));
+      p.y = Math.max(0, Math.min(height, p.y));
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = 0.75;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Faint connective lines between nearby particles.
+    for (var a = 0; a < particles.length; a++) {
+      for (var b = a + 1; b < particles.length; b++) {
+        var dx = particles[a].x - particles[b].x;
+        var dy = particles[a].y - particles[b].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < LINK_DIST) {
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.strokeStyle = "rgba(145, 167, 255, " + (0.22 * (1 - dist / LINK_DIST)) + ")";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Brighter lines from the cursor to nearby particles — the part that
+    // visibly "follows" the mouse.
+    if (mouse.active) {
+      for (var m = 0; m < particles.length; m++) {
+        var pm = particles[m];
+        var dxc = pm.x - mouse.x;
+        var dyc = pm.y - mouse.y;
+        var distC = Math.sqrt(dxc * dxc + dyc * dyc);
+        if (distC < MOUSE_RADIUS) {
+          ctx.beginPath();
+          ctx.moveTo(mouse.x, mouse.y);
+          ctx.lineTo(pm.x, pm.y);
+          ctx.strokeStyle = "rgba(224, 231, 255, " + (0.35 * (1 - distC / MOUSE_RADIUS)) + ")";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  var rafId = null;
+  var running = false;
+
+  function loop() {
+    if (!running) return;
+    step();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function stop() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+  }
+
+  if (hasFinePointer) {
+    hero.addEventListener("mousemove", function (e) {
+      var rect = hero.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+    });
+    hero.addEventListener("mouseleave", function () {
+      mouse.active = false;
+    });
+  }
+
+  window.addEventListener("resize", resize);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      stop();
+    } else {
+      start();
+    }
+  });
+
+  resize();
+  start();
+});
