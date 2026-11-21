@@ -2857,7 +2857,7 @@ new MutationObserver(()=>{drawProt();calcT2()}).observe(document.documentElement
 /* PANPAD：3D／2D 畫面的移動按鍵（▲▼◀▶ 移動、＋－ 縮放、⟲ 回到一開始、📷 截圖存成 PNG）。按一下動一格，按住會一直動 */
 /* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
 const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
-function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[0,1,2].map(()=>({src:"",cap:""}));return g}   /* 只有第一次才給 3 格空的；刪掉之後就不會再補回來 */
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
 /* 可以一直新增的照片格子：每張有照片＋圖片描述，按「＋ 新增照片」多一格 */
@@ -4508,7 +4508,7 @@ setTimeout(()=>{const svg=document.querySelector("svg.fam");const ui=document.ge
 <script>
 /* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
 const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
-function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[0,1,2].map(()=>({src:"",cap:""}));return g}   /* 只有第一次才給 3 格空的；刪掉之後就不會再補回來 */
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
 /* 可以一直新增的照片格子：每張有照片＋圖片描述，按「＋ 新增照片」多一格 */
@@ -6651,7 +6651,7 @@ window.__map={get mics(){return mics},set mics(v){mics=v;changed()},get amb(){re
 
 /* GALLERY START：學習單的「模型截圖（1 張，按 📷）＋實驗照片（3 張，自己拍照上傳）」，每張都可以寫圖片描述 */
 const GAL0=()=>({m:{src:"",cap:""},p:[0,1,2].map(()=>({src:"",cap:""}))});
-function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[];while(g.p.length<3)g.p.push({src:"",cap:""});return g}
+function galFix(g){g=g&&typeof g==="object"?g:GAL0();if(!g.m)g.m={src:"",cap:""};if(!Array.isArray(g.p))g.p=[0,1,2].map(()=>({src:"",cap:""}));return g}   /* 只有第一次才給 3 格空的；刪掉之後就不會再補回來 */
 function galShrink(src,max=1280){return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.85))};im.onerror=()=>ok(src);im.src=src})}
 /* 可以一直新增的照片格子：每張有照片＋圖片描述，按「＋ 新增照片」多一格 */
