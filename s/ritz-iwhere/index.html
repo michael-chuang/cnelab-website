@@ -3347,6 +3347,34 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
   const b=await new Promise(r=>c.toBlob(r,"image/png"));return await b.arrayBuffer()}
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
 window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
+/* 給「科展作品說明」用：照定稿的格式整理實驗一（R 是作品說明那一頁給的排版工具） */
+window.__wsReport=async R=>{const q=localStorage.getItem("wwt-fw-h1q")||"為什麼光靠駕駛的耳朵不夠？",T=`實驗一：【Why】${q}`,g=galFix(S.gal);
+  const steps=[...document.querySelectorAll("#stepList li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(Boolean);
+  const label=(o,i)=>{const t=(o.t||"").trim();return !t||/^實驗照片\s*\d+$/.test(t)?`實驗照片 ${i+1}`:t};
+  const proc=[R.exp(T),R.h("一、實驗目的"),R.p("比較「未遮蔽（正常聽）」和「有遮蔽（戴耳機，模擬關緊車窗的車廂）」兩種情況，用手指出聲音的方向，看指的方向和真正的方向差幾度。"),
+    ...await R.grid([g.m,...((g.mx||{}).__m||[])].filter(o=>o&&o.src).map(o=>({src:o.src,cap:o.cap||o.t||""}))),
+    R.h("二、實驗方法"),...R.list(steps),
+    ...await R.grid(g.p.filter(o=>o&&o.src).map((o,i)=>({src:o.src,cap:label(o,i)+(o.cap?"："+o.cap:"")}))),R.blank()];
+  const subs=S.t2.filter(r=>r.t1).map(r=>({name:r.name,t1:r.t1,pl:r.pl,cap:r.cap}));
+  const cur=["a","b"].some(k=>S.t1[k].some(x=>num(x.r)!==null||num(x.p)!==null));
+  if(cur&&!subs.some(x=>JSON.stringify(x.t1)===JSON.stringify(S.t1)))subs.push({name:S.who||"（未填名字）",t1:S.t1});
+  const H1=["第幾次","A 真實角度","A 指的角度","A 角度差","B 真實角度","B 指的角度","B 角度差"];
+  const t1Rows=T1=>{const rows=[...Array(N)].map((_,i)=>{const a=T1.a[i],b=T1.b[i];return [i+1,a.r,a.p,f1(dUse(a)),b.r,b.p,f1(dUse(b))]});
+    const r=["平均","—","—",f1(t1Avg("a",T1)),"—","—",f1(t1Avg("b",T1))];r.bold=true;rows.push(r);return rows};
+  const res=[R.h(T),R.h("一、比較有無戴上耳機對於聲音源的角度誤差")];
+  for(const [i,x] of subs.entries()){res.push(R.tcap(`${x.name} 的紀錄`),R.table(H1,t1Rows(x.t1),[10,15,15,15,15,15,15]));
+    const sv=off("0 0 600 340");drawProt(sv,x.t1,PRINT,x.pl,false,"");
+    res.push(...await R.fig({data:await svgPng(sv,600,340),w:600,h:340,width:420,id:"w1p"+i,cap:x.cap||`${x.name} 的角度差（左：未遮蔽；右：戴耳機；越靠近 0° 越準）`}))}
+  const A=avg(S.t2.map(r=>num(r.a))),B=avg(S.t2.map(r=>num(r.b)));
+  const rows2=S.t2.map(r=>{const a=num(r.a),b=num(r.b);return [r.name||"",r.a??"",r.b??"",a!==null&&b!==null?f1(b-a):""]});
+  const ar=["全部平均",f1(A),f1(B),A!==null&&B!==null?f1(B-A):""];ar.bold=true;rows2.push(ar);
+  res.push(R.h("二、整理"),R.tcap("平均角度差"),R.table(["受試者","A 未遮蔽 平均角度差","B 戴耳機 平均角度差","多了幾度（B－A）"],rows2,[25,25,25,25]));
+  {const bv=off("0 0 420 300");drawBar(A,B,bv,PRINT);res.push(...await R.fig({data:await svgPng(bv,420,300),w:420,h:300,width:360,cap:"未遮蔽和戴耳機的平均角度差。"}))}
+  const rf=subs.map((x,i)=>R.ref("w1p"+i)),refs=rf.length>1?rf.slice(0,-1).join("、")+"與"+rf[rf.length-1]:(rf[0]||"");
+  res.push(R.h("三、結果與結論"),...R.list([
+    `未遮蔽時平均差 ${A===null?"＿＿":f1(A)} 度，戴耳機時平均差 ${B===null?"＿＿":f1(B)} 度，多了 ${A!==null&&B!==null?f1(B-A):"＿＿"} 度。`,
+    "戴耳機時，播音員站在哪裡最容易指錯？"+R.dot(S.q2),`圖 ${refs} 左右兩邊的點，哪一邊離 0° 比較遠？`+R.dot(S.q3),"結論："+(S.concl||"＿＿＿＿＿＿＿＿＿＿")]));
+  return {proc,res}};
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
@@ -5025,6 +5053,47 @@ function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("x
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
 window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
+/* 給「科展作品說明」用：照定稿的格式整理實驗二（R 是作品說明那一頁給的排版工具） */
+window.__wsReport=async R=>{const q=localStorage.getItem("wwt-fw-h2q")||"警笛聲「長」什麼樣？",T=`實驗二：【What】${q}`,g=galFix(IMG.gal);
+  const txt=e=>e?e.innerText.replace(/\s+/g," ").trim():"",stepT=e=>{const k=e.querySelector(".k");return ((k?k.textContent.trim()+"：":"")+[...e.querySelectorAll(":scope > p, :scope > .formula")].map(txt).filter(Boolean).join(" ")).trim()};
+  const noNum=t=>String(t||"").replace(/^\s*\d+\s*[.、．]\s*/,"").trim(),tc=(o,d)=>{const t=noNum(o.t);return t?t+(o.cap?"："+o.cap:""):(o.cap||d||"")};
+  /* 一、喇叭推空氣、彩虹彈簧的截圖：同一個模型的截圖放在一起 */
+  const base=n=>n.split("：")[0],bases=[];for(const n of [...Object.keys(g.ms||{}),...Object.keys(g.mx||{})])if(n!=="__m"&&!bases.includes(base(n)))bases.push(base(n));
+  const shots=[];for(const b of bases){for(const [n,o] of Object.entries(g.ms||{}))if(base(n)===b&&o&&o.src)shots.push({src:o.src,cap:tc(o,n.replace("：","："))});
+    for(const o of ((g.mx||{})[b]||[]))if(o&&o.src)shots.push({src:o.src,cap:tc(o,b)})}
+  const s1=secBy("一、"),s2=secBy("二、");
+  const proc=[R.exp(T),R.h("一、實驗目的"),
+    R.p("自然課學過聲音是物體在振動，不過我們還需要認識更多關於頻率的知識，因此這個實驗先從認識「頻率」（每秒振動幾次）開始，再用串珠了解「頻譜」，最後用手機 App 把自己的聲音和警笛聲拆開來看，並查一查臺灣對警笛聲的規定。"),
+    R.h("二、實驗方法（認識頻率、傅立葉轉換）"),R.p("我們先複習一下自然課學過的聲音："),
+    ...R.list(["聲音是怎麼產生的？"+(S.n1||"＿＿＿＿"),"聲音靠什麼傳到耳朵？"+(S.n2||"＿＿＿＿"),"聲音的高低（高音、低音）跟什麼有關？"+(S.n3||"＿＿＿＿"),"聲音的大小（大聲、小聲）跟什麼有關？"+(S.n4||"＿＿＿＿")]),
+    R.p("如果聲音是振動，那頻率是什麼？我們先看喇叭怎麼推空氣、麥克風怎麼記下波形，所以我們常看到聲波被記錄下來時的形狀很像海浪，接著我們再用彩虹彈簧看看「每秒轉幾圈」，原來那就是頻率。"),
+    R.blank(),...await R.grid(shots),R.blank(),R.p("在這裡我們透過彈簧而去學習到"),
+    ...R.circ(s1?[...s1.querySelectorAll(".steps .step")].map(stepT):[]),...R.circ(s1&&s1.querySelector(".fam-card")?[stepT(s1.querySelector(".fam-card")).replace(/\s*名詞小卡：.*$/,"")]:[])];
+  {const fp=window.__famPrint&&await window.__famPrint();if(fp&&fp.src)proc.push(...await R.grid([{src:fp.src,full:true,maxH:335,cap:"不僅是發出聲音，我們從自然課也學習到聽到的聲音也都是用頻率表示，這裡是我們從網路上查到各個動物有不同的聽力。"}]))}
+  const bead0=Array.isArray(IMG.bead0)?IMG.bead0:[{src:IMG.ph1,t:"照片 1：抓一把（還沒排）"},{src:IMG.ph2,t:"照片 2：同顏色排成一排"}];
+  const bt=o=>{const t=String(o.t||"").replace(/^\s*照片\s*\d+\s*[：:]\s*/,"").trim();return t?t+(o.cap?"："+o.cap:""):(o.cap||"")};
+  proc.push(R.blank(),R.p("接下來，我們將透過一個簡單的小實驗認識如何將聲音「拆開」。一個聲音裡面混了很多種頻率，就像一把混在一起的彩色串珠，在這邊我們先抓一把、拍照，用眼睛猜猜看；再把同顏色排成一排、拍照、數一數。",{indent:false}),
+    ...await R.grid(bead0.filter(o=>o&&o.src).map(o=>({src:o.src,cap:bt(o)}))));
+  /* —— 結果 —— */
+  const res=[R.h(T),R.h("一、用串珠認識「頻譜」"),...await R.grid((IMG.xBead||[]).filter(o=>o&&o.src).map(o=>({src:o.src,cap:bt(o)})))];
+  const br=S.beads.filter(b=>b.g!==""||b.a!=="").map(b=>[b.n,b.g,b.a,num(b.g)!==null&&num(b.a)!==null?Math.abs(num(b.a)-num(b.g)):""]);
+  res.push(R.tcap("猜測與實際串珠的數量"),R.table(["顏色","我猜幾顆","實際幾顆","差幾顆"],br.length?br:[["","","",""]]));
+  {const bs=off("0 0 560 300");drawBeads(bs,PRINT);res.push(...await R.fig({data:await svgPng(bs,560,300),w:560,h:300,width:450,cap:"我的串珠頻譜（實心＝實際，虛線＝我猜）。"}))}
+  res.push(R.h("二、串珠實驗的結果與討論"),...R.circ(s2?[...s2.querySelectorAll(".step")].filter(e=>!e.closest("[data-noword]")).map(stepT):[],{hang:true}));
+  const st=[...document.querySelectorAll("#stepList2 li")].map(x=>x.textContent.replace(/\s+/g," ").trim()).filter(t=>t&&!/^截圖貼/.test(t));
+  res.push(R.h("三、分析自己的聲音頻譜"),...R.list(st),R.tcap("我的聲音：波形和頻譜"));
+  {const rows=S.t23.filter(r=>r.v);res.push(R.table(["我發出的聲音","波形規律嗎？","頻譜的尖尖山峰","主要頻率（Hz）"],rows.length?rows.map(r=>[r.v,r.reg,r.peak,r.peak==="很明顯"?r.hz:"—"]):[["","","",""]]))}
+  {const ph=[],pairs=[];for(const r of S.t23){if(!r.v)continue;(IMG["t23x_"+r.id]||[]).forEach(o=>o&&o.src&&ph.push({src:o.src,cap:tc(o,r.v)}));
+      pairs.push({src:IMG["t23w_"+r.id],cap:`${r.v}的波形。`},{src:IMG["t23s_"+r.id],cap:`${r.v}的頻譜，`+(r.reg==="不規律"?"波形不規律，":"")+(r.peak==="很明顯"?`頻譜有很明顯的尖尖山峰，主要頻率是 ${r.hz||"＿＿"} Hz。`:r.peak==="不明顯"?"頻譜沒有明顯的尖尖山峰。":"")})}
+    res.push(...await R.grid([...ph,...pairs]))}
+  res.push(R.h("四、頻譜實驗的結果與討論"),...R.list(["怎麼發聲，波形才會規律、頻譜才有尖尖的山峰？"+R.dot(S.qp1),"唱高音和唱低音，山峰的位置有什麼不同？"+(S.qp2||"＿＿")]));
+  res.push(R.h("五、警笛聲調查：YouTube＋Phyphox"),R.p("生活中有哪些警笛或警報聲？一次選一種（也可以自己取名），在 YouTube 找這個聲音（挑聲音清楚、沒有配樂的影片），用喇叭播放，看 Phyphox「Audio Spectrum」的「Spectrum」，貼上波形和頻譜截圖。"));
+  {const sr=S.t24.filter(r=>r.s);res.push(R.tcap("警笛聲的頻率"),R.table(["警笛／警報聲","影片網址","頻率範圍（Hz）","變化形式"],sr.length?sr.map(r=>[r.s,r.url,rng24(r),r.form]):[["","","",""]]));
+    const pics=[];for(const r of sr)pics.push({src:IMG["t24w_"+r.id],cap:`${r.s}的波形。`},{src:IMG["t24s_"+r.id],cap:`${r.s}的頻譜，頻率範圍 ${rng24(r)||"＿＿"} Hz；變化形式：${R.dot(r.form)}`});
+    res.push(...await R.grid(pics))}
+  res.push(R.h("六、查一查：臺灣對警笛聲有規定嗎？"),R.p("答案是有的，我們到「全國法規資料庫」或「交通部主管法規查詢系統」（motclaw.motc.gov.tw），用關鍵字「警報訊號之內容及樣式」查查看，找到「救護車、消防車、警車」各自的規定，把頻率範圍（幾 Hz 到幾 Hz）和節奏（聲音怎麼變、多久變一次）填進下表。"+(S.cWhat||"")),
+    R.tcap("法規對警報聲的規定"),R.table(["車種","頻率範圍（Hz）","節奏（怎麼變、多久變一次）"],S.t25.map(r=>[r.c,r.lr,r.lt]),[12,42,46]));
+  return {proc,res}};
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
@@ -7075,6 +7144,59 @@ async function svgPng(svg,w,h){const xml=new XMLSerializer().serializeToString(s
   return await (await new Promise(r=>c.toBlob(r,"image/png"))).arrayBuffer()}
 function off(vb){const s=document.createElementNS(SVGNS,"svg");s.setAttribute("xmlns",SVGNS);s.setAttribute("viewBox",vb);s.setAttribute("font-family","Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif");return s}
 window.__wsBlocks=L=>new Promise((ok,no)=>{window.__L=L;const tm=setTimeout(()=>{window.__wantBlocks=null;window.__L=null;no("timeout")},90000);window.__wantBlocks=b=>{clearTimeout(tm);window.__L=null;ok(b)};btn.click()});   // 給「科展作品說明」彙整用
+/* 給「科展作品說明」用：照定稿的格式整理實驗三（R 是作品說明那一頁給的排版工具） */
+window.__wsReport=async R=>{const q=localStorage.getItem("wwt-fw-h3q")||"警笛聲從哪裡來？",T=`實驗三：【Where】${q}`;
+  const nm=n=>n.replace(/^(學習單.?|實驗.?)_/,""),G=k=>galFix(S[k]);
+  const msx=(g,capOf)=>{const out=[];for(const [n,o] of Object.entries(g.ms||{})){if(o&&o.src)out.push({src:o.src,cap:capOf(nm(n),o,true)});for(const x of ((g.mx||{})[n]||[]))if(x&&x.src)out.push({src:x.src,cap:capOf(nm(n),x,false)})}
+    for(const [n,L] of Object.entries(g.mx||{}))if(n!=="__m"&&!(g.ms||{})[n])for(const x of L)if(x&&x.src)out.push({src:x.src,cap:capOf(nm(n),x,false)});return out};
+  const g1=G("gal1"),g2=G("gal2"),g4=G("gal4"),g=G("gal");
+  const p4=String(S.p4||"").trim().replace(/[。.]$/,"");
+  const proc=[R.exp(T),R.h("一、實驗目的"),
+    R.p("機器聽方向的本事叫做「聲源定位」，也叫 DOA (direction of arrival)。這個實驗先用自己的兩隻耳朵了解「時間差」，再用學過的三角形和圓規，從時間差畫出三角形、找出聲音的角度，接著到路口想一想要幾支麥克風，最後用 ReSpeaker 做實驗。"),
+    R.p("在這邊我們先想一想幾個問題："),
+    ...R.list(["實驗一發現：戴上耳機後，指方向變得怎樣？"+R.dot(S.p1),"你覺得兩隻耳朵是靠什麼聽出聲音從左邊還是右邊來？"+(S.p2||"＿＿"),`我猜：路口至少要裝 ${S.p3||"＿＿"} 麥克風，${p4?p4+"，":""}才分得出救護車從哪一條路來。`]),
+    R.h("二、實驗方法（認識時間差、聲音來源角度）"),
+    R.p("實驗三的第一個活動是了解兩隻耳朵的時間差，在草地上點一下，喇叭就會走到那裡，放好就對著小朋友播放古典樂。聲音像水波一樣一圈一圈傳出去（紅圈＝空氣擠在一起、藍圈＝空氣稀稀疏疏，和實驗二一樣），看看它先碰到哪一隻耳朵。"),
+    ...await R.grid([...msx(g1,(n,o,main)=>main?n+(o.cap?"："+o.cap:""):(o.cap||n)),
+      ...(S.fig31?[{src:S.fig31,full:true,maxH:200,cap:"兩隻耳朵收到的聲音（最新的在右邊；紅＝壓縮、藍＝稀疏）：形狀一樣，只是一隻耳朵比較晚收到"}]:[]),
+      ...(g1.p||[]).filter(o=>o&&o.src).map(o=>({src:o.src,full:true,maxH:285,cap:o.cap||""}))]),
+    R.p("接下來我們透過簡單的學習活動，將喇叭拉到特定的位置，然後去觀察聽到的時間差，這裡的時間差跟兩耳的距離與聲音的速度有關。"),R.blank(),
+    R.tcap("喇叭在不同位置，兩隻耳朵的時間差"),R.table(["喇叭的位置","哪隻耳朵先聽到？","時間差（毫秒）"],S.t31.map(r=>[r.p,r.first,r.ms!=null&&r.ms!==""?r.ms+" 毫秒（"+sec(r.ms)+" 秒）":(r.big||"")])),R.blank(),
+    R.p("實驗三的第二個活動是讓我們去了解真的做實驗時，我們先量到兩耳的「時間差」，乘上聲音的速度，就知道遠的耳朵「多走的路」。我們已經學過三角形的基本性質和圓規：知道兩個邊長（兩耳的距離 20 公分、多走的路）和一個直角，就能畫出這個三角形，再用量角器讀出聲音來的角度。在上面的頭旁邊拖曳喇叭，看看聲音換方向時，上下兩個三角形怎麼一起變：下面的三角形跟上面一模一樣、方向也一樣，只是放大，方便用尺和量角器量。")];
+  {const tri=document.getElementById("tri");let u=null;try{if(tri&&typeof svgSnap==="function")u=await svgSnap(tri)}catch(e){}
+    if(u)proc.push(...await R.grid([{src:u,full:true,maxH:441,cap:"我們正在從這個互動的模型，學會計算多走的路並找出角度。"}]))}
+  proc.push(R.p("接著我們將聲音源（黑色的喇叭）拉到不同角度，模擬聲音從右邊 45° 來、從正前方來（0°）、從右邊90°來，還有從左邊60°來，來觀察聲音到達兩隻耳朵的其中一隻需要多走的路。"),
+    ...await R.grid(msx(g2,(n,o)=>o.cap&&!/^找角度/.test(n)?n+"："+o.cap:n)),R.blank(),
+    R.p("其實計算沒有這個困難，聲音每秒大約走 340 公尺（34000 公分），因為1 秒＝1000 毫秒，所以每 1 毫秒大約走 34 公分。多走的路（公分）＝ 時間差（毫秒）× 34。我們已經學過三角形的基本性質和圓規：知道兩個邊長（兩耳的距離 20 公分、多走的路）和一個直角，就能畫出這個三角形。畫法：先畫兩耳的線（20 公分），用它當直徑畫半圓；從遠的耳朵用圓規量出多走的路，碰到半圓的點和近的耳朵連起來，那裡就是直角；最後在遠的耳朵放量角器（0° 對正前方），就可以讀出聲音來的角度。以下是我們練習從四個聲音差去估計出角度。"),R.blank(),
+    R.tcap("從時間差找出角度"),R.table(["時間差（毫秒）","多走的路（公分）","角度（度）"],S.t32.map(r=>[(+r.ms).toFixed(2),r.cm,r.deg])),
+    R.p("但是計算角度可能需要使用到中學才學會的三角函數，因此我們就利用互動的圓規協助我們去計算，在這邊我們只要先去計算多走的路就好，接著拉出距離即可得角度。"));
+  {let k=0;const t32=S.t32||[];const tryIt=msx(g4,(n,o)=>{const r=t32[k++];return o.cap||(r&&r.deg!==""?`時間差${+r.ms}毫秒時，角度是${r.deg}度。`:n)});
+    proc.push(...await R.grid([...tryIt,...(g4.p||[]).filter(o=>o&&o.src).map(o=>({src:o.src,cap:o.cap||""}))]))}
+  const st=[...document.querySelectorAll("#stepList3 li")].map(x=>x.textContent.replace(/\s+/g," ").replace("（右邊）","").trim()).filter(Boolean);
+  proc.push(R.p("最後就是我們科展的重頭戲，實驗三的第三個活動我們會用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。詳細的步驟有：",{justify:true}),
+    ...R.list(st,{justify:true}),R.blank(),
+    ...await R.grid([g.m,...((g.mx||{}).__m||[])].filter(o=>o&&o.src).map(o=>({src:o.src,cap:o.cap||""}))),R.blank(),
+    R.tcap("步驟三場景設定：雷達上的角度"),R.table(["場景設定","角度（度）／點選"],[...ROADN.map(r=>[RL(r),S.setup.road[r]]),...[1,2,3,4].map(n=>[n+" 號麥克風",S.setup.mic[n]]),...[1,2,3,4].map(n=>[`用 ${n} 支時`,S.setup.use[n]])],[50,50]),R.blank(),
+    ...await R.grid((g.p||[]).filter(o=>o&&o.src).map(o=>({src:o.src,cap:o.cap||""}))));
+  /* —— 結果 —— */
+  const res=[R.h(T),R.p("最後的重頭戲就是用小模型路口和 ReSpeaker 陣列式麥克風，比比看用 1、2、3、4 支麥克風時，雷達算出的角度差多少、選對路的次數有幾次。")];
+  for(const n of [1,2,3,4]){const rows=S.exp[n].map((r,i)=>{const c=rowCalc(r);return [i+1,r.road?RL(r.road):"",r.tr,r.ra,c.err===null?"":Math.round(c.err),c.rr&&c.rr!=="沒有方向"?RL(c.rr):c.rr,c.ok===null?"":c.ok?"✓":"✗"]});
+    res.push(R.tcap(`用 ${n} 支麥克風的結果`),R.table(["第幾次","救護車在哪條路","真實角度","雷達角度","角度差","雷達指的路","對嗎"],rows),
+      ...await R.grid(((S.radar||{})[n]||[]).filter(o=>o&&o.src).map((o,i)=>({src:o.src,cap:(o.t||`用 ${n} 支麥克風：雷達截圖 ${i+1}`)+(o.cap?"："+o.cap:"")}))))}
+  res.push(R.tcap("四種麥克風數量的比較"),R.table(["麥克風數量","選對路的次數","正確率","平均角度差（度）"],[1,2,3,4].map(n=>{const s=stats(n);return [n+" 支",s.done?`${s.ok} / ${s.done}`:"",s.acc===null?"":Math.round(s.acc)+"%",s.err===null?"":s.err.toFixed(1)]})));
+  {const ch=[];for(const [k,t] of [["acc","選對路的正確率。"],["err","平均角度差（越小越準）。"]]){const s=off("0 0 420 300");drawBars(s,k,PRINT);ch.push({data:await svgPng(s,420,300),w:420,h:300,cap:t})}res.push(...await R.grid(ch))}
+  /* 結論：c3 那一題沒寫的話，從數據找「選對一樣多次、角度差卻差很多」的例子 */
+  let c3=String(S.c3c||"").trim();
+  if(!c3){const st4=[1,2,3,4].map(n=>({n,...stats(n)}));for(let i=0;i<3&&!c3;i++)for(let j=i+1;j<4&&!c3;j++){const a=st4[i],b=st4[j];
+      if(a.done&&b.done&&a.ok===b.ok&&a.err!==null&&b.err!==null&&Math.abs(a.err-b.err)>=5){const [lo,hi]=a.err>b.err?[b,a]:[a,b];
+        c3=`這次實驗中，我們發現${a.n}支和${b.n}支麥克風都選對了${a.ok}次，但是${lo.n}支的平均角度誤差比${hi.n}支少了${(+hi.err.toFixed(1)-+lo.err.toFixed(1)).toFixed(1)}度。這讓我們知道，原來就算猜對同一條路，指得準不準還是差很多。`}}}
+  const c5=String(S.c5||"").split("\n"),c5a=[],c5b=[];{let i=0;for(;i<c5.length&&c5[i].trim();i++)c5a.push(c5[i].trim());for(;i<c5.length;i++)if(c5[i].trim())c5b.push(c5[i].trim())}
+  const Q=R.numbered({bold:true});
+  res.push(R.h("結論"),Q("兩隻耳朵（或兩支麥克風）是靠什麼知道聲音從哪一邊來？"),R.p(S.c1||"＿＿"),Q("怎麼從時間差畫出三角形、找出角度？"),R.p(S.c2||"＿＿"),
+    Q(`麥克風越多，正確率越${S.c3a||"＿"} ，角度差越${S.c3b||"＿"}。`),...(c3?[R.p(c3)]:[]),Q("我的假設對嗎？至少要幾支、怎麼擺？"),R.p(S.c4||"＿＿"),
+    Q("智慧路口的建議"),...(c5a.length?c5a.map(t=>R.p(t)):[R.p("＿＿")]));
+  for(const t of c5b)res.push(/^(研究總結|[一二三四五六七八九十]+、)/.test(t)&&t.length<20?R.h(t):R.p(t));
+  return {proc,res}};
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
@@ -8487,61 +8609,142 @@ async function eqCompile(){const X=window.docx,rd=k=>{try{return JSON.parse(loca
     const ph=L.filter(x=>x.src).map(x=>({src:x.src,cap:x.name.trim()}));
     if(ph.length)out.push(await photoTable(X,ph,7300),new X.Paragraph({spacing:{after:80},children:[]}))}
   return out}
-/* 研究過程：直接把實驗一～三整理好的內容（文字、表格、圖）放進來（只有在網站裡才拿得到） */
+/* ===== 科展作品說明：照「定稿」的格式產生 Word =====
+   R＝排版小工具（三個實驗的學習單也用它，格式才會一致）：
+   標題粗體 12 pt、實驗名稱 13 pt；內文 12 pt、首行縮排兩個字；步驟用 Word 的編號清單；
+   照片兩張一列（格子 7.8 公分、照片 7.5 公分、沒有框線），每張下面一行「圖2-5、……」（10 pt）；
+   圖、表的編號最後才依照順序編：研究動機／目的是「圖1-」，使用器材＋研究過程是「圖2-、表2-」，結果是「圖3-、表3-」。 */
+function mkR(X){const {Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,AlignmentType,WidthType,BorderStyle,ShadingType}=X;
+  const NB={style:BorderStyle.NONE,size:0,color:"FFFFFF"},NBD={top:NB,bottom:NB,left:NB,right:NB,insideHorizontal:NB,insideVertical:NB};
+  const half=4422,IW=283,IH=340,FW=567,FH=380,FIX=X.TableLayoutType&&X.TableLayoutType.FIXED;   // 7.8 cm 格子、7.5 cm 照片（283 px）；整列 15 cm（567 px）
+  let LI=0;
+  const run=(t,o={})=>new TextRun({text:String(t??""),bold:o.bold,size:o.size});
+  const u8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d.slice(0));if(ArrayBuffer.isView(d))return new Uint8Array(d);return d};
+  const bytes=async it=>it.data?u8(it.data):new Uint8Array(await (await fetch(it.src)).arrayBuffer());
+  const dims=it=>it.w&&it.h?Promise.resolve([it.w,it.h]):new Promise(ok=>{const i=new Image();i.onload=()=>ok([i.naturalWidth||4,i.naturalHeight||3]);i.onerror=()=>ok([4,3]);i.src=it.src});
+  const pic=async(it,W,H)=>{const [w,h]=await dims(it);let ww=W,hh=Math.round(W*h/w);if(hh>H){hh=H;ww=Math.round(H*w/h)}
+    return new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await bytes(it),transformation:{width:ww,height:hh}})]})};
+  const tok=(k,id)=>"⁣"+k+(id?":"+id:"")+"⁣";
+  const capP=(it,o={})=>new Paragraph({alignment:o.center?AlignmentType.CENTER:undefined,children:[run(tok("F",it.id)+(it.cap?"、"+String(it.cap).trim():""),{size:20})]});
+  const C=(ch,span,w)=>new TableCell({columnSpan:span,width:{size:w||half*(span||1),type:WidthType.DXA},borders:NBD,margins:{top:40,bottom:40,left:85,right:85},children:ch});
+  const has=it=>it&&(it.src||it.data);
+  const R={
+    exp:t=>new Paragraph({children:[run(t,{bold:true,size:26})]}),
+    h:t=>new Paragraph({children:[run(t,{bold:true})]}),
+    p:(t,o={})=>new Paragraph({alignment:o.justify?AlignmentType.JUSTIFIED:undefined,indent:o.indent===false?undefined:{firstLine:480},children:[run(t,o)]}),
+    blank:()=>new Paragraph({children:[]}),
+    /* 編號清單（每一組重新從 1 開始）；項目可以是字，或 {t,bold} */
+    list:(items,o={})=>{const k=++LI;return items.filter(t=>t!=null&&t!=="").map(t=>new Paragraph({numbering:{reference:"rnum",level:0,instance:k},alignment:o.justify?AlignmentType.JUSTIFIED:undefined,children:[run(typeof t==="object"?t.t:t,{bold:o.bold||(typeof t==="object"&&t.bold)})]}))},
+    /* 同一組編號，中間可以夾別的段落：const n=R.numbered(); n("第一題") */
+    numbered:(o={})=>{const k=++LI;return t=>new Paragraph({numbering:{reference:"rnum",level:0,instance:k},children:[run(t,{bold:o.bold})]})},
+    circ:(items,o={})=>items.filter(Boolean).map(t=>new Paragraph({indent:o.hang?{left:870,hanging:425}:{left:480},children:[run(o.hang&&!/[。！？]$/.test(t)?t+"。":t)]})),
+    tcap:(t,id)=>new Paragraph({children:[run(tok("T",id)+"、"+t,{size:20})]}),
+    ref:id=>tok("R",id),
+    dot:s=>{s=String(s||"").trim();return s?(/[。！？!?.]$/.test(s)?s:s+"。"):"＿＿"},
+    /* 資料表格：15.6 公分寬、表頭灰底粗體、內容 10 pt 置中 */
+    table:(head,rows,pct)=>{const n=head.length,TW=8844,cw=pct&&pct.length===n?pct.map(p=>Math.round(TW*p/100)):Array(n).fill(Math.floor(TW/n));
+      const cell=(t,o={})=>new TableCell({width:{size:o.dx,type:WidthType.DXA},shading:o.head?{type:ShadingType.CLEAR,fill:"E7EBEE",color:"auto"}:undefined,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[run(t,{bold:o.bold,size:20})]})]});
+      return new Table({width:{size:TW,type:WidthType.DXA},columnWidths:cw,layout:FIX,rows:[new TableRow({tableHeader:true,children:head.map((h,i)=>cell(h,{head:true,bold:true,dx:cw[i]}))}),...rows.map(r=>new TableRow({children:r.map((c,i)=>cell(c,{bold:r.bold,dx:cw[i]}))}))]})},
+    /* 照片：兩張一列，每張下面一行說明；{full:true} 的自己佔一整列 */
+    async grid(items){items=(items||[]).filter(has);if(!items.length)return [];const rows=[];
+      for(let i=0;i<items.length;){const it=items[i];
+        if(it.full){rows.push(new TableRow({cantSplit:true,children:[C([await pic(it,FW,it.maxH||FH)],2)]}),new TableRow({cantSplit:true,children:[C([capP(it)],2)]}));i++;continue}
+        const b=items[i+1]&&!items[i+1].full?items[i+1]:null,two=[it,b];i+=b?2:1;
+        rows.push(new TableRow({cantSplit:true,children:await Promise.all(two.map(async x=>C([x?await pic(x,IW,IH):new Paragraph("")])))}),
+          new TableRow({cantSplit:true,children:two.map(x=>C([x?capP(x):new Paragraph("")]))}))}
+      return [new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:FIX,borders:NBD,rows})]},
+    /* 兩張一組、共用一句說明：[{a,b,cap,id}] */
+    async pairs(L){L=(L||[]).filter(x=>has(x.a)||has(x.b));if(!L.length)return [];const rows=[];
+      for(const x of L){rows.push(new TableRow({cantSplit:true,children:await Promise.all([x.a,x.b].map(async it=>C([has(it)?await pic(it,IW,IH):new Paragraph("")])))}),new TableRow({cantSplit:true,children:[C([capP(x)],2)]}))}
+      return [new Table({width:{size:half*2,type:WidthType.DXA},columnWidths:[half,half],layout:FIX,borders:NBD,rows})]},
+    /* 一張圖（統計圖）：置中，下面一行說明；width 是圖的寬（px） */
+    async fig(it){if(!has(it))return [];const [w,h]=await dims(it),W=it.width||420,H=Math.round(W*h/w),tw=W*15+200;
+      return [new Table({alignment:AlignmentType.CENTER,width:{size:tw,type:WidthType.DXA},columnWidths:[tw],layout:FIX,borders:NBD,rows:[
+        new TableRow({cantSplit:true,children:[C([new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await bytes(it),transformation:{width:W,height:H}})]})],1,tw)]}),
+        new TableRow({cantSplit:true,children:[C([capP(it)],1,tw)]})]})]},
+    /* 最後才編號：groups＝[[章, 內容陣列], …]（照文件順序） */
+    number(groups){const cnt={},lab={},seen=new Set();
+      const walk=(o,fn)=>{if(!o||typeof o!=="object"||seen.has(o))return;seen.add(o);if(Array.isArray(o)){o.forEach(x=>walk(x,fn));return}
+        const r=o.root;if(Array.isArray(r))for(let i=0;i<r.length;i++){if(typeof r[i]==="string"){if(r[i].includes("⁣"))r[i]=fn(r[i])}else walk(r[i],fn)}};
+      for(const [ch,bl] of groups)walk(bl,s=>s.replace(/⁣([FT])(?::([^⁣]+))?⁣/g,(m,k,id)=>{const key=k+ch;cnt[key]=(cnt[key]||0)+1;if(id)lab[id]=`${ch}-${cnt[key]}`;return `${k==="F"?"圖":"表"}${ch}-${cnt[key]}`}));
+      seen.clear();for(const [,bl] of groups)walk(bl,s=>s.replace(/⁣R:([^⁣]+)⁣/g,(m,id)=>lab[id]||"＿"))}};
+  return R}
+window.__mkR=mkR;
+/* 研究過程、結果：請三個實驗的學習單照定稿的格式整理好（只有在網站裡才拿得到） */
 let WC=null;
-async function wsCompile(say){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
-  const X=window.docx,toU8=d=>{const tag=Object.prototype.toString.call(d);if(tag==="[object ArrayBuffer]")return new Uint8Array(d).slice();if(ArrayBuffer.isView(d))return new Uint8Array(d.buffer,d.byteOffset,d.byteLength).slice();return d};
-  const L=Object.assign({},X,{ImageRun:function(o){return new X.ImageRun(Object.assign({},o,{data:toU8(o.data)}))}});
+async function wsCompile(say,R){let P=null;try{if(parent!==window&&parent.document.getElementById("tab4"))P=parent}catch(e){}if(!P)return null;
   const out={proc:[],res:[]},WS=[["一","Why","tab4","__ws1Show","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？"],["二","What","tab5","__ws2Show","wwt-fw-h2q","警笛聲「長」什麼樣？"],["三","Where","tab6","__ws3Show","wwt-fw-h3q","警笛聲從哪裡來？"]];
   for(const [n,tag,tab,show,qk,qd] of WS){let q0=qd;try{q0=localStorage.getItem(qk)||qd}catch(e){}say(`正在整理「${q0}」……`);
     try{if(P[show])P[show](true);const f=P.document.querySelector("#"+tab+" iframe");let w=null;
-      for(let i=0;i<150;i++){try{w=f&&f.contentWindow;if(w&&w.__wsBlocks&&w.docx)break}catch(e){}await new Promise(r=>setTimeout(r,200))}
-      if(!w||!w.__wsBlocks)throw "沒載入";
-      const b=await w.__wsBlocks(L);let q=qd;try{q=localStorage.getItem(qk)||qd}catch(e){}
-      const hd=()=>new X.Paragraph({spacing:{before:200,after:80},children:[new X.TextRun({text:`實驗${n}：【${tag}】${q}`,bold:true,size:26})]}),blk=b.slice(2),sp=blk.findIndex(x=>x&&x.__split);
-      out.proc.push(hd(),...(sp<0?blk:blk.slice(0,sp)));out.res.push(hd(),...(sp<0?[]:blk.slice(sp+1)))}
-    catch(e){const m=()=>new X.Paragraph({children:[new X.TextRun({text:`（${q0} 沒有整理進來，請到那一個實驗按「匯出 Word」）`,color:"AA0000"})]});out.proc.push(m());out.res.push(m())}}
+      for(let i=0;i<150;i++){try{w=f&&f.contentWindow;if(w&&w.__wsReport&&w.docx)break}catch(e){}await new Promise(r=>setTimeout(r,200))}
+      if(!w||!w.__wsReport)throw "沒載入";
+      const b=await w.__wsReport(R);out.proc.push(...b.proc);out.res.push(...b.res)}
+    catch(e){console.warn("[作品說明]",q0,e);const m=()=>R.p(`（${q0} 沒有整理進來，請到那一個實驗按「匯出 Word」）`,{indent:false});out.proc.push(m());out.res.push(m())}}
   return out}
 btn.addEventListener("click",async()=>{
   if(!window.docx){msg.textContent="Word 工具還沒載入，請確認有網路後重新整理頁面。";return}
   btn.disabled=true;msg.textContent="正在產生 Word 檔……";
-  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ImageRun,VerticalAlign,BorderStyle}=D;
-    const B={style:BorderStyle.SINGLE,size:6,color:"000000"},BD={top:B,bottom:B,left:B,right:B};
-    const para=(t,o={})=>new Paragraph({alignment:o.align,spacing:{after:o.after??40,line:300},children:[new TextRun({text:t,bold:o.bold,size:o.size??24,color:o.color})]});
-    const lines=t=>String(t||"").split("\n").map(l=>para(l));
-    const head=(t,hint)=>new TableCell({width:{size:703,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:40,right:40},children:[para(t,{bold:true}),...(hint?[para(""),para(hint,{size:20,color:"666666"})]:[])]});
-    /* 情境1、情境2 的說明用截圖：照它寫的用途，自動放進研究動機或研究目的 */
-    const SL={tab1:[["jam","緊急車輛塞在車陣中","motive"],["green","紅綠燈切換：緊急車輛這邊綠燈、其他方向紅燈","goal"],["pass","緊急車輛順利通過路口","goal"]],
-      tab2:[["hear","關著車窗，聽得到警笛卻不知道它在哪裡","motive"],["screen","車用螢幕顯示警笛從哪裡來","goal"],["yield","汽車自動閃避，讓出通道","goal"]]};
-    const sceneShots=use=>{let o={};try{o=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}const out=[];
-      for(const [tab,L] of Object.entries(SL))for(const [k,title,u] of L){const x=o.slots&&o.slots[tab]&&o.slots[tab][k];if(u===use&&x&&x.src)out.push({src:x.src,cap:(tab==="tab1"?"情境1：":"情境2：")+title+(x.cap?"。"+x.cap:"")})}return out};
-    const withScene=(arr,use)=>{const mine=arr||[],seen=new Set(mine.map(p=>p.src));return [...mine,...sceneShots(use).filter(p=>!seen.has(p.src))]};
-    async function archTable(p){const X=window.docx,{Table,TableRow,TableCell,Paragraph,TextRun,ImageRun,AlignmentType,WidthType,BorderStyle}=X,W=8844,B={style:BorderStyle.SINGLE,size:6,color:"444444"},BD={top:B,bottom:B,left:B,right:B};
-      const [w,h]=await imgSize(p.src),PW=Math.round(W/15*0.95),PH=Math.round(PW*h/w);   // 研究架構：自己一張表格，佔滿整格
-      return [new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({cantSplit:true,children:[new TableCell({width:{size:W,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:PW,height:PH}})]})]})]}),
-        new TableRow({children:[new TableCell({width:{size:W,type:WidthType.DXA},borders:BD,margins:{top:60,bottom:60,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:p.cap||"研究架構",size:20,color:"5B6872"})]})]})]})]}),para("")]}
-    async function picsEach(arr){const out=[];for(const p of (arr||[]).filter(p=>p&&p.src))out.push(...await archTable(p));return out}   // 研究動機的圖：每張自己一張表格
-    async function pics(arr){arr=(arr||[]).filter(p=>p&&p.src);const A=arr.filter(p=>p.cap==="研究架構");if(A.length){const rest=arr.filter(p=>p.cap!=="研究架構");const out=[];for(const p of A)out.push(...await archTable(p));return [...out,...await pics(rest)]}
-      if(arr.length>1)return [await window.__photoTable(window.docx,arr.map(p=>({src:p.src,cap:p.cap||""})),7300),para("")];   // 兩張以上排成表格
-      const out=[];for(const p of arr){const [w,h]=await imgSize(p.src),W=320,H=Math.round(W*h/w);
-      out.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:120},children:[new ImageRun({data:await dataBuf(p.src),transformation:{width:W,height:H}})]}));
-      if(p.cap)out.push(para(p.cap,{align:AlignmentType.CENTER,size:20,color:"444444",after:120}))}return out}
-    const body=(kids)=>new TableCell({width:{size:9197,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:120,right:120},children:kids.length?kids:[para("")]});
-    const row=(h,hint,kids,minH)=>new TableRow({height:minH?{value:minH,rule:"atLeast"}:undefined,children:[head(h,hint),body(kids)]});
+  try{const D=window.docx,{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,BorderStyle,Footer,PageNumber,PageBreak,LevelFormat}=D;
+    const R=mkR(D),B={style:BorderStyle.SINGLE,size:6,color:"000000"},BD={top:B,bottom:B,left:B,right:B};
+    const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")||{}}catch(e){return {}}},ls=(k,d)=>{try{return localStorage.getItem(k)||d}catch(e){return d}};
+    const run=(t,o={})=>new TextRun({text:String(t??""),bold:o.bold,size:o.size});
+    const head=t=>new TableCell({width:{size:703,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:40,right:40},children:[new Paragraph({children:[run(t,{bold:true})]})]});
+    const body=kids=>new TableCell({width:{size:9197,type:WidthType.DXA},borders:BD,margins:{top:80,bottom:80,left:120,right:120},children:kids.length?kids:[new Paragraph("")]});
+    const row=(h,kids,minH)=>new TableRow({height:minH?{value:minH,rule:"atLeast"}:undefined,children:[head(h),body(kids)]});
+    const tbl=rows=>new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[703,9197],layout:D.TableLayoutType.FIXED,rows});
+    const plain=t=>new Paragraph({children:[run(t)]});
+    /* 研究動機、研究目的：一行一段（首行縮排）；「1. 」開頭的連續幾行變成編號清單 */
+    const paras=(txt,stopAt)=>{const out=[],rest=[];let buf=[],stop=false;const flush=()=>{if(buf.length){out.push(...R.list(buf));buf=[]}};
+      for(const l of String(txt||"").split("\n")){const tgt=stop?rest:out;if(stop){rest.push(l);continue}
+        const m=l.match(/^\s*\d+\s*[.、．)]\s*(.*)$/);if(m){buf.push(m[1].trim());continue}flush();
+        out.push(l.trim()?(/^【/.test(l.trim())?new Paragraph({indent:{left:1013,hanging:1013},children:[run(l.trim())]}):R.p(l.trim())):R.blank());
+        if(stopAt&&stopAt(l))stop=true}
+      flush();return {out,rest}};
+    /* 情境1、情境2 的截圖 */
+    let SH={};try{SH=JSON.parse(localStorage.getItem("ws5-shots")||"{}")||{}}catch(e){}
+    const shot=(tab,k)=>{const x=SH.slots&&SH.slots[tab]&&SH.slots[tab][k];return x&&x.src?x:null};
+    const end=s=>{s=String(s||"").trim();return s&&!/[。！？]$/.test(s)?s+"。":s};
+    const SC={jam:["tab1","緊急車輛塞在車陣中","可能的情境1"],hear:["tab2","關著車窗，聽得到警笛卻不知道它在哪裡","可能的情境2"],green:["tab1","紅綠燈切換：緊急車輛這邊綠燈、其他方向紅燈"],pass:["tab1","緊急車輛順利通過路口"],screen:["tab2","車用螢幕顯示警笛從哪裡來"],yield:["tab2","汽車自動閃避，讓出通道"]};
+    const sc=k=>{const [tab,title,pre]=SC[k],x=shot(tab,k);return x?{src:x.src,cap:(pre?pre+"：":"")+end(title)+end(x.cap||""),short:(x.cap||title).trim().replace(/。$/,"")}:null};
+    /* —— 研究動機 —— */
+    const mot=paras(S.motive).out;
+    const mPics=[...(S.newsOff?[]:[{src:document.querySelector("#newsFig img").src,cap:"新聞畫面（模擬）：救護車被擋，塞在車陣中過不去"}]),sc("jam"),sc("hear"),...(S.motivePics||[]).filter(p=>p&&p.src)].filter(Boolean);
+    if(mPics.length)mot.push(R.blank(),...await R.grid(mPics),R.blank());
+    /* —— 研究目的：研究架構圖放在【Where】那段的後面 —— */
+    const g=paras(S.goal,l=>/^【Where】/.test(l.trim())),gp=(S.goalPics||[]).filter(p=>p&&p.src),arch=gp.filter(p=>p.cap==="研究架構"),gOther=gp.filter(p=>p.cap!=="研究架構");
+    const goal=[...g.out];
+    if(arch.length)goal.push(R.blank(),...await R.grid(arch.map(p=>({src:p.src,full:true,maxH:640,cap:"我們將研究目的畫成研究架構圖，設計三個實驗來回答三個「W」。"}))),R.blank());
+    goal.push(...paras(g.rest.join("\n")).out);
+    const pr=(a,b)=>{const A=sc(a),Bx=sc(b);if(!A&&!Bx)return null;return {a:A,b:Bx,cap:[A?`(左圖) ${A.short}。`:"",Bx?`(右圖) ${Bx.short}。`:""].join("")}};
+    const gpairs=[pr("green","pass"),pr("screen","yield")].filter(Boolean);
+    if(gpairs.length)goal.push(R.blank(),...await R.pairs(gpairs));
+    if(gOther.length)goal.push(...await R.grid(gOther.map(p=>({src:p.src,cap:p.cap||""}))));
+    /* —— 使用器材：三個實驗各自的器材（含照片）；科展網站自己一整列 —— */
+    const tools=[];{const li=(html,def)=>{if(!html)return def.slice();const d=document.createElement("div");d.innerHTML=html;return [...d.querySelectorAll("li")].map(x=>x.textContent.trim()).filter(Boolean)};
+      const WS=[["一","Why","wwt-fw-h1q","為什麼光靠駕駛的耳朵不夠？",rd("ws1-occlusion-v2"),null,WSDEF[1]],["二","What","wwt-fw-h2q","警笛聲「長」什麼樣？",rd("ws2-fourier-v1"),rd("ws2-fourier-v1-img"),WSDEF[2]],["三","Where","wwt-fw-h3q","警笛聲從哪裡來？",rd("ws3-doa-v1"),null,WSDEF[3]]];
+      for(const [n,tag,qk,qdf,S2,IM,def] of WS){const eq=(IM&&IM.eq)||S2.eq;const L=Array.isArray(eq)?eq.filter(x=>x&&x.name&&x.name.trim()):li(S2.equipHTML,def.eq).map(name=>({name,src:""}));
+        tools.push(R.h(`實驗${n}：【${tag}】${ls(qk,qdf)}`),...L.map(x=>plain("・"+x.name.trim())));
+        tools.push(...await R.grid(L.filter(x=>x.src).map(x=>({src:x.src,cap:end(x.name.trim()),full:/科展網站|cnelab\.net/.test(x.name)}))));if(n!=="三")tools.push(R.blank())}}
+    /* —— 研究過程、結果 —— */
+    WC=await wsCompile(s=>msg.textContent=s,R);
+    const NOWS=()=>[R.p("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{indent:false})];
+    const proc=WC?WC.proc:NOWS(),res=WC?WC.res:NOWS();
+    {const tl=((rd("ws6-talk-v1").L)||[]).filter(o=>o&&o.end&&o.src);if(tl.length)res.push(R.blank(),...await R.grid(tl.map(o=>({src:o.src,cap:o.cap||""}))))}   // 討論過程紀錄裡打星號的照片：放在最後
+    const refs=String(S.refs||"").split("\n").filter(l=>l.trim()).map(l=>new Paragraph({indent:{left:303,hanging:303},children:[run(l.trim())]}));
     const box=k=>(S.kinds.includes(k)?"■":"□")+k;
-    const rows=[
-      new TableRow({children:[new TableCell({columnSpan:2,borders:BD,margins:{top:100,bottom:100},children:[para("臺中市麗喆雙語中小學　校內科學展覽作品說明(初審)",{align:AlignmentType.CENTER,size:30,bold:true})]})]}),
-      row("年級",null,S.mems.map(m=>para(`${m.yr||"　"} 年 ${m.cls||"　"} 班　　姓名：${m.nm||""}`))),
-      row("科別",null,[para([box("物理"),box("化學"),box("生物"),box("地球科學"),box("數學")].join("　")),para(box("生活與應用科學"))]),
-      row("作品名稱",null,[para(S.title||"",{bold:true})].concat(S.subtitle?[para("——"+S.subtitle)]:[])),
-      row("研究動機","（描述為何想研究的起因）",[...lines(S.motive),...await picsEach([...(S.newsOff?[]:[{src:document.querySelector("#newsFig img").src,cap:"新聞畫面（模擬）：救護車被擋，塞在車陣中過不去"}]),...withScene(S.motivePics,"motive")])],1800),
-      row("研究目的","（對此研究想要知道什麼或可以得知什麼）",[...lines(S.goal),...await pics(withScene(S.goalPics,"goal"))],1800),
-      row("使用器材","（此實驗所需的器材）",await eqCompile(),1400),
-      row("研究過程","（請寫出至少一整個實驗步驟及實驗紀錄描寫）",[...((((WC=await wsCompile(s=>msg.textContent=s))&&WC.proc))||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkBlocks()],2400),
-      row("結果","（對實驗過程及紀錄列出你分析的結果或想法）",[...((WC&&WC.res)||[para("（請在網站的「📋 科展作品說明」分頁匯出，才會自動整理三個實驗）",{color:"AA0000"})]),...await window.__talkEnd()],2000),
-      row("參考資料及其他",null,lines(S.refs),1000)];
+    R.number([[1,mot],[1,goal],[2,tools],[2,proc],[3,res]]);
+    const t1=tbl([
+      new TableRow({children:[new TableCell({columnSpan:2,borders:BD,margins:{top:100,bottom:100},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[run("臺中市麗喆雙語中小學　校內科學展覽作品說明(初審)",{bold:true,size:30})]})]})]}),
+      row("年級",S.mems.map(m=>plain(`${m.yr||"　"} 年 ${m.cls||"　"} 班　　姓名：${m.nm||""}`))),
+      row("科別",[plain(["物理","化學","生物","地球科學","數學","生活與應用科學"].map(box).join("　"))]),
+      row("作品名稱",[plain((S.title||"")+(S.subtitle?"——"+S.subtitle:""))]),
+      row("研究動機",mot,1800),row("研究目的",goal,1800),row("使用器材",tools,1400)]);
+    const pb=()=>new Paragraph({children:[new PageBreak()]});
     const doc=new Document({styles:{default:{document:{run:{font:{ascii:"Times New Roman",hAnsi:"Times New Roman",eastAsia:"標楷體"},size:24}}}},
-      sections:[{properties:{page:{margin:{top:900,bottom:900,left:1000,right:1000}}},children:[para("附件 2："),new Table({width:{size:9900,type:WidthType.DXA},columnWidths:[703,9197],layout:D.TableLayoutType.FIXED,rows})]}]});
+      numbering:{config:[{reference:"rnum",levels:[{level:0,format:LevelFormat.DECIMAL,text:"%1.",alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:720,hanging:360}}}}]}]},
+      sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:900,bottom:900,left:1000,right:1000}}},
+        footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({children:[PageNumber.CURRENT]})]})]})},
+        children:[t1,pb(),tbl([row("研究過程",proc,2400)]),pb(),tbl([row("結果",res,2000),row("參考資料及其他",refs,1000)])]}]});
     const blob=await Packer.toBlob(doc);
     const fn=`校內科展作品說明_初審_${(S.mems.map(m=>m.nm).filter(Boolean).join("、")||"").replace(/[\/\\:*?"<>|]/g,"")||"未填姓名"}.docx`;
     let done=false;
