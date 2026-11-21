@@ -8275,7 +8275,12 @@ svg text{font-family:var(--body)}
   <h2>儲存與匯出</h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
     <p>寫的內容和照片會自動存到雲端，全隊共用一份，換電腦也看得到（照片會縮小再存）。寫完按下面的按鈕存成 Word 檔，格式和學校的附件 2 一樣。</p>
-    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div>
+    <div id="finalBox" style="border:2px solid #d97706;background:#fffbeb;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div><b>📌 定稿（老師手動排版、校稿後的版本）</b><br><span class="note" id="finalInfo">檢查雲端有沒有定稿…</span></div>
+      <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap"><button class="go" id="finalDl" hidden>⬇ 下載定稿 Word 檔</button><label class="xbtn" for="finalUp" id="finalUpL" style="cursor:pointer">⬆ 上傳／更換定稿（.docx）</label><input type="file" id="finalUp" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><span class="note" id="finalMsg" aria-live="polite"></span></div>
+    </div>
+    <details id="regenBox"><summary class="note" style="cursor:pointer">用網站上的資料重新產生（不是定稿，格式會跟定稿不一樣）</summary>
+    <div class="row" style="align-items:center"><button class="go" id="export">匯出 Word 檔（.docx）</button><span class="note" id="expMsg" aria-live="polite"></span></div></details>
   </div>
 </section>
 </div>
@@ -8413,6 +8418,41 @@ window.__talkEnd=async()=>{const X=window.docx,{Paragraph}=X;const L=((rd("ws6-t
 })();
 
 /* ================= 匯出 Word ================= */
+/* 📌 定稿：老師手動排版、校稿後的 Word。存在雲端（final-docx），「下載定稿」一字不差拿回來；不放在公開網站上 */
+(()=>{const info=$("finalInfo"),dl=$("finalDl"),up=$("finalUp"),msg=$("finalMsg"),rg=$("regenBox");if(!info)return;
+  const KEY="final-docx",IKEY="final-docx-info";let I=null;
+  const show=()=>{if(I&&I.name){info.textContent=`雲端已經有定稿：${I.name}（${(I.size/1048576).toFixed(1)} MB），${new Date(I.at).toLocaleString("zh-TW")} 由 ${I.by||"某台電腦"} 上傳。要交出去的就是這一份。`;dl.hidden=false;if(rg)rg.open=false}
+    else{info.textContent="雲端還沒有定稿。老師排版、校稿好 Word 後，按「上傳／更換定稿」放上來，大家就能下載同一份。";dl.hidden=true;if(rg)rg.open=true}};
+  const fbP=()=>window.__FB;
+  const BL=()=>{let F=null;try{F=window.top.firebase}catch(e){}F=F||window.firebase;return F.firestore().collection("teams").doc("ritz").collection("blobs")};
+  (async()=>{try{const fb=await fbP();const r=await fb.load(IKEY);I=r&&r.data?JSON.parse(r.data):null}catch(e){I=null;info.textContent="連不上雲端，等一下重新整理再試。";return}show()})();
+  async function saveBlob(blob,fn){let done=false;
+    try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
+    if(!done&&window.claude&&typeof window.claude.use==="function"){const d=await window.claude.use("downloads");if(d){try{await d.save({filename:fn,data:blob});msg.textContent="已存好 "+fn}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"這裡沒辦法存檔，請改到 cnelab.net 的網頁版下載。"}done=true}}
+    if(!done){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},4000);msg.textContent="已下載 "+fn}}
+  dl.addEventListener("click",async()=>{dl.disabled=true;msg.textContent="從雲端拿定稿中（檔案比較大，請等一下）…";
+    try{await fbP();if(!I||!I.id)throw new Error("雲端找不到定稿檔");const R=BL();
+      const parts=await Promise.all([...Array(I.n)].map((_,i)=>R.doc(I.id+"~"+i).get()));
+      if(parts.some(x=>!x.exists))throw new Error("定稿檔不完整，請重新上傳");
+      const b64=parts.map(x=>x.data().d||"").join(""),bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+      await saveBlob(new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),I.name||"校內科展作品說明_定稿.docx")}
+    catch(e){msg.textContent="下載失敗："+(e&&e.message||e)}dl.disabled=false});
+  up.addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+    if(window.__wwtRO&&window.__wwtRO()){alert("現在鎖起來了，要先解鎖才能上傳定稿。");return}
+    if(I&&I.name&&!confirm(`雲端已經有定稿「${I.name}」。要換成「${f.name}」嗎？`))return;
+    up.disabled=true;msg.textContent=`上傳中（${(f.size/1048576).toFixed(1)} MB，大約 1～3 分鐘，請不要關掉網頁）…`;
+    try{const fb=await fbP(),u=await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=()=>no(fr.error);fr.readAsDataURL(f)});
+      const b64=u.slice(u.indexOf(",")+1),CH=250000,n=Math.ceil(b64.length/CH),id="final_"+Date.now(),R=BL(),old=I&&I.id?I:null;
+      /* 一塊一塊放到雲端（每塊 25 萬字，8 塊一起送） */
+      for(let i=0;i<n;i+=8){const bt=R.firestore.batch();for(let j=i;j<Math.min(n,i+8);j++)bt.set(R.doc(id+"~"+j),{d:b64.slice(j*CH,(j+1)*CH)});
+        await Promise.race([bt.commit(),new Promise((_,no)=>setTimeout(()=>no(new Error("網路太慢")),90000))]);msg.textContent=`上傳中… ${Math.min(100,Math.round((i+8)/n*100))}%（請不要關掉網頁）`}
+      I={name:f.name,size:f.size,at:Date.now(),id,n,by:(/iPhone|iPad/.test(navigator.userAgent)?"iPhone/iPad":/Mac/.test(navigator.userAgent)?"Mac":"電腦")};
+      await fb.save(IKEY,JSON.stringify(I),Date.now());show();msg.textContent="✓ 定稿已經放到雲端了。";
+      if(old&&old.id!==id)for(let i=0;i<old.n;i+=8){const bt=R.firestore.batch();for(let j=i;j<Math.min(old.n,i+8);j++)bt.delete(R.doc(old.id+"~"+j));try{await bt.commit()}catch(e){}}   // 舊的定稿刪掉
+    }
+    catch(err){msg.textContent=/locked/.test(err&&err.message)?"現在鎖起來了，要先解鎖才能上傳。":"上傳失敗："+(err&&err.message||err)+"（網路穩一點再試一次）"}
+    up.disabled=false});
+})();
 (()=>{const btn=$("export"),msg=$("expMsg");
 function imgSize(u){return new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=()=>r([4,3]);i.src=u})}
 async function dataBuf(u){return await (await fetch(u)).arrayBuffer()}
