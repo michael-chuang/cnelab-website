@@ -401,6 +401,26 @@ document.addEventListener("DOMContentLoaded", function () {
       wrap.addEventListener("mouseleave", function () {
         mouse.active = false;
       });
+    } else {
+      // Touch devices have no persistent hover, but a finger touching or
+      // dragging across the banner can still drive the same reaction.
+      // Passive and read-only (no preventDefault), so page scroll and the
+      // site's own swipe-navigation gesture are unaffected.
+      var updateTouch = function (e) {
+        if (!e.touches.length) return;
+        var rect = wrap.getBoundingClientRect();
+        var t = e.touches[0];
+        mouse.x = t.clientX - rect.left;
+        mouse.y = t.clientY - rect.top;
+        mouse.active = true;
+      };
+      var clearTouch = function () {
+        mouse.active = false;
+      };
+      wrap.addEventListener("touchstart", updateTouch, { passive: true });
+      wrap.addEventListener("touchmove", updateTouch, { passive: true });
+      wrap.addEventListener("touchend", clearTouch, { passive: true });
+      wrap.addEventListener("touchcancel", clearTouch, { passive: true });
     }
 
     window.addEventListener("resize", resize);
