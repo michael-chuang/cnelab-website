@@ -8424,7 +8424,8 @@ window.__talkEnd=async()=>{const X=window.docx,{Paragraph}=X;const L=((rd("ws6-t
   const show=()=>{if(I&&I.name){info.textContent=`雲端已經有定稿：${I.name}（${(I.size/1048576).toFixed(1)} MB），${new Date(I.at).toLocaleString("zh-TW")} 由 ${I.by||"某台電腦"} 上傳。要交出去的就是這一份。`;dl.hidden=false;if(rg)rg.open=false}
     else{info.textContent="雲端還沒有定稿。老師排版、校稿好 Word 後，按「上傳／更換定稿」放上來，大家就能下載同一份。";dl.hidden=true;if(rg)rg.open=true}};
   const fbP=()=>window.__FB;
-  const BL=()=>{let F=null;try{F=window.top.firebase}catch(e){}F=F||window.firebase;return F.firestore().collection("teams").doc("ritz").collection("blobs")};
+  let FW=window;const PO=x=>Object.assign(new FW.Object(),x);   /* 雲端程式在上層網頁：資料物件要用上層網頁的 Object 做，不然會被拒收 */
+  const BL=()=>{let F=null;try{F=window.top.firebase;if(F)FW=window.top}catch(e){}if(!F){F=window.firebase;FW=window}return F.firestore().collection("teams").doc("ritz").collection("blobs")};
   (async()=>{try{const fb=await fbP();const r=await fb.load(IKEY);I=r&&r.data?JSON.parse(r.data):null}catch(e){I=null;info.textContent="連不上雲端，等一下重新整理再試。";return}show()})();
   async function saveBlob(blob,fn){let done=false;
     try{if(window.parent!==window&&typeof window.parent.__saveFile==="function"){msg.textContent=(await window.parent.__saveFile(blob,fn))||"已存好 "+fn;done=true}}catch(e){msg.textContent=e&&e.code==="declined"?"已取消儲存。":"存檔失敗："+(e&&e.message||e);done=true}
@@ -8444,7 +8445,7 @@ window.__talkEnd=async()=>{const X=window.docx,{Paragraph}=X;const L=((rd("ws6-t
     try{const fb=await fbP(),u=await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=()=>no(fr.error);fr.readAsDataURL(f)});
       const b64=u.slice(u.indexOf(",")+1),CH=250000,n=Math.ceil(b64.length/CH),id="final_"+Date.now(),R=BL(),old=I&&I.id?I:null;
       /* 一塊一塊放到雲端（每塊 25 萬字，8 塊一起送） */
-      for(let i=0;i<n;i+=8){const bt=R.firestore.batch();for(let j=i;j<Math.min(n,i+8);j++)bt.set(R.doc(id+"~"+j),{d:b64.slice(j*CH,(j+1)*CH)});
+      for(let i=0;i<n;i+=8){const bt=R.firestore.batch();for(let j=i;j<Math.min(n,i+8);j++)bt.set(R.doc(id+"~"+j),PO({d:b64.slice(j*CH,(j+1)*CH)}));
         await Promise.race([bt.commit(),new Promise((_,no)=>setTimeout(()=>no(new Error("網路太慢")),90000))]);msg.textContent=`上傳中… ${Math.min(100,Math.round((i+8)/n*100))}%（請不要關掉網頁）`}
       I={name:f.name,size:f.size,at:Date.now(),id,n,by:(/iPhone|iPad/.test(navigator.userAgent)?"iPhone/iPad":/Mac/.test(navigator.userAgent)?"Mac":"電腦")};
       await fb.save(IKEY,JSON.stringify(I),Date.now());show();msg.textContent="✓ 定稿已經放到雲端了。";
